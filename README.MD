@@ -2,16 +2,16 @@
 
 ## Install  
 ```
-###Exon Mode
+### Exon Mode
 cd HLAPro/script/exon/
 sh HLAPro_exon.sh -h
-###Whole Mode
+### Whole Mode
 cd HLAPro/script/whole/
 sh HLAPro_whole.sh -h
 
 ```
 ## Dependencies 
-###Programming language
+### Programming language
 * Python 3.7.0 or above  
 * Python libraries:  
     * Numpy  
@@ -35,18 +35,21 @@ HLAPro relies on these softwares, we have uploaded the binary file of them to th
     * Freebayes-v1.2.0-2-g29c4002
     * Novoalign V4.02.01
     * Tabix-Version: 1.9
-
+    * ScanIndel
+    * fermikit
  Then you can use HLAPro's codes in the script/ folder. 
 
 
 ## Basic Usage  
+### Extract HLA reads
+Before profiling the HLA, we should first extract HLA reads. Then we use the extracted HLA reads to do the following steps.
 ### Exon Mode (profile HLA in exons)
 ```
 Usage:
   sh HLAPro_exon.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
 
 Options:
-  -n        Sample ID..
+  -n        Sample ID.
   -1        The first fastq file.
   -2        The second fastq file.
   -p        The population of the sample: Asian, Black, or Caucasus. Use mean frequency
@@ -55,10 +58,12 @@ Options:
             is 2. It should be set larger to infer novel alleles.
   -g        True or False. The ratio of two haplotype will be regarded the same if set True.
             Otherwise, we will calculate the haplotype ratio. Default is False.
-  -h        Show this message.```
+  -h        Show this message.
 ```
 ### Whole Mode (profile HLA with full length)
 ```
+The Whole version of HLAPro, performs HLA assembly and HLA Typing with full-length.
+
 Usage:
   sh HLAPro_whole.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
 
@@ -72,21 +77,19 @@ Options:
             is 2. It should be set larger to infer novel alleles.
   -g        True or False. The ratio of two haplotype will be regarded the same if set True.
             Otherwise, we will calculate the haplotype ratio. Default is False.
-  -h        Show this message.```
-
+  -h        Show this message.
 ```
 
-## Getting help
-Should you have any queries, please feel free to contact me, I will reply as soon as possible (swang66-c@my.cityu.edu.hk).
+### Detect HLA LOH in cancer samples
 
 ## Interpret output
 HLAPro will automaticly build a folder named output/ in the current path. In the output/ folder, the results of each sample are saved in a folder named as the sample ID.  
 
 In the directory of one specific sample, you will find the below files:
 ```
-* "hla.result.txt" contains the Typing results of each allele.
-* "result.HLA_*.fasta" contains the Assembly results of each allele.
-* "HLA_*_freq.txt" contains the Haplotype Ratios of each gene.
+"hla.result.txt" contains the Typing results of each allele.
+"result.HLA_*.fasta" contains the Assembly results of each allele.
+"HLA_*_freq.txt" contains the Haplotype Ratios of each gene.
 
 ```
 An example for the formats of "hla.result.txt" is as below:
@@ -97,6 +100,15 @@ Score   100     100     100             100     100     100     100     100     
 ```
 This means the typing result of each gene's haplotype. The third line indicates the match score between the assembly sequence and the typing allele in the database.   
 
+## Test
+Please go to the example/ folder, and run the test code in exon/ or whole/. 
+```
+sh ./test_exon.sh
+or
+sh ./test_whole.sh
+```
+If you install successfully, you will find results in the example/exon/output/ or example/whole/output/.
 
-## Infer HLA LOH
+## Getting help
+Should you have any queries, please feel free to contact me, I will reply as soon as possible (swang66-c@my.cityu.edu.hk).
 

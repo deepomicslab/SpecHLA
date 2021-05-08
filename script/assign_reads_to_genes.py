@@ -116,14 +116,11 @@ def extract_reads(options):
             # first_align = l[0][0].split('*')[0]
             # reads_len = #list(len_dict.values())[0]
             for key in dict.keys():
-                # print (len_dict[key])
                 if len_dict[key] < 0:  #make sure the reads is paired mapped.
                     dict[key] = 0
                 else:
                     dict[key] = float(dict[key])/len_dict[key]
             first_align = check_score(dict, options, name)
-            # print (dict, first_align, reads_len)
-            # break
             if first_align == 'REMOVE':
                 remove += 1
                 continue
@@ -151,10 +148,8 @@ def check_score(dict, options, name):
     elif len(new_l) == 1:
         return new_l[0][0]
     elif new_l[0][1] - new_l[1][1] < 0.5:# or new_l[0][1] < options.theta_pm:
-        # print ('remove reads', new_l)
-        # print (name.split('_')[0], new_l[0][0], new_l[1][0], new_l)
-        if new_l[0][0] == 'DRB1':
-            print (new_l[0][0], name, 'too similar with other genes', new_l[1][0], new_l[0][1] - new_l[1][1])
+        #if new_l[0][0] == 'DRB1':
+            #print (new_l[0][0], name, 'too similar with other genes', new_l[1][0], new_l[0][1] - new_l[1][1])
         return 'REMOVE'
     else:
         return new_l[0][0]

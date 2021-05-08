@@ -70,7 +70,7 @@ fq2=$outdir/$sample.uniq.name.R2.gz
 ## map the HLA reads to the allele database ##
 $bin/novoalign -d $db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.ndx -f $fq1 $fq2  -o SAM -o FullNW -r All 100000 --mCPU 10 -c 10  -g 20 -x 3  | $bin/samtools view -Sb - | $bin/samtools sort -  > $outdir/$sample.novoalign.bam
 $bin/samtools index $outdir/$sample.novoalign.bam
-#$bin/samtools view -h -F 0x800 -F 4 -F 8 $outdir/$sample.novoalign.bam 
+$bin/samtools view -h -F 0x800 -F 4 -F 8 $outdir/$sample.novoalign.bam 
 #| $bin/samtools sort -n -O SAM -o $outdir/$sample.novoalign.sam
 
 ## assign the reads to corresponding gene ##
@@ -97,6 +97,5 @@ sh $dir/run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70
 #!
 ## phase, link blocks, calculate haplotype ratio, give typing results ##
 $bin/python3 $dir/../phase_exon.py -b $outdir/$sample.realign.sort.bam -v $outdir/$sample.realign.filter.vcf -o $outdir/ -k 2 -g ${germline:-False} --block_len 80 --points_num 1 --freq_bias 0.05 --reads_num 2 --rlen 90 
-sh $dir/../clear_output.sh $outdir/
+
 #perl $dir/anno_HLA_pop.pl $sample $outdir 2 $pop
-echo $sample is done.
