@@ -1,0 +1,1 @@
+sh  ../../script/whole/HLAPro_whole.sh HG00118 /mnt/disk2_workspace/wangmengyao/NeedleHLA/WGS/fastp/HG00118/HG00118_1.filter.fastq.gz /mnt/disk2_workspace/wangmengyao/NeedleHLA/WGS/fastp/HG00118/HG00118_2.filter.fastq.gz Caucasian

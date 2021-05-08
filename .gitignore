@@ -1,0 +1,5 @@
+bin/
+bin_380/
+db/
+example/exon/*bam
+example/whole/*bam
