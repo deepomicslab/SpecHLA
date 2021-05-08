@@ -41,8 +41,18 @@ HLAPro relies on these softwares, we have uploaded the binary file of them to th
 
 
 ## Basic Usage  
-### Extract HLA reads
-Before profiling the HLA, we should first extract HLA reads. Then we use the extracted HLA reads to do the following steps.
+### Extract HLA-related reads
+Before profiling the HLA, we should first extract HLA reads. Then we use the extracted HLA reads to do the following steps. Please first map the fastq reads to hg19 or hg38, then use the ExtractHLAread.sh in script/ folder to extract HLA-related reads.
+```
+USAGE: sh ExtractHLAread.sh <sample_id> <bamfile> <refGenome>
+
+    sample_id        : desired sample name (ex: NA12878) [required]
+
+    bamfile          : sorted and indexed bam (ex: NA12878.bam) [required]
+
+    ref              : hg38 or hg19"
+
+```
 ### Exon Mode (profile HLA in exons)
 ```
 Usage:
