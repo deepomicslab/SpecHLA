@@ -289,7 +289,8 @@ def output(outdir,final_alpha,seq_list,snp_list,gene,freq_bias):
 
 def rectify(snp_list,beta_set,delta_set,lambda1,lambda2,germline_flag,database_flag):
     nucleotide={'A':0,'T':1,'C':2,'G':3}
-    prior_first=first_database()
+    if database_flag:
+        prior_first=first_database()
     has_prior=['HLA_A','HLA_B','HLA_C','HLA_DQB1','HLA_DRB1','HLA_DQA1','HLA_DPA1','HLA_DPB1']
     # rectify beta
     first_beta=[]

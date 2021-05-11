@@ -2,12 +2,17 @@
 
 ## Install  
 ```
-### Exon Mode
+* Exon Mode
 cd HLAPro/script/exon/
 sh HLAPro_exon.sh -h
-### Whole Mode
+
+* Whole Mode
 cd HLAPro/script/whole/
 sh HLAPro_whole.sh -h
+
+* Detect LOH events
+ls output/*/*_freq.txt >freq.list
+perl HLAPro/script/cal.hla.copy.pl  -purity <Purity> -ploidy <Ploidy> -F freq.list -O <Outdir>
 
 ```
 ## Dependencies 
@@ -29,28 +34,30 @@ HLAPro relies on these softwares, we have uploaded the binary file of them to th
     * picard-tools-2.1.0
     * BWA-0.7.17-r1188
     * blast 2.3.0
-    * blat
+    * BLAT v. 36x2
     * bedtools-v2.26.0
     * bcftools-Version: 1.9
     * Freebayes-v1.2.0-2-g29c4002
     * Novoalign V4.02.01
     * Tabix-Version: 1.9
-    * ScanIndel
-    * fermikit
- Then you can use HLAPro's codes in the script/ folder. 
+    * ScanIndel v1.3
+    * Fermikit-0.13
+
+Then you can use HLAPro's codes in the script/ folder. 
 
 
 ## Basic Usage  
 ### Extract HLA-related reads
 Before profiling the HLA, we should first extract HLA reads. Then we use the extracted HLA reads to do the following steps. Please first map the fastq reads to hg19 or hg38, then use the ExtractHLAread.sh in script/ folder to extract HLA-related reads.
 ```
-USAGE: sh ExtractHLAread.sh <sample_id> <bamfile> <refGenome>
+USAGE: 
+    sh ExtractHLAread.sh <sample_id> <bamfile> <refGenome>
 
     sample_id        : desired sample name (ex: NA12878) [required]
 
     bamfile          : sorted and indexed bam (ex: NA12878.bam) [required]
 
-    ref              : hg38 or hg19"
+    ref              : hg38 or hg19
 
 ```
 ### Exon Mode (profile HLA in exons)
@@ -71,9 +78,8 @@ Options:
   -h        Show this message.
 ```
 ### Whole Mode (profile HLA with full length)
-```
 The Whole version of HLAPro, performs HLA assembly and HLA Typing with full-length.
-
+```
 Usage:
   sh HLAPro_whole.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
 
@@ -91,6 +97,18 @@ Options:
 ```
 
 ### Detect HLA LOH in cancer samples
+If the purity of cancer sample and the ploidy of HLA region are known, we can infer HLA LOH event.
+```
+Usage:
+       perl cal.hla.copy.pl [Options] -purity <Purity> -ploidy <Ploidy> -F <filelist> -O <outdir>
+
+OPTIONS:
+        -purity  [f]  the purity of tumor sample. <required>
+        -ploidy  [f]  the ploidy of tumor sample in HLA gene region. <required>
+        -F       [s]  the filelist. <required>
+                     Format, separated by table:  Sample/HLA_A_freq.txt
+        -O       [s]  the output dir. <required>
+```
 
 ## Interpret output
 HLAPro will automaticly build a folder named output/ in the current path. In the output/ folder, the results of each sample are saved in a folder named as the sample ID.  
@@ -118,6 +136,21 @@ or
 sh ./test_whole.sh
 ```
 If you install successfully, you will find results in the example/exon/output/ or example/whole/output/.
+
+## Simulation
+Please go to the simulation/ folder, and run simu.hla.sh like:
+```
+Simulation HLA capture reads for HLA Typing
+USAGE: <PATH-TO>/simu.hla.sh -n <sample_size> -r <read_length> -1 <depth of haplotype1> -2 <depth of haplotype2>
+
+ -n        : sample size of simulation [required]
+
+ -r        : read length [required]
+
+ -1        : depth of haplotype1 [required]
+
+ -2        : depth of haplotype2 [required]
+```
 
 ## Getting help
 Should you have any queries, please feel free to contact me, I will reply as soon as possible (swang66-c@my.cityu.edu.hk).

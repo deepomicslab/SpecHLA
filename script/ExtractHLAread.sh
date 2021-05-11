@@ -10,24 +10,46 @@ num_processors=8
 me=`basename $0`
 function usage {
     echo "HLA-related reads extractor for HLA Typing"
-    echo "USAGE: <PATH-TO>/$me <sample_id> <bamfile> <refGenome>"
+    echo "USAGE: <PATH-TO>/$me -s <sample_id> -b <bamfile> -r <refGenome>"
     echo
-    echo " sample_id        : desired sample name (ex: NA12878) [required]"
+    echo " -s          : desired sample name (ex: NA12878) [required]"
     echo
-    echo " bamfile          : sorted and indexed bam (ex: NA12878.bam) [required]"
+    echo " -b          : sorted and indexed bam (ex: NA12878.bam) [required]"
     echo
-    echo " ref              : hg38 or hg19"
+    echo " -r          : hg38 or hg19"
     echo
     exit 1
 }
 
+help() {
+	 sed -rn 's/^### ?//;T;p' "$0"
+}
 
-sampleid=$1
-bam_path=$2
-ref=$3
+if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
+	usage
+	exit 1
+fi
 
-samtools_bin=/home/BIOINFO_TOOLS/mutation_tools/SamTools/SamTools-1.9/samtools
-bamUtil=/home/wangmengyao/packages/bamUtil-1.0.14/bin/bam
+while getopts ":s:b:r:" opt; do
+	   case $opt in
+	    s) sampleid="$OPTARG"
+		 ;;
+            b) bam_path="$OPTARG"
+		 ;;
+	    r) ref="$OPTARG"
+		 ;;
+	    \?) echo "Invalid option -$OPTARG" >&2
+		 ;;
+ esac
+done
+
+
+#sampleid=$1
+#bam_path=$2
+#ref=$3
+
+samtools_bin=../bin/samtools
+bamUtil=../bin/bam
 
 if [ ! -x "$samtools_bin" ]  || [ ! -x "$bamUtil" ];then
     echo "Please make sure samtools and bamUtil are installed"
