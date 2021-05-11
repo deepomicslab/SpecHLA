@@ -16,7 +16,6 @@ perl HLAPro/script/cal.hla.copy.pl  -purity <Purity> -ploidy <Ploidy> -F freq.li
 
 ```
 ## Dependencies 
-### Programming language
 * Python 3.7.0 or above  
 * Python libraries:  
     * Numpy  
@@ -26,9 +25,9 @@ perl HLAPro/script/cal.hla.copy.pl  -purity <Purity> -ploidy <Ploidy> -F freq.li
     * Pysam  
 * Perl 5 or above
 
-HLAPro needs a HLA allele database. We have uploaded the database in the db/ folder to the link https://drive.google.com/drive/folders/1NgBNlfduLwG61P3JMBZts6pVUJn3UR8n?usp=sharing, you can directly download the db/ folder, and put it in the same path with the script/ folder. HLAPro will use them by default. 
+HLAPro needs a HLA allele database. We have uploaded the database in the db/ folder to the link https://drive.google.com/drive/folders/1M5GSF-oDTJ-tWgHt30TskOTWZvGBrD0Y?usp=sharing, you can directly download the db/ folder, and put it in the same path with the script/ folder. HLAPro will use them by default. 
 
-HLAPro relies on these softwares, we have uploaded the binary file of them to the folder bin/ in the link https://drive.google.com/drive/folders/1NgBNlfduLwG61P3JMBZts6pVUJn3UR8n?usp=sharing, you can directly download the bin/ folder, and put it in the same path with the script/ folder. HLAPro could use them by default. Also, you can install them by yourself, and build a folder named bin/ in the same folder of script/, and link the binery files to the bin/ folder. HLAPro will use them by default.   
+HLAPro relies on these softwares, we have uploaded the binary file of them to the folder bin/ in the link https://drive.google.com/drive/folders/1M5GSF-oDTJ-tWgHt30TskOTWZvGBrD0Y?usp=sharing, you can directly download the bin/ folder, and put it in the same path with the script/ folder. HLAPro could use them by default. Also, you can install them by yourself, and build a folder named bin/ in the same folder of script/, and link the binery files to the bin/ folder. HLAPro will use them by default.   
 * Third party pipelines:
     * SamTools-1.3.1
     * picard-tools-2.1.0
