@@ -1,12 +1,12 @@
 #!/usr/bin/perl
+use FindBin qw($Bin);
 #perl annoHLA.pl HLA_10_T_50-50 /mnt/disk2_workspace/wangmengyao/NeedleHLA/simu_data/simu_20200318/assembly/HLA_10_T_50-50/phase/HLA_10_T_50-50 ./ 2
-my ($sample,$fadir,$workdir,$k,$pop) = @ARGV;
+my ($sample,$fadir,$workdir,$k,$pop, $version) = @ARGV;
 
-my $db="../../db/HLA";
-my $bin="../../bin";
+my $db="$Bin/../../db/HLA";
+my $bin="$Bin/../../bin";
 
 my @hlas = ("A","B","C","DPA1","DPB1","DQA1","DQB1","DRB1");
-#my @hlas = ("DQB1","DRB1");
 my (%hash,%hashp);
 open FIN, "$db/HLA_FREQ_HLA_I_II.txt" or die "$!\n";
 while(<FIN>){
@@ -14,10 +14,18 @@ while(<FIN>){
     my ($gene,$c,$b,$a) = (split);
     if(!$pop){$hashp{$gene} = ($a+$b+$c)/3}
     if($pop eq "Asian"){$hashp{$gene} = $a}
-    if($pop eq "Black"){$hashp{$gene} = $b}
-    if($pop eq "Caucasian"){$hashp{$gene} = $c}
+    elsif($pop eq "Black"){$hashp{$gene} = $b}
+    elsif($pop eq "Caucasian"){$hashp{$gene} = $c}
+    else{$hashp{$gene} = ($a+$b+$c)/3}
 }
 close FIN;
+my ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000);
+if($version eq "pstrain"){
+     ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (30,500,200,100,100,100,100,70);
+}
+elsif($version eq "spechap"){
+     ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (500,10000,10000,10000,10000,10000,10000,70);
+}
 
 my %hashm;
 open INL, "$db/hla_nom_g.txt" or die "$!\n";
@@ -143,16 +151,16 @@ foreach my $class(@hlas){
 		      if(($tf > 0) && ($ts==100)){$ttf = 1}
                       if($tf == 0){$ttf = -1}
                       my $scorel=0;
-                      if($class eq "B"){$scorel = $ts * (2**($ttf/500));}
-		      elsif($class eq "DRB1"){$scorel = $ts * (2**($ttf/70))}
+                      if($class eq "B"){$scorel = $ts * (2**($ttf/$C_b));}
+		      elsif($class eq "DRB1"){$scorel = $ts * (2**($ttf/$C_drb))}
                       elsif($class eq "A"){
                                   if($tf==0){$ttf=-10}
-                                  $scorel = $ts * (2**($ttf/30))
+                                  $scorel = $ts * (2**($ttf/$C_a))
                       }
                       elsif($class eq "C"){
                                  if($tf==0){$ttf=-10}
-                                 $scorel = $ts * (2**($ttf/200))
-                      }else{$scorel = $ts * (2 ** ($tff/100))}
+                                 $scorel = $ts * (2**($ttf/$C_c))
+                      }else{$scorel = $ts * (2 ** ($tff/$C_dpa))}
 
 	              if($scorel > $score){
 		             $score = $scorel;

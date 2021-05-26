@@ -1,13 +1,13 @@
 #!/usr/bin/perl
+use FindBin qw($Bin);
 
-my ($sample,$dir,$k,$pop) = @ARGV;
+my ($sample,$dir,$k,$pop,$version) = @ARGV;
 my ($line1,$line2,$line3);
 
-my $db="../../db/HLA";
-my $bin="../../bin";
+my $db="$Bin/../../db/HLA";
+my $bin="$Bin/../../bin";
 my @hlas = ("HLA_A","HLA_B","HLA_C","HLA_DPA1","HLA_DPB1","HLA_DQA1","HLA_DQB1","HLA_DRB1");
-#my @hlas = ("HLA_A","HLA_B","HLA_C");
-#my @hlas = ("HLA_DRB1");
+
 my %hash;
 open FIN, "$db/HLA_FREQ_HLA_I_II.txt" or die "$!\n";
 while(<FIN>){
@@ -15,10 +15,18 @@ while(<FIN>){
     my ($gene,$c,$b,$a) = (split);
     if(!$pop){$hash{$gene} = ($a+$b+$c)/3}
     if($pop eq "Asian"){$hash{$gene} = $a}
-    if($pop eq "Black"){$hash{$gene} = $b}
-    if($pop eq "Caucasian"){$hash{$gene} = $c}
+    elsif($pop eq "Black"){$hash{$gene} = $b}
+    elsif($pop eq "Caucasian"){$hash{$gene} = $c}
+    else{$hash{$gene} = ($a+$b+$c)/3}
 }
 close FIN;
+my ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000);
+if($version eq "pstrain"){
+     ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (20,8,200,100,100,100,100,50);
+}
+elsif($version eq "spechap"){
+     ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (20,8,200,100,100,100,100,50);
+}
 
 my %hashm;
 open INL, "$db/hla_nom_g.txt" or die "$!\n";
@@ -181,19 +189,19 @@ foreach my $class(@hlas){
 			 if(($tf > 0) && ($ts==100)){$ttf = 1}
 			 if($tf == 0){$ttf = -1}
 			 my $scorel=0;
-			 if($class eq "HLA_B"){$scorel = $ts * (2**($ttf/8));}
+			 if($class eq "HLA_B"){$scorel = $ts * (2**($ttf/$C_b));}
 			 elsif($class eq "HLA_DRB1"){
 				 #if($tf >0){$scorel = $ts ;}else{$scorel=70}
-                                 $scorel = $ts * (2 ** ($ttf/50))
+                                 $scorel = $ts * (2 ** ($ttf/$C_drb))
 			 }
                          elsif($class eq "HLA_A"){
                                   if($tf==0){$ttf=-10}
-                                  $scorel = $ts * (2**($ttf/20))
+                                  $scorel = $ts * (2**($ttf/$C_a))
                          }
 			 elsif($class eq "HLA_C"){
 				 if($tf==0){$ttf=-10}
-				 $scorel = $ts * (2**($ttf/200))
-			 }else{$scorel = $ts * (2**($ttf/100));}
+				 $scorel = $ts * (2**($ttf/$C_c))
+			 }else{$scorel = $ts * (2**($ttf/$C_dpb));}
 			  print "$idd\t$hla\t$scorel\t$ts\t$tf\n";
 			 if($scorel>=$mscorel){$mscorel = $scorel;$hh=$hla}
 		     }

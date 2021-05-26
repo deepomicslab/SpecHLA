@@ -16,6 +16,7 @@ perl HLAPro/script/cal.hla.copy.pl  -purity <Purity> -ploidy <Ploidy> -F freq.li
 
 ```
 ## Dependencies 
+### Programming 
 * Python 3.7.0 or above  
 * Python libraries:  
     * Numpy  
@@ -25,10 +26,15 @@ perl HLAPro/script/cal.hla.copy.pl  -purity <Purity> -ploidy <Ploidy> -F freq.li
     * Pysam  
 * Perl 5 or above
 
-HLAPro needs a HLA allele database. We have uploaded the database in the db/ folder to the link https://drive.google.com/drive/folders/1M5GSF-oDTJ-tWgHt30TskOTWZvGBrD0Y?usp=sharing, you can directly download the db/ folder, and put it in the same path with the script/ folder. HLAPro will use them by default. 
+### Reference database
+HLAPro needs a HLA allele database. Please download db/ folder from https://drive.google.com/drive/folders/1M5GSF-oDTJ-tWgHt30TskOTWZvGBrD0Y?usp=sharing, and put it in the same path with the script/ folder. HLAPro will use it by default. 
 
-HLAPro relies on these softwares, we have uploaded the binary file of them to the folder bin/ in the link https://drive.google.com/drive/folders/1M5GSF-oDTJ-tWgHt30TskOTWZvGBrD0Y?usp=sharing, you can directly download the bin/ folder, and put it in the same path with the script/ folder. HLAPro could use them by default. Also, you can install them by yourself, and build a folder named bin/ in the same folder of script/, and link the binery files to the bin/ folder. HLAPro will use them by default.   
-* Third party pipelines:
+### Third party packages
+Please download the folder bin/ from https://drive.google.com/drive/folders/1M5GSF-oDTJ-tWgHt30TskOTWZvGBrD0Y?usp=sharing, and put it in the same path with the script/ folder. 
+
+After that, please install Novoalign and Tabix by yourself. And link the binary files of novoalign, novoalign.lic, Tabix, python2, and python3 to the db/ folder. HLAPro will use them by default.
+
+* Third party packages:
     * SamTools-1.3.1
     * picard-tools-2.1.0
     * BWA-0.7.17-r1188
@@ -42,12 +48,22 @@ HLAPro relies on these softwares, we have uploaded the binary file of them to th
     * ScanIndel v1.3
     * Fermikit-0.13
 
-Then you can use HLAPro's codes in the script/ folder. 
+Then you can test HLAPro in the example/ folder. 
 
+Also, you can install them by yourself, and link the binary files to the bin/ folder. 
+
+## Test
+Please go to the example/ folder, and run the test code in exon/ or whole/. 
+```
+sh ./test_exon.sh
+or
+sh ./test_whole.sh
+```
+If you install successfully, you will find results in the example/exon/output/ or example/whole/output/.
 
 ## Basic Usage  
 ### Extract HLA-related reads
-Before profiling the HLA, we should first extract HLA reads. Then we use the extracted HLA reads to do the following steps. Please first map the fastq reads to hg19 or hg38, then use the ExtractHLAread.sh in script/ folder to extract HLA-related reads.
+Before profiling the HLA, we should first extract HLA reads. Then we use the extracted HLA reads to do the following steps. Please first map the fastq reads to hg19 or hg38, then use the ExtractHLAread.sh in script/ folder to extract HLA-related reads. We use the script of Kourami with minor revision for this step. 
 ```
 USAGE: 
     sh ExtractHLAread.sh <sample_id> <bamfile> <refGenome>
@@ -61,6 +77,8 @@ USAGE:
 ```
 ### Exon Mode (profile HLA in exons)
 ```
+The Exon version of HLAPro, performs HLA assembly and HLA Typing.
+
 Usage:
   sh HLAPro_exon.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
 
@@ -68,12 +86,17 @@ Options:
   -n        Sample ID.
   -1        The first fastq file.
   -2        The second fastq file.
-  -p        The population of the sample: Asian, Black, or Caucasus. Use mean frequency
+  -p        The population of the sample: Asian, Black, or Caucasian. Use mean frequency
             if not provided.
+  -f        True or False. The annotation database only includes the alleles with population
+            frequency higher than zero if set True. Otherwise, it includes all alleles. Default
+            is True.
   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
-            is 2. It should be set larger to infer novel alleles.
-  -g        True or False. The ratio of two haplotype will be regarded the same if set True.
-            Otherwise, we will calculate the haplotype ratio. Default is False.
+            is 3. It should be set larger to infer novel alleles.
+  -g        True or False. Split more blocks if set True; then rely more on allele database.
+            Otherwise, split less blocks. Default is True.
+  -s        True or False. Use SpecHap to phase if True, else use PStrain. Default is True.
+            We recommend SpecHap.
   -h        Show this message.
 ```
 ### Whole Mode (profile HLA with full length)
@@ -83,15 +106,18 @@ Usage:
   sh HLAPro_whole.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
 
 Options:
-  -n        Sample ID..
+  -n        Sample ID.
   -1        The first fastq file.
   -2        The second fastq file.
-  -p        The population of the sample: Asian, Black, or Caucasus. Use mean frequency
+  -p        The population of the sample: Asian, Black, or Caucasian. Use mean frequency
             if not provided.
+  -f        True or False. The annotation database only includes the alleles with population
+            frequency higher than zero if set True. Otherwise, it includes all alleles. Default
+            is True.
   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
             is 2. It should be set larger to infer novel alleles.
-  -g        True or False. The ratio of two haplotype will be regarded the same if set True.
-            Otherwise, we will calculate the haplotype ratio. Default is False.
+  -s        True or False. Use SpecHap to phase if True, else use PStrain. Default is True.
+            We recommend use SpecHap.
   -h        Show this message.
 ```
 
@@ -115,7 +141,7 @@ HLAPro will automaticly build a folder named output/ in the current path. In the
 In the directory of one specific sample, you will find the below files:
 ```
 "hla.result.txt" contains the Typing results of each allele.
-"result.HLA_*.fasta" contains the Assembly results of each allele.
+"result.HLA_*.fasta" contains the Haplotyping sequence results of each allele.
 "HLA_*_freq.txt" contains the Haplotype Ratios of each gene.
 
 ```
@@ -126,15 +152,6 @@ NA06985 A*02:01:01G     A*03:01:01G     B*07:02:01G     B*57:01:01G     C*07:02:
 Score   100     100     100             100     100     100     100     100     100     100     100     99.6376811594203        100     1       1
 ```
 This means the typing result of each gene's haplotype. The third line indicates the match score between the assembly sequence and the typing allele in the database.   
-
-## Test
-Please go to the example/ folder, and run the test code in exon/ or whole/. 
-```
-sh ./test_exon.sh
-or
-sh ./test_whole.sh
-```
-If you install successfully, you will find results in the example/exon/output/ or example/whole/output/.
 
 ## Simulation
 Please go to the simulation/ folder, and run simu.hla.sh like:
@@ -152,5 +169,5 @@ USAGE: <PATH-TO>/simu.hla.sh -n <sample_size> -r <read_length> -1 <depth of hapl
 ```
 
 ## Getting help
-Should you have any queries, please feel free to contact me, I will reply as soon as possible (swang66-c@my.cityu.edu.hk).
+Should you have any queries, please feel free to contact us, we will reply as soon as possible (swang66-c@my.cityu.edu.hk).
 

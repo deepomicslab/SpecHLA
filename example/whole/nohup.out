@@ -1,0 +1,2204 @@
+Start profiling HLA for HG00118.
+map the reads to database to assign reads to corresponding genes.
+# novoalign (AVX) (V4.02.01 - Build Jan 24 2020 @ 11:25:08) - A short read aligner with qualities.
+# (C) 2008-2016 Novocraft Technologies Sdn Bhd.
+# License file: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/novoalign.lic
+# Licensed to WANG Shuai@Dr. LI Shuaicheng Lab@City University of Hong Kong
+#  novoalign -d /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.ndx -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HG00118.uniq.name.R1.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HG00118.uniq.name.R2.gz -o SAM -o FullNW -r All 100000 --mCPU 10 -c 10 -g 20 -x 3
+# Default Options:  --matchReward 4 -H 5 -t 0,3.0 --hlimit 8 -v 150
+# System 96 CPU Threads, 598G Bytes RAM
+# Starting at Thu May 13 12:02:09 2021
+# Interpreting input files as Sanger FASTQ.
+# Index Build Version: 4.2
+#   Hash length:   14
+#     Step size:    1
+#       Paired Reads:    12195
+#       Proper Pairs:    10677 (87.6%)
+#     Read Sequences:    24390
+#   Unique Alignment:     1390 ( 5.7%)
+#       Multi Mapped:    20346 (83.4%)
+#   No Mapping Found:     2654 (10.9%)
+# Timers
+#       Elapsed Time: 135.200 (secs.)
+#           CPU Time: 6.91 (min.)
+# Fragment Length Distribution
+#	From	To	Count
+#	255	269	1
+#	270	284	0
+#	285	299	0
+#	300	314	0
+#	315	329	0
+#	330	344	0
+#	345	359	0
+#	360	374	0
+#	375	389	2
+#	390	404	1
+#	405	419	2
+#	420	434	3
+#	435	449	0
+#	450	464	1
+#	465	479	0
+#	480	494	1
+#	495	509	2
+#	510	524	0
+#	525	539	1
+#	540	554	0
+#	555	569	0
+#	570	584	1
+# Mean   439, Std Dev  72.9
+# Done at Thu May 13 12:04:25 2021
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 24390 sequences (3657957 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (2, 6245, 0, 3)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (357, 420, 499)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (73, 783)
+[M::mem_pestat] mean and std.dev: (428.59, 106.00)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 925)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 24390 reads in 5.740 CPU sec, 12.134 real sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 898 sequences (134638 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 449, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (367, 431, 498)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (105, 760)
+[M::mem_pestat] mean and std.dev: (434.70, 103.11)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 891)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 898 reads in 0.145 CPU sec, 0.332 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -U 10000 -L 10000,10000 -O 7,7 -E 2,2 -R @RG\tID:HG00118\tSM:HG00118 /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../db/HLA/HLA_A/HLA_A.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/A.R1.fq.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/A.R2.fq.gz
+[main] Real time: 0.395 sec; CPU: 0.160 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 924 sequences (138599 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 451, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (364, 425, 500)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (92, 772)
+[M::mem_pestat] mean and std.dev: (433.86, 98.50)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 908)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 924 reads in 0.080 CPU sec, 0.179 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -U 10000 -L 10000,10000 -O 7,7 -E 2,2 -R @RG\tID:HG00118\tSM:HG00118 /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../db/HLA/HLA_B/HLA_B.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/B.R1.fq.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/B.R2.fq.gz
+[main] Real time: 0.221 sec; CPU: 0.094 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 872 sequences (130789 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 427, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (362, 406, 483)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (120, 725)
+[M::mem_pestat] mean and std.dev: (422.64, 93.07)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 846)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 872 reads in 0.131 CPU sec, 0.385 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -U 10000 -L 10000,10000 -O 7,7 -E 2,2 -R @RG\tID:HG00118\tSM:HG00118 /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../db/HLA/HLA_C/HLA_C.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/C.R1.fq.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/C.R2.fq.gz
+[main] Real time: 0.448 sec; CPU: 0.146 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 352 sequences (52800 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 175, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (361, 423, 500)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (83, 778)
+[M::mem_pestat] mean and std.dev: (436.44, 99.31)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 917)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 352 reads in 0.025 CPU sec, 0.083 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -U 10000 -L 10000,10000 -O 7,7 -E 2,2 -R @RG\tID:HG00118\tSM:HG00118 /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../db/HLA/HLA_DPA1/HLA_DPA1.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DPA1.R1.fq.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DPA1.R2.fq.gz
+[main] Real time: 0.137 sec; CPU: 0.039 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 896 sequences (134332 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 435, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (357, 431, 504)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (63, 798)
+[M::mem_pestat] mean and std.dev: (436.06, 104.36)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 945)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 896 reads in 0.091 CPU sec, 0.258 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -U 10000 -L 10000,10000 -O 7,7 -E 2,2 -R @RG\tID:HG00118\tSM:HG00118 /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../db/HLA/HLA_DPB1/HLA_DPB1.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DPB1.R1.fq.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DPB1.R2.fq.gz
+[main] Real time: 0.315 sec; CPU: 0.106 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 1470 sequences (220456 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 715, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (359, 409, 491)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (95, 755)
+[M::mem_pestat] mean and std.dev: (426.64, 98.94)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 887)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 1470 reads in 0.151 CPU sec, 0.404 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -U 10000 -L 10000,10000 -O 7,7 -E 2,2 -R @RG\tID:HG00118\tSM:HG00118 /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../db/HLA/HLA_DQA1/HLA_DQA1.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DQA1.R1.fq.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DQA1.R2.fq.gz
+[main] Real time: 0.478 sec; CPU: 0.168 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 1808 sequences (271166 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 824, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (361, 428, 509)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (65, 805)
+[M::mem_pestat] mean and std.dev: (437.94, 114.23)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 953)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 1808 reads in 0.368 CPU sec, 0.819 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -U 10000 -L 10000,10000 -O 7,7 -E 2,2 -R @RG\tID:HG00118\tSM:HG00118 /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../db/HLA/HLA_DQB1/HLA_DQB1.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DQB1.R1.fq.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DQB1.R2.fq.gz
+[main] Real time: 0.971 sec; CPU: 0.387 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 2828 sequences (424195 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 1361, 30, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (352, 417, 489)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (78, 763)
+[M::mem_pestat] mean and std.dev: (424.06, 104.94)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 900)
+[M::mem_pestat] analyzing insert size distribution for orientation RF...
+[M::mem_pestat] (25, 50, 75) percentile: (6759, 6857, 6892)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (6493, 7158)
+[M::mem_pestat] mean and std.dev: (6825.23, 76.94)
+[M::mem_pestat] low and high boundaries for proper pairs: (6360, 7291)
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_pestat] skip orientation RF
+[M::mem_process_seqs] Processed 2828 reads in 0.498 CPU sec, 1.007 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -U 10000 -L 10000,10000 -O 7,7 -E 2,2 -R @RG\tID:HG00118\tSM:HG00118 /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../db/HLA/HLA_DRB1/HLA_DRB1.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DRB1.R1.fq.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DRB1.R2.fq.gz
+[main] Real time: 1.197 sec; CPU: 0.523 sec
+start realignment.
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.01 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.053 sec; CPU: 0.013 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.029 CPU sec, 0.100 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.158 sec; CPU: 0.040 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.062 sec; CPU: 0.012 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.029 CPU sec, 0.075 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.089 sec; CPU: 0.039 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.01 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.058 sec; CPU: 0.013 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.031 CPU sec, 0.066 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.101 sec; CPU: 0.042 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.076 sec; CPU: 0.012 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.031 CPU sec, 0.114 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.145 sec; CPU: 0.042 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.078 sec; CPU: 0.012 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.028 CPU sec, 0.076 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.086 sec; CPU: 0.038 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.075 sec; CPU: 0.011 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.028 CPU sec, 0.118 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.137 sec; CPU: 0.038 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.046 sec; CPU: 0.009 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.020 CPU sec, 0.019 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.022 sec; CPU: 0.028 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.042 sec; CPU: 0.008 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.019 CPU sec, 0.018 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.022 sec; CPU: 0.027 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.048 sec; CPU: 0.009 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.023 CPU sec, 0.022 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.024 sec; CPU: 0.032 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.043 sec; CPU: 0.009 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.020 CPU sec, 0.020 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.023 sec; CPU: 0.029 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.044 sec; CPU: 0.008 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.019 CPU sec, 0.019 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.022 sec; CPU: 0.030 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.047 sec; CPU: 0.016 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.020 CPU sec, 0.020 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.023 sec; CPU: 0.029 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.045 sec; CPU: 0.010 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.023 CPU sec, 0.022 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.026 sec; CPU: 0.033 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.047 sec; CPU: 0.008 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.020 CPU sec, 0.019 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.022 sec; CPU: 0.030 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.052 sec; CPU: 0.009 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.018 CPU sec, 0.017 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.021 sec; CPU: 0.027 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.049 sec; CPU: 0.009 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.019 CPU sec, 0.019 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.022 sec; CPU: 0.029 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.045 sec; CPU: 0.009 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.020 CPU sec, 0.019 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.022 sec; CPU: 0.029 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.048 sec; CPU: 0.009 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.020 CPU sec, 0.019 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.022 sec; CPU: 0.030 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.045 sec; CPU: 0.017 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.022 CPU sec, 0.021 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.024 sec; CPU: 0.031 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.045 sec; CPU: 0.010 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.020 CPU sec, 0.019 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.022 sec; CPU: 0.028 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.01 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.050 sec; CPU: 0.013 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.019 CPU sec, 0.018 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.023 sec; CPU: 0.030 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.046 sec; CPU: 0.009 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.019 CPU sec, 0.018 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.021 sec; CPU: 0.028 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.046 sec; CPU: 0.010 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.020 CPU sec, 0.019 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.022 sec; CPU: 0.029 sec
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g  -k 33 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz'; \
+bash -e -o pipefail -c '/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -s 3g -Rk 55 -t 4 <(cat /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa) /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz 2>> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz'; \
+rm -f /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec1.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/bfc -1s 3g -k 10 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.ec.fq.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/ropebwt2 -dNCr /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fq.gz > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd.log
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 assemble -l 40 -m 53 -t 4 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.flt.fmd 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz
+/mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/fermikit/fermi.kit/fermi2 simplify -CSo 45 -m 53 -T 40 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.pre.gz 2> /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz.log | gzip -1 > /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/prefix2.mag.gz
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa index /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa
+[main] Real time: 0.045 sec; CPU: 0.009 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 157 sequences (23549 bp)...
+[M::mem_process_seqs] Processed 157 reads in 0.018 CPU sec, 0.017 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /mnt/delta_WS_1/wangmengyao/HLAPro/script/whole/../../bin/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/assembly.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/extract.fa
+[main] Real time: 0.021 sec; CPU: 0.027 sec
+Error in TCP non-blocking connect() 111 - Connection refused. Host localhost port 32735.
+Starting gfServer
+gfServer ready
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 898 sequences (134638 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 449, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (367, 431, 496)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (109, 754)
+[M::mem_pestat] mean and std.dev: (432.79, 102.14)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 883)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 898 reads in 0.122 CPU sec, 0.017 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -M -t8 /mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_A/HLA_A.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/A.R1.fq.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/A.R2.fq.gz
+[main] Real time: 0.047 sec; CPU: 0.135 sec
+Blat aligned read: A00132:53:HFHJKDSXX:2:2444:29053:34084
+Blat aligned read: A00132:53:HFHJKDSXX:2:2444:29297:34381
+Blat aligned read: A00132:53:HFHJKDSXX:2:1220:7618:12555
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:2527:29505:4053
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:1169:23357:20650
+Blat aligned read: A00132:53:HFHJKDSXX:1:2270:25491:26068
+Blat aligned read: A00132:53:HFHJKDSXX:1:1503:20998:6010
+Blat aligned read: A00132:53:HFHJKDSXX:1:1503:22408:5353
+Blat aligned read: A00132:53:HFHJKDSXX:1:1503:21160:6073
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:1436:27570:25723
+Blat aligned read: A00132:54:HFH2JDSXX:4:1451:13268:14951
+Min assembly length set to: 151
+double stranded mode set
+-storing Kmers...
+
+ done parsing 11 sequences, extracted 248 kmers, taking 0 seconds.
+Sorting 248 kmers ...Done sorting 248 kmers, taking 0 seconds.
+Pruning kmers (min_kmer_count=1 min_any_entropy=0 min_ratio_non_error=0.05)
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 1 sequences (253 bp)...
+[M::mem_process_seqs] Processed 1 reads in 0.005 CPU sec, 0.002 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -M -t8 /mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_A/HLA_A.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel//HG00118.A.temp.contig
+[main] Real time: 0.011 sec; CPU: 0.020 sec
+sent stop message to server
+starting untranslated server...
+Counting tiles in HLA_A.2bit
+Done adding
+Server ready for queries!
+ScanIndel starts running: 2021-05-13 12:58:29
+Loaded config and sample list
+Checking for 'bedtools': found /disk2/apps/software/BEDTools/2.29.2-GCC-9.3.0/bin/bedtools
+
+Checking for 'bwa': found /disk2/apps/software/BWA/0.7.17-GCC-9.3.0/bin/bwa
+
+Checking for 'samtools': found /disk2/apps/software/SAMtools/1.11-GCC-9.3.0/bin/samtools
+
+Checking for 'gfServer': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/gfServer
+
+Checking for 'gfClient': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/gfClient
+
+Checking for 'freebayes': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/freebayes
+
+Checking for 'inchworm': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/inchworm
+
+Analyzing sample: HG00118.A
+BWA [ScanIndel] takes 0.313096046448 seconds.
+BLAT [ScanIndel] takes 0.55718588829 seconds.
+Assembly [ScanIndel] takes 0.678014039993 seconds.
+Freebayes [ScanIndel] takes 1.77184915543 seconds.
+ScanIndel running done: 2021-05-13 12:58:43
+ScanIndel takes 13.6528320312 seconds.
+Error in TCP non-blocking connect() 111 - Connection refused. Host localhost port 32735.
+Starting gfServer
+gfServer ready
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 924 sequences (138599 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 451, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (364, 425, 500)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (92, 772)
+[M::mem_pestat] mean and std.dev: (433.71, 98.56)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 908)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 924 reads in 0.073 CPU sec, 0.011 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -M -t8 /mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_B/HLA_B.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/B.R1.fq.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/B.R2.fq.gz
+[main] Real time: 0.047 sec; CPU: 0.090 sec
+Min assembly length set to: 151
+double stranded mode set
+-storing Kmers...
+
+ done parsing 0 sequences, extracted 0 kmers, taking 0 seconds.
+Sorting 0 kmers ...Done sorting 0 kmers, taking 0 seconds.
+Pruning kmers (min_kmer_count=1 min_any_entropy=0 min_ratio_non_error=0.05)
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -M -t8 /mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_B/HLA_B.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel//HG00118.B.temp.contig
+[main] Real time: 0.012 sec; CPU: 0.010 sec
+ScanIndel starts running: 2021-05-13 12:58:43
+Loaded config and sample list
+Checking for 'bedtools': found /disk2/apps/software/BEDTools/2.29.2-GCC-9.3.0/bin/bedtools
+
+Checking for 'bwa': found /disk2/apps/software/BWA/0.7.17-GCC-9.3.0/bin/bwa
+
+Checking for 'samtools': found /disk2/apps/software/SAMtools/1.11-GCC-9.3.0/bin/samtools
+
+Checking for 'gfServer': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/gfServer
+
+Checking for 'gfClient': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/gfClient
+
+Checking for 'freebayes': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/freebayes
+
+Checking for 'inchworm': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/inchworm
+
+Analyzing sample: HG00118.B
+BWA [ScanIndel] takes 0.286263942719 seconds.
+BLAT [ScanIndel] takes 0.230095148087 seconds.
+Traceback (most recent call last):
+  File "/mnt/delta_WS_1/wangmengyao/HLAPro/script/ScanIndel/ScanIndel.py", line 474, in <module>
+    main()
+  File "/mnt/delta_WS_1/wangmengyao/HLAPro/script/ScanIndel/ScanIndel.py", line 444, in main
+    blat_alignment(mapping, reference, softclip_ratio, lowqual_cutoff, min_percent_hq, mapq_cutoff, blat_ident_pct_cutoff, gfServer_port, 'a', output_dir+'/'+each+'.denovo.temp.bwa.bam', output_dir+'/'+each + '.contigs.bam')
+  File "/mnt/delta_WS_1/wangmengyao/HLAPro/script/ScanIndel/ScanIndel.py", line 255, in blat_alignment
+    readlen = bwa_bam.next().rlen
+  File "pysam/libcalignmentfile.pyx", line 1806, in pysam.libcalignmentfile.AlignmentFile.__next__
+StopIteration
+No such file or directory	novcf	/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel/HG00118.B.merged.indel.vcf
+sent stop message to server
+starting untranslated server...
+Counting tiles in HLA_B.2bit
+Done adding
+Server ready for queries!
+Starting gfServer
+gfServer ready
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 872 sequences (130789 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 426, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (360, 403, 480)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (120, 720)
+[M::mem_pestat] mean and std.dev: (421.59, 92.66)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 840)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 872 reads in 0.112 CPU sec, 0.015 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -M -t8 /mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_C/HLA_C.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/C.R1.fq.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/C.R2.fq.gz
+[main] Real time: 0.045 sec; CPU: 0.125 sec
+Min assembly length set to: 151
+double stranded mode set
+-storing Kmers...
+
+ done parsing 0 sequences, extracted 0 kmers, taking 0 seconds.
+Sorting 0 kmers ...Done sorting 0 kmers, taking 0 seconds.
+Pruning kmers (min_kmer_count=1 min_any_entropy=0 min_ratio_non_error=0.05)
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -M -t8 /mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_C/HLA_C.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel//HG00118.C.temp.contig
+[main] Real time: 0.037 sec; CPU: 0.009 sec
+ScanIndel starts running: 2021-05-13 12:58:56
+Loaded config and sample list
+Checking for 'bedtools': found /disk2/apps/software/BEDTools/2.29.2-GCC-9.3.0/bin/bedtools
+
+Checking for 'bwa': found /disk2/apps/software/BWA/0.7.17-GCC-9.3.0/bin/bwa
+
+Checking for 'samtools': found /disk2/apps/software/SAMtools/1.11-GCC-9.3.0/bin/samtools
+
+Checking for 'gfServer': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/gfServer
+
+Checking for 'gfClient': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/gfClient
+
+Checking for 'freebayes': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/freebayes
+
+Checking for 'inchworm': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/inchworm
+
+Analyzing sample: HG00118.C
+BWA [ScanIndel] takes 0.300487995148 seconds.
+BLAT [ScanIndel] takes 0.25576210022 seconds.
+Traceback (most recent call last):
+  File "/mnt/delta_WS_1/wangmengyao/HLAPro/script/ScanIndel/ScanIndel.py", line 474, in <module>
+    main()
+  File "/mnt/delta_WS_1/wangmengyao/HLAPro/script/ScanIndel/ScanIndel.py", line 444, in main
+    blat_alignment(mapping, reference, softclip_ratio, lowqual_cutoff, min_percent_hq, mapq_cutoff, blat_ident_pct_cutoff, gfServer_port, 'a', output_dir+'/'+each+'.denovo.temp.bwa.bam', output_dir+'/'+each + '.contigs.bam')
+  File "/mnt/delta_WS_1/wangmengyao/HLAPro/script/ScanIndel/ScanIndel.py", line 255, in blat_alignment
+    readlen = bwa_bam.next().rlen
+  File "pysam/libcalignmentfile.pyx", line 1806, in pysam.libcalignmentfile.AlignmentFile.__next__
+StopIteration
+No such file or directory	novcf	/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel/HG00118.C.merged.indel.vcf
+sent stop message to server
+starting untranslated server...
+Counting tiles in HLA_C.2bit
+Done adding
+Server ready for queries!
+Starting gfServer
+gfServer ready
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 352 sequences (52800 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 175, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (361, 423, 500)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (83, 778)
+[M::mem_pestat] mean and std.dev: (438.38, 102.28)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 917)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 352 reads in 0.025 CPU sec, 0.004 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -M -t8 /mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_DPA1/HLA_DPA1.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DPA1.R1.fq.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DPA1.R2.fq.gz
+[main] Real time: 0.025 sec; CPU: 0.037 sec
+Min assembly length set to: 151
+double stranded mode set
+-storing Kmers...
+
+ done parsing 1 sequences, extracted 126 kmers, taking 0 seconds.
+Sorting 126 kmers ...Done sorting 126 kmers, taking 0 seconds.
+Pruning kmers (min_kmer_count=1 min_any_entropy=0 min_ratio_non_error=0.05)
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -M -t8 /mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_DPA1/HLA_DPA1.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel//HG00118.DPA1.temp.contig
+[main] Real time: 0.008 sec; CPU: 0.009 sec
+ScanIndel starts running: 2021-05-13 12:59:08
+Loaded config and sample list
+Checking for 'bedtools': found /disk2/apps/software/BEDTools/2.29.2-GCC-9.3.0/bin/bedtools
+
+Checking for 'bwa': found /disk2/apps/software/BWA/0.7.17-GCC-9.3.0/bin/bwa
+
+Checking for 'samtools': found /disk2/apps/software/SAMtools/1.11-GCC-9.3.0/bin/samtools
+
+Checking for 'gfServer': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/gfServer
+
+Checking for 'gfClient': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/gfClient
+
+Checking for 'freebayes': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/freebayes
+
+Checking for 'inchworm': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/inchworm
+
+Analyzing sample: HG00118.DPA1
+BWA [ScanIndel] takes 0.264700889587 seconds.
+BLAT [ScanIndel] takes 0.154115915298 seconds.
+Traceback (most recent call last):
+  File "/mnt/delta_WS_1/wangmengyao/HLAPro/script/ScanIndel/ScanIndel.py", line 474, in <module>
+    main()
+  File "/mnt/delta_WS_1/wangmengyao/HLAPro/script/ScanIndel/ScanIndel.py", line 444, in main
+    blat_alignment(mapping, reference, softclip_ratio, lowqual_cutoff, min_percent_hq, mapq_cutoff, blat_ident_pct_cutoff, gfServer_port, 'a', output_dir+'/'+each+'.denovo.temp.bwa.bam', output_dir+'/'+each + '.contigs.bam')
+  File "/mnt/delta_WS_1/wangmengyao/HLAPro/script/ScanIndel/ScanIndel.py", line 255, in blat_alignment
+    readlen = bwa_bam.next().rlen
+  File "pysam/libcalignmentfile.pyx", line 1806, in pysam.libcalignmentfile.AlignmentFile.__next__
+StopIteration
+No such file or directory	novcf	/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel/HG00118.DPA1.merged.indel.vcf
+sent stop message to server
+starting untranslated server...
+Counting tiles in HLA_DPA1.2bit
+Done adding
+Server ready for queries!
+Starting gfServer
+gfServer ready
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 896 sequences (134332 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 435, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (357, 431, 504)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (63, 798)
+[M::mem_pestat] mean and std.dev: (436.15, 104.46)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 945)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 896 reads in 0.086 CPU sec, 0.012 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -M -t8 /mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_DPB1/HLA_DPB1.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DPB1.R1.fq.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DPB1.R2.fq.gz
+[main] Real time: 0.045 sec; CPU: 0.102 sec
+Blat aligned read: A00132:53:HFHJKDSXX:4:2202:29134:7420
+Blat aligned read: A00132:53:HFHJKDSXX:4:1501:2871:1799
+No blat hit for read: A00132:53:HFHJKDSXX:4:1501:3206:1376
+Min assembly length set to: 151
+double stranded mode set
+-storing Kmers...
+
+ done parsing 5 sequences, extracted 271 kmers, taking 0 seconds.
+Sorting 271 kmers ...Done sorting 271 kmers, taking 0 seconds.
+Pruning kmers (min_kmer_count=1 min_any_entropy=0 min_ratio_non_error=0.05)
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -M -t8 /mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_DPB1/HLA_DPB1.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel//HG00118.DPB1.temp.contig
+[main] Real time: 0.009 sec; CPU: 0.010 sec
+ScanIndel starts running: 2021-05-13 12:59:20
+Loaded config and sample list
+Checking for 'bedtools': found /disk2/apps/software/BEDTools/2.29.2-GCC-9.3.0/bin/bedtools
+
+Checking for 'bwa': found /disk2/apps/software/BWA/0.7.17-GCC-9.3.0/bin/bwa
+
+Checking for 'samtools': found /disk2/apps/software/SAMtools/1.11-GCC-9.3.0/bin/samtools
+
+Checking for 'gfServer': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/gfServer
+
+Checking for 'gfClient': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/gfClient
+
+Checking for 'freebayes': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/freebayes
+
+Checking for 'inchworm': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/inchworm
+
+Analyzing sample: HG00118.DPB1
+BWA [ScanIndel] takes 0.356235027313 seconds.
+BLAT [ScanIndel] takes 0.315896034241 seconds.
+Traceback (most recent call last):
+  File "/mnt/delta_WS_1/wangmengyao/HLAPro/script/ScanIndel/ScanIndel.py", line 474, in <module>
+    main()
+  File "/mnt/delta_WS_1/wangmengyao/HLAPro/script/ScanIndel/ScanIndel.py", line 444, in main
+    blat_alignment(mapping, reference, softclip_ratio, lowqual_cutoff, min_percent_hq, mapq_cutoff, blat_ident_pct_cutoff, gfServer_port, 'a', output_dir+'/'+each+'.denovo.temp.bwa.bam', output_dir+'/'+each + '.contigs.bam')
+  File "/mnt/delta_WS_1/wangmengyao/HLAPro/script/ScanIndel/ScanIndel.py", line 255, in blat_alignment
+    readlen = bwa_bam.next().rlen
+  File "pysam/libcalignmentfile.pyx", line 1806, in pysam.libcalignmentfile.AlignmentFile.__next__
+StopIteration
+No such file or directory	novcf	/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel/HG00118.DPB1.merged.indel.vcf
+sent stop message to server
+starting untranslated server...
+Counting tiles in HLA_DPB1.2bit
+Done adding
+Server ready for queries!
+Starting gfServer
+gfServer ready
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 1470 sequences (220456 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 715, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (359, 409, 491)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (95, 755)
+[M::mem_pestat] mean and std.dev: (426.45, 98.86)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 887)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 1470 reads in 0.122 CPU sec, 0.017 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -M -t8 /mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_DQA1/HLA_DQA1.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DQA1.R1.fq.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DQA1.R2.fq.gz
+[main] Real time: 0.064 sec; CPU: 0.140 sec
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:1316:30454:20447
+Blat aligned read: A00132:53:HFHJKDSXX:4:1344:20374:24909
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:1675:28745:29731
+Blat aligned read: A00132:53:HFHJKDSXX:2:1277:3224:25175
+Blat aligned read: A00132:53:HFHJKDSXX:2:1267:30743:8015
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:2249:31548:16141
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:2249:31566:16141
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:1442:18367:13886
+Blat aligned read: A00132:54:HFH2JDSXX:2:1373:21377:18599
+Blat aligned read: A00132:54:HFH2JDSXX:2:1373:21567:18740
+Min assembly length set to: 151
+double stranded mode set
+-storing Kmers...
+
+ done parsing 30 sequences, extracted 625 kmers, taking 0 seconds.
+Sorting 625 kmers ...Done sorting 625 kmers, taking 0 seconds.
+Pruning kmers (min_kmer_count=1 min_any_entropy=0 min_ratio_non_error=0.05)
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 2 sequences (540 bp)...
+[M::mem_process_seqs] Processed 2 reads in 0.004 CPU sec, 0.002 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -M -t8 /mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_DQA1/HLA_DQA1.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel//HG00118.DQA1.temp.contig
+[main] Real time: 0.011 sec; CPU: 0.012 sec
+Blat aligned read: a1;9
+sent stop message to server
+starting untranslated server...
+Counting tiles in HLA_DQA1.2bit
+Done adding
+Server ready for queries!
+ScanIndel starts running: 2021-05-13 12:59:32
+Loaded config and sample list
+Checking for 'bedtools': found /disk2/apps/software/BEDTools/2.29.2-GCC-9.3.0/bin/bedtools
+
+Checking for 'bwa': found /disk2/apps/software/BWA/0.7.17-GCC-9.3.0/bin/bwa
+
+Checking for 'samtools': found /disk2/apps/software/SAMtools/1.11-GCC-9.3.0/bin/samtools
+
+Checking for 'gfServer': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/gfServer
+
+Checking for 'gfClient': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/gfClient
+
+Checking for 'freebayes': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/freebayes
+
+Checking for 'inchworm': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/inchworm
+
+Analyzing sample: HG00118.DQA1
+BWA [ScanIndel] takes 0.508271932602 seconds.
+BLAT [ScanIndel] takes 0.600383043289 seconds.
+Assembly [ScanIndel] takes 0.354117155075 seconds.
+Freebayes [ScanIndel] takes 0.821043968201 seconds.
+ScanIndel running done: 2021-05-13 12:59:44
+ScanIndel takes 12.4494919777 seconds.
+HLA_DQA1	7493	7493
+Error in TCP non-blocking connect() 111 - Connection refused. Host localhost port 32735.
+Starting gfServer
+gfServer ready
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 1808 sequences (271166 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 824, 0, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (358, 424, 505)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (64, 799)
+[M::mem_pestat] mean and std.dev: (434.57, 113.98)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 946)
+[M::mem_pestat] skip orientation RF as there are not enough pairs
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_process_seqs] Processed 1808 reads in 0.329 CPU sec, 0.043 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -M -t8 /mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_DQB1/HLA_DQB1.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DQB1.R1.fq.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DQB1.R2.fq.gz
+[main] Real time: 0.107 sec; CPU: 0.348 sec
+Blat aligned read: A00132:53:HFHJKDSXX:3:2308:29812:21778
+Blat aligned read: A00132:53:HFHJKDSXX:2:2631:21178:10426
+Blat aligned read: A00132:53:HFHJKDSXX:2:2631:21332:10347
+Blat aligned read: A00132:53:HFHJKDSXX:1:2620:22462:20290
+Blat aligned read: A00132:54:HFH2JDSXX:1:1616:4969:8844
+Blat aligned read: A00132:53:HFHJKDSXX:3:1644:21486:30561
+Blat aligned read: A00132:54:HFH2JDSXX:2:2351:11505:9893
+Blat aligned read: A00132:53:HFHJKDSXX:2:1641:15076:31610
+Blat aligned read: A00132:54:HFH2JDSXX:3:1656:16776:6120
+Blat aligned read: A00132:54:HFH2JDSXX:3:2228:21730:1454
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:2606:11243:24283
+Blat aligned read: A00132:54:HFH2JDSXX:3:1319:22137:12837
+Blat aligned read: A00132:53:HFHJKDSXX:2:1554:4417:26146
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:2606:11216:24330
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:2554:21414:1501
+Blat aligned read: A00132:54:HFH2JDSXX:2:2471:10773:28385
+Blat aligned read: SNA00132:51:HCJ2HDSXX:2:2543:11767:26850
+Blat aligned read: A00132:53:HFHJKDSXX:3:2346:32841:27743
+Blat aligned read: A00132:54:HFH2JDSXX:2:1526:5611:25144
+Blat aligned read: A00132:53:HFHJKDSXX:4:1672:8296:23375
+Blat aligned read: SNA00132:51:HCJ2HDSXX:2:1311:1271:20823
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:2108:7627:12477
+Blat aligned read: A00132:53:HFHJKDSXX:3:2319:23674:16845
+Blat aligned read: A00132:53:HFHJKDSXX:3:2319:23945:16908
+Blat aligned read: A00132:54:HFH2JDSXX:3:2228:21730:1454
+Blat aligned read: A00132:54:HFH2JDSXX:3:1319:22137:12837
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:1450:20772:18646
+Blat aligned read: A00132:54:HFH2JDSXX:2:2471:10773:28385
+No blat hit for read: SNA00132:51:HCJ2HDSXX:2:1627:13367:12680
+No blat hit for read: SNA00132:51:HCJ2HDSXX:2:1627:14516:12414
+No blat hit for read: SNA00132:51:HCJ2HDSXX:2:2353:4191:18584
+No blat hit for read: SNA00132:51:HCJ2HDSXX:2:2531:29360:21026
+No blat hit for read: A00132:54:HFH2JDSXX:2:1607:26395:19304
+No blat hit for read: A00132:54:HFH2JDSXX:3:2227:8621:25911
+No blat hit for read: SNA00132:51:HCJ2HDSXX:1:2270:16486:13166
+No blat hit for read: SNA00132:51:HCJ2HDSXX:2:2429:4661:23907
+No blat hit for read: A00132:53:HFHJKDSXX:2:2644:8811:3035
+No blat hit for read: A00132:53:HFHJKDSXX:1:1526:4444:35149
+No blat hit for read: A00132:54:HFH2JDSXX:4:2334:21594:19382
+No blat hit for read: A00132:53:HFHJKDSXX:3:1676:28113:6527
+No blat hit for read: A00132:54:HFH2JDSXX:2:2633:1588:14888
+No blat hit for read: A00132:53:HFHJKDSXX:1:1256:24948:21026
+No blat hit for read: A00132:53:HFHJKDSXX:1:1256:25021:21590
+No blat hit for read: A00132:53:HFHJKDSXX:1:1256:25301:20854
+No blat hit for read: A00132:54:HFH2JDSXX:4:2334:20564:19601
+No blat hit for read: A00132:54:HFH2JDSXX:3:1504:31340:13589
+No blat hit for read: SNA00132:51:HCJ2HDSXX:4:1573:32551:9017
+No blat hit for read: SNA00132:51:HCJ2HDSXX:2:1133:29134:3098
+No blat hit for read: A00132:54:HFH2JDSXX:3:1439:13376:11537
+No blat hit for read: SNA00132:51:HCJ2HDSXX:2:1625:17924:25739
+No blat hit for read: SNA00132:51:HCJ2HDSXX:4:2443:2736:8703
+No blat hit for read: A00132:53:HFHJKDSXX:1:1452:3839:7326
+No blat hit for read: A00132:54:HFH2JDSXX:3:1413:9127:8155
+No blat hit for read: A00132:53:HFHJKDSXX:3:2367:21920:36260
+No blat hit for read: SNA00132:51:HCJ2HDSXX:1:2513:26738:7435
+No blat hit for read: A00132:53:HFHJKDSXX:1:2258:10095:3004
+No blat hit for read: SNA00132:51:HCJ2HDSXX:3:2417:30517:36683
+No blat hit for read: A00132:54:HFH2JDSXX:2:2347:11261:8187
+Blat aligned read: A00132:54:HFH2JDSXX:1:2277:27633:31501
+Blat aligned read: A00132:53:HFHJKDSXX:2:1345:17436:21010
+Blat aligned read: A00132:54:HFH2JDSXX:4:1157:12789:28087
+Blat aligned read: A00132:54:HFH2JDSXX:3:1239:25373:2848
+Blat aligned read: SNA00132:51:HCJ2HDSXX:2:2410:18683:30592
+Blat aligned read: A00132:54:HFH2JDSXX:3:2462:1533:11318
+No blat hit for read: SNA00132:51:HCJ2HDSXX:1:2662:18728:19774
+Blat aligned read: A00132:54:HFH2JDSXX:4:1104:32886:12915
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:1144:10529:5259
+Blat aligned read: A00132:53:HFHJKDSXX:2:1248:12527:1642
+Blat aligned read: A00132:53:HFHJKDSXX:2:1248:12653:1892
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:1565:14208:11694
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:1213:27724:20854
+Blat aligned read: A00132:54:HFH2JDSXX:1:2339:7003:19601
+Blat aligned read: SNA00132:51:HCJ2HDSXX:2:2153:16025:28902
+Blat aligned read: SNA00132:51:HCJ2HDSXX:2:2153:17083:30201
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:1638:19922:19586
+Blat aligned read: SNA00132:51:HCJ2HDSXX:2:1478:5746:15702
+Blat aligned read: A00132:53:HFHJKDSXX:3:1316:23032:8719
+Blat aligned read: A00132:53:HFHJKDSXX:4:2328:25066:31375
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:1678:6244:6042
+Blat aligned read: A00132:53:HFHJKDSXX:3:1258:13774:29418
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:1374:10791:11193
+Blat aligned read: A00132:53:HFHJKDSXX:1:1504:7310:19946
+Blat aligned read: A00132:53:HFHJKDSXX:1:1447:13847:27352
+Blat aligned read: A00132:53:HFHJKDSXX:1:2550:14199:2910
+Blat aligned read: SNA00132:51:HCJ2HDSXX:2:2374:26693:33098
+Blat aligned read: A00132:54:HFH2JDSXX:2:1625:6433:19805
+No blat hit for read: SNA00132:51:HCJ2HDSXX:3:1153:19434:3427
+No blat hit for read: SNA00132:51:HCJ2HDSXX:4:1142:21206:32769
+Blat aligned read: A00132:53:HFHJKDSXX:4:1530:3965:19163
+Blat aligned read: A00132:53:HFHJKDSXX:1:2550:14199:2910
+Blat aligned read: A00132:54:HFH2JDSXX:3:2303:27489:30123
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:1318:26820:26115
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:2316:19687:12915
+Blat aligned read: A00132:53:HFHJKDSXX:2:1461:2483:11397
+Blat aligned read: A00132:53:HFHJKDSXX:2:1461:3423:20353
+Blat aligned read: SNA00132:51:HCJ2HDSXX:2:2378:26205:16188
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:2502:1714:21934
+Blat aligned read: SNA00132:51:HCJ2HDSXX:2:1512:27697:23249
+Blat aligned read: A00132:53:HFHJKDSXX:3:2676:7265:33959
+Blat aligned read: A00132:53:HFHJKDSXX:3:1258:13774:29418
+Blat aligned read: A00132:53:HFHJKDSXX:3:1117:25934:24643
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:1374:10791:11193
+Blat aligned read: A00132:53:HFHJKDSXX:3:1540:16676:4319
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:2375:28628:17378
+No blat hit for read: A00132:54:HFH2JDSXX:2:2278:12445:22388
+No blat hit for read: SNA00132:51:HCJ2HDSXX:1:1674:12933:19758
+No blat hit for read: SNA00132:51:HCJ2HDSXX:3:1245:14036:12962
+No blat hit for read: A00132:54:HFH2JDSXX:3:2473:19370:27148
+No blat hit for read: A00132:54:HFH2JDSXX:4:1272:4689:29747
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:2635:1524:4570
+No blat hit for read: A00132:53:HFHJKDSXX:1:2640:24777:14873
+No blat hit for read: A00132:54:HFH2JDSXX:4:1538:8052:21887
+No blat hit for read: A00132:54:HFH2JDSXX:4:2272:5367:23281
+No blat hit for read: SNA00132:51:HCJ2HDSXX:3:1261:14452:28119
+Blat aligned read: A00132:53:HFHJKDSXX:1:1504:7310:19946
+Blat aligned read: A00132:53:HFHJKDSXX:4:2517:30725:30217
+Blat aligned read: A00132:53:HFHJKDSXX:2:1517:14326:27524
+Blat aligned read: A00132:53:HFHJKDSXX:1:2448:11017:36260
+Blat aligned read: A00132:54:HFH2JDSXX:1:1168:8386:34397
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:2176:8088:6167
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:1375:11098:8782
+No blat hit for read: A00132:53:HFHJKDSXX:1:2471:32036:22091
+Blat aligned read: A00132:53:HFHJKDSXX:4:1622:19343:31735
+Blat aligned read: SNA00132:51:HCJ2HDSXX:2:1552:15456:21872
+Blat aligned read: A00132:53:HFHJKDSXX:4:1632:25654:10723
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:1553:17173:16767
+Blat aligned read: A00132:54:HFH2JDSXX:1:1269:6036:31203
+Blat aligned read: A00132:53:HFHJKDSXX:4:1148:16712:29183
+Blat aligned read: A00132:53:HFHJKDSXX:4:2505:2799:18051
+Blat aligned read: A00132:53:HFHJKDSXX:4:2106:7654:10520
+Blat aligned read: A00132:53:HFHJKDSXX:2:2609:24975:22608
+Blat aligned read: A00132:54:HFH2JDSXX:3:2666:9796:20588
+No blat hit for read: A00132:53:HFHJKDSXX:3:2166:19090:3490
+No blat hit for read: A00132:54:HFH2JDSXX:1:1312:15628:2503
+No blat hit for read: A00132:54:HFH2JDSXX:4:1526:18222:5400
+No blat hit for read: A00132:53:HFHJKDSXX:3:2546:14986:10066
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:2203:17146:11490
+Blat aligned read: A00132:53:HFHJKDSXX:3:1632:22372:23484
+Blat aligned read: A00132:53:HFHJKDSXX:4:1430:22896:7921
+Blat aligned read: A00132:53:HFHJKDSXX:3:1169:14235:19288
+Blat aligned read: A00132:53:HFHJKDSXX:3:1169:14425:19742
+Blat aligned read: A00132:53:HFHJKDSXX:3:1169:14498:19711
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:1613:18846:14090
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:1264:8938:3881
+Blat aligned read: A00132:53:HFHJKDSXX:3:1345:17074:25895
+Blat aligned read: A00132:53:HFHJKDSXX:4:2432:14931:1892
+Blat aligned read: A00132:53:HFHJKDSXX:3:1671:2880:11553
+Blat aligned read: A00132:54:HFH2JDSXX:3:1369:14859:31798
+Blat aligned read: A00132:54:HFH2JDSXX:1:2609:6515:30279
+Blat aligned read: A00132:53:HFHJKDSXX:1:2212:13602:30906
+Blat aligned read: A00132:54:HFH2JDSXX:2:2245:14660:23907
+Blat aligned read: A00132:54:HFH2JDSXX:1:1325:28610:31657
+Blat aligned read: A00132:53:HFHJKDSXX:4:1154:24370:14794
+Blat aligned read: A00132:53:HFHJKDSXX:3:1523:9010:8265
+Blat aligned read: A00132:53:HFHJKDSXX:1:2236:22770:28244
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:2513:20799:9017
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:1630:20320:7529
+Blat aligned read: A00132:53:HFHJKDSXX:2:2460:14660:17331
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:1118:2989:24643
+Blat aligned read: A00132:53:HFHJKDSXX:4:1167:12825:17033
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:1118:5014:28839
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:1229:12988:4257
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:1229:12798:4398
+Blat aligned read: A00132:54:HFH2JDSXX:1:1171:23710:30624
+Blat aligned read: A00132:53:HFHJKDSXX:2:2653:4544:12399
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:2230:32325:34835
+Blat aligned read: SNA00132:51:HCJ2HDSXX:2:2136:26639:35509
+Blat aligned read: A00132:53:HFHJKDSXX:3:2401:5764:31829
+Blat aligned read: A00132:53:HFHJKDSXX:2:2123:8657:30671
+Blat aligned read: A00132:53:HFHJKDSXX:2:2124:7907:5603
+Blat aligned read: SNA00132:51:HCJ2HDSXX:2:2128:28122:36479
+Blat aligned read: A00132:54:HFH2JDSXX:1:2675:10682:13542
+Blat aligned read: A00132:53:HFHJKDSXX:4:2540:14714:36307
+Blat aligned read: A00132:53:HFHJKDSXX:4:1113:20735:26569
+Blat aligned read: A00132:53:HFHJKDSXX:1:1671:15817:1892
+Blat aligned read: A00132:53:HFHJKDSXX:2:1509:29649:32925
+No blat hit for read: SNA00132:51:HCJ2HDSXX:3:2344:17065:15608
+No blat hit for read: SNA00132:51:HCJ2HDSXX:2:2358:16821:26616
+Min assembly length set to: 151
+double stranded mode set
+-storing Kmers...
+
+ done parsing 219 sequences, extracted 3928 kmers, taking 0 seconds.
+Sorting 3928 kmers ...Done sorting 3928 kmers, taking 0 seconds.
+Pruning kmers (min_kmer_count=1 min_any_entropy=0 min_ratio_non_error=0.05)
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 11 sequences (3201 bp)...
+[M::mem_process_seqs] Processed 11 reads in 0.010 CPU sec, 0.002 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -M -t8 /mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_DQB1/HLA_DQB1.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel//HG00118.DQB1.temp.contig
+[main] Real time: 0.022 sec; CPU: 0.019 sec
+Blat aligned read: a8;6
+Blat aligned read: a5;11
+Blat aligned read: a9;4
+Blat aligned read: a4;8
+sent stop message to server
+starting untranslated server...
+Counting tiles in HLA_DQB1.2bit
+Done adding
+Server ready for queries!
+ScanIndel starts running: 2021-05-13 12:59:45
+Loaded config and sample list
+Checking for 'bedtools': found /disk2/apps/software/BEDTools/2.29.2-GCC-9.3.0/bin/bedtools
+
+Checking for 'bwa': found /disk2/apps/software/BWA/0.7.17-GCC-9.3.0/bin/bwa
+
+Checking for 'samtools': found /disk2/apps/software/SAMtools/1.11-GCC-9.3.0/bin/samtools
+
+Checking for 'gfServer': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/gfServer
+
+Checking for 'gfClient': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/gfClient
+
+Checking for 'freebayes': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/freebayes
+
+Checking for 'inchworm': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/inchworm
+
+Analyzing sample: HG00118.DQB1
+BWA [ScanIndel] takes 0.365205049515 seconds.
+BLAT [ScanIndel] takes 6.19511699677 seconds.
+Assembly [ScanIndel] takes 0.554111003876 seconds.
+Freebayes [ScanIndel] takes 0.542112112045 seconds.
+ScanIndel running done: 2021-05-13 13:00:03
+ScanIndel takes 17.8587341309 seconds.
+HLA_DQB1	4235	4556
+Error in TCP non-blocking connect() 111 - Connection refused. Host localhost port 32735.
+Starting gfServer
+gfServer ready
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 2828 sequences (424195 bp)...
+[M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 1361, 30, 0)
+[M::mem_pestat] skip orientation FF as there are not enough pairs
+[M::mem_pestat] analyzing insert size distribution for orientation FR...
+[M::mem_pestat] (25, 50, 75) percentile: (352, 415, 487)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (82, 757)
+[M::mem_pestat] mean and std.dev: (423.27, 104.87)
+[M::mem_pestat] low and high boundaries for proper pairs: (1, 892)
+[M::mem_pestat] analyzing insert size distribution for orientation RF...
+[M::mem_pestat] (25, 50, 75) percentile: (6759, 6857, 6903)
+[M::mem_pestat] low and high boundaries for computing mean and std.dev: (6471, 7191)
+[M::mem_pestat] mean and std.dev: (6831.73, 80.19)
+[M::mem_pestat] low and high boundaries for proper pairs: (6327, 7335)
+[M::mem_pestat] skip orientation RR as there are not enough pairs
+[M::mem_pestat] skip orientation RF
+[M::mem_process_seqs] Processed 2828 reads in 0.485 CPU sec, 0.063 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -M -t8 /mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_DRB1/HLA_DRB1.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DRB1.R1.fq.gz /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/DRB1.R2.fq.gz
+[main] Real time: 0.147 sec; CPU: 0.512 sec
+Blat aligned read: A00132:53:HFHJKDSXX:2:2602:30445:9502
+Blat aligned read: A00132:53:HFHJKDSXX:2:1148:28492:25128
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:2577:12102:12743
+Blat aligned read: A00132:54:HFH2JDSXX:4:2457:9923:19523
+Blat aligned read: A00132:53:HFHJKDSXX:4:2374:8730:30044
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:2540:6686:23907
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:1351:6876:30843
+Blat aligned read: A00132:53:HFHJKDSXX:2:1465:13982:7983
+Blat aligned read: A00132:53:HFHJKDSXX:1:2361:2446:22795
+Blat aligned read: A00132:54:HFH2JDSXX:1:2562:11876:31798
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:2115:28438:28948
+No blat hit for read: A00132:54:HFH2JDSXX:3:1234:32868:18865
+No blat hit for read: SNA00132:51:HCJ2HDSXX:3:2646:16170:30718
+No blat hit for read: SNA00132:51:HCJ2HDSXX:3:2646:14995:30655
+Blat aligned read: A00132:53:HFHJKDSXX:1:1529:25265:5478
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:2252:10655:29277
+Blat aligned read: A00132:54:HFH2JDSXX:3:2264:7256:1344
+No blat hit for read: A00132:54:HFH2JDSXX:2:1263:32615:14669
+No blat hit for read: A00132:54:HFH2JDSXX:2:2345:28519:8860
+No blat hit for read: A00132:54:HFH2JDSXX:2:2345:28899:8672
+No blat hit for read: A00132:53:HFHJKDSXX:2:2534:16947:36229
+No blat hit for read: SNA00132:51:HCJ2HDSXX:1:1651:23330:11678
+Blat aligned read: A00132:53:HFHJKDSXX:3:1226:23194:4773
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:2331:28664:5916
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:2664:30816:23484
+Blat aligned read: A00132:54:HFH2JDSXX:4:1156:29631:29575
+Blat aligned read: A00132:53:HFHJKDSXX:2:1447:19777:33082
+Blat aligned read: A00132:54:HFH2JDSXX:4:1618:19461:29528
+Blat aligned read: A00132:54:HFH2JDSXX:3:2332:27760:25895
+Blat aligned read: A00132:53:HFHJKDSXX:1:1677:18087:36667
+Blat aligned read: A00132:54:HFH2JDSXX:3:2332:27733:26099
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:1265:3839:21512
+Blat aligned read: A00132:53:HFHJKDSXX:4:1607:3332:34287
+Blat aligned read: A00132:54:HFH2JDSXX:3:1536:20202:11616
+Blat aligned read: A00132:54:HFH2JDSXX:1:1473:9796:11882
+Blat aligned read: A00132:54:HFH2JDSXX:1:1363:24614:18881
+Blat aligned read: A00132:53:HFHJKDSXX:2:1371:13386:15154
+Blat aligned read: A00132:53:HFHJKDSXX:1:2468:1181:9643
+Blat aligned read: A00132:53:HFHJKDSXX:2:2447:16242:12837
+Blat aligned read: SNA00132:51:HCJ2HDSXX:2:1107:23873:27868
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:1612:29912:17910
+Blat aligned read: A00132:53:HFHJKDSXX:3:1659:12617:6840
+Blat aligned read: A00132:53:HFHJKDSXX:1:2226:21775:5228
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:2540:6686:23907
+Blat aligned read: A00132:53:HFHJKDSXX:2:1461:32235:28886
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:2272:25816:22467
+Blat aligned read: SNA00132:51:HCJ2HDSXX:2:2603:10122:2801
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:1238:24777:4883
+Blat aligned read: A00132:54:HFH2JDSXX:4:1373:14362:5760
+Blat aligned read: A00132:54:HFH2JDSXX:3:1678:5385:19398
+Blat aligned read: A00132:54:HFH2JDSXX:1:1118:23909:29935
+Blat aligned read: A00132:54:HFH2JDSXX:4:1655:20012:32737
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:2408:27118:3865
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:1537:17445:32456
+Blat aligned read: SNA00132:51:HCJ2HDSXX:2:1652:5556:15687
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:2217:20148:33379
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:2217:18738:33254
+Blat aligned read: A00132:54:HFH2JDSXX:2:1441:5692:19429
+Blat aligned read: A00132:53:HFHJKDSXX:1:2226:21775:5228
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:1318:11189:30733
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:1217:20708:26553
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:1438:1823:20337
+Blat aligned read: SNA00132:51:HCJ2HDSXX:1:2175:17707:8422
+Blat aligned read: SNA00132:51:HCJ2HDSXX:3:2408:28402:6527
+Blat aligned read: A00132:53:HFHJKDSXX:4:2360:2067:32847
+Blat aligned read: A00132:53:HFHJKDSXX:2:1453:18385:11256
+Blat aligned read: A00132:53:HFHJKDSXX:1:1339:6759:2362
+Blat aligned read: SNA00132:51:HCJ2HDSXX:4:2305:7699:17080
+Blat aligned read: SNA00132:51:HCJ2HDSXX:2:1273:2835:2581
+Min assembly length set to: 151
+double stranded mode set
+-storing Kmers...
+
+ done parsing 80 sequences, extracted 2317 kmers, taking 0 seconds.
+Sorting 2317 kmers ...Done sorting 2317 kmers, taking 0 seconds.
+Pruning kmers (min_kmer_count=1 min_any_entropy=0 min_ratio_non_error=0.05)
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 4 sequences (843 bp)...
+[M::mem_process_seqs] Processed 4 reads in 0.005 CPU sec, 0.002 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: bwa mem -M -t8 /mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_DRB1/HLA_DRB1.fa /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel//HG00118.DRB1.temp.contig
+[main] Real time: 0.040 sec; CPU: 0.014 sec
+Blat aligned read: a3;6
+Blat aligned read: a2;17
+Blat aligned read: a4;3
+Blat aligned read: a1;17
+sent stop message to server
+starting untranslated server...
+Counting tiles in HLA_DRB1.2bit
+Done adding
+Server ready for queries!
+ScanIndel starts running: 2021-05-13 13:00:04
+Loaded config and sample list
+Checking for 'bedtools': found /disk2/apps/software/BEDTools/2.29.2-GCC-9.3.0/bin/bedtools
+
+Checking for 'bwa': found /disk2/apps/software/BWA/0.7.17-GCC-9.3.0/bin/bwa
+
+Checking for 'samtools': found /disk2/apps/software/SAMtools/1.11-GCC-9.3.0/bin/samtools
+
+Checking for 'gfServer': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/gfServer
+
+Checking for 'gfClient': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/gfClient
+
+Checking for 'freebayes': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/freebayes
+
+Checking for 'inchworm': found /mnt/delta_WS_1/wangmengyao/HLAPro/bin/inchworm
+
+Analyzing sample: HG00118.DRB1
+BWA [ScanIndel] takes 0.522180080414 seconds.
+BLAT [ScanIndel] takes 2.90869903564 seconds.
+Assembly [ScanIndel] takes 0.546218156815 seconds.
+Freebayes [ScanIndel] takes 0.599927902222 seconds.
+ScanIndel running done: 2021-05-13 13:00:18
+ScanIndel takes 14.7635929585 seconds.
+HLA_DRB1	4250	11175
+start assembly.
+input_rephase_para:200	1
+1574
+HLA_A	1001	1574	region1
+1574	1831
+HLA_A	1574	1831	region2
+100	0	1
+98.4313725490196	100	2
+HLA_A:1573-1829	0 1	100 100	new
+HLA_A	1001	1572	HLA_A	1573	1829	8	0	1
+1831
+HLA_A	1573	1831	region1
+1831	1917
+1831	2177
+HLA_A	1831	2177	region2
+100	0	1
+98.8372093023256	100	2
+HLA_A:1830-2175	0 1	100 100	new
+HLA_A	1573	1829	HLA_A	1830	2175	13	0	1
+2177
+HLA_A	1830	2177	region1
+2177	2314
+2177	2575
+HLA_A	2177	2575	region2
+100	0	1
+99.5	100	2
+HLA_A:2176-2573	0 1	100 100	new
+HLA_A	1830	2175	HLA_A	2176	2573	9	0	1
+2575
+HLA_A	2176	2575	region1
+2575	3684
+HLA_A	2575	3684	region2
+100	0	1
+95.4626334519573	100	2
+HLA_A:2574-3682	0 1	100 100	new
+HLA_A	2176	2573	HLA_A	2574	3682	50	0	1
+3684
+HLA_A	2574	3684	region1
+3684	3767
+HLA_A	3684	4503	region2
+100	0	1
+98.7760097919217	100	2
+HLA_A:3683-4501	0 1	100 100	new
+HLA_A	2574	3682	HLA_A	3683	4501	2	0	1
+/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118
+/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel/HG00118.breakpoint.txt
+[]
+[]
+[]
+ordered deletion region: []
+hete loci number 100
+['HLA_A', 1246, 'T', 'G', 'T'] [4, 0, 1, 6]
+['HLA_A', 1348, 'C', 'T', 'C'] [0, 17, 17, 0]
+['HLA_A', 1372, 'G', 'A', 'G'] [0, 13, 20, 0]
+['HLA_A', 1407, 'C', 'T', 'C'] [27, 0, 0, 18]
+['HLA_A', 1420, 'G', 'C', 'G'] [0, 22, 16, 0]
+['HLA_A', 1443, 'G', 'A', 'G'] [0, 11, 16, 0]
+['HLA_A', 1508, 'C', 'T', 'C'] [0, 17, 21, 0]
+['HLA_A', 1528, 'T', 'C', 'T'] [0, 19, 15, 0]
+['HLA_A', 1574, 'C', 'A', 'C'] [10, 0, 0, 9]
+['HLA_A', 1670, 'G', 'T', 'G'] [0, 18, 19, 0]
+['HLA_A', 1686, 'GG', 'GA', 'CA'] [23, 0, 0, 19]
+['HLA_A', 1695, 'C', 'G', 'C'] [0, 18, 17, 0]
+['HLA_A', 1722, 'G', 'C', 'G'] [0, 18, 21, 0]
+['HLA_A', 1729, 'TGG', 'AGA', 'CGA'] [22, 0, 0, 20]
+['HLA_A', 1737, 'GGGACCCTGCGCG', 'CGGATCGCGCTCC', 'GGGACCCTGCGCG'] [0, 12, 13, 0]
+['HLA_A', 1809, 'C', 'T', 'C'] [0, 20, 18, 0]
+['HLA_A', 1831, 'A', 'G', 'A'] [0, 20, 23, 0]
+['HLA_A', 1862, 'A', 'G', 'A'] [0, 14, 18, 0]
+['HLA_A', 1917, 'T', 'A', 'T'] [0, 13, 19, 0]
+['HLA_A', 1956, 'G', 'A', 'G'] [0, 23, 12, 0]
+['HLA_A', 1970, 'G', 'C', 'G'] [0, 14, 23, 0]
+['HLA_A', 1989, 'T', 'C', 'T'] [23, 0, 0, 16]
+['HLA_A', 2007, 'G', 'C', 'G'] [25, 0, 0, 17]
+['HLA_A', 2026, 'C', 'G', 'A'] [0, 23, 19, 0]
+['HLA_A', 2033, 'GG', 'TG', 'TA'] [20, 0, 0, 22]
+['HLA_A', 2039, 'A', 'T', 'A'] [0, 18, 20, 0]
+['HLA_A', 2062, 'G', 'T', 'G'] [0, 6, 10, 0]
+['HLA_A', 2160, 'A', 'G', 'A'] [0, 22, 21, 0]
+['HLA_A', 2168, 'T', 'C', 'T'] [21, 0, 0, 20]
+['HLA_A', 2177, 'G', 'A', 'G'] [0, 20, 16, 0]
+['HLA_A', 2209, 'TT', 'CA', 'CG'] [0, 15, 23, 0]
+['HLA_A', 2241, 'CG', 'GT', 'CG'] [0, 12, 12, 0]
+['HLA_A', 2314, 'C', 'A', 'C'] [0, 15, 22, 0]
+['HLA_A', 2326, 'GTAGG', 'GTAGA', 'ATAGA'] [6, 0, 0, 5]
+['HLA_A', 2505, 'CGGAA', 'AGGAA', 'AGGAG'] [0, 26, 26, 0]
+['HLA_A', 2516, 'G', 'A', 'G'] [22, 0, 0, 25]
+['HLA_A', 2542, 'G', 'C', 'G'] [0, 21, 23, 0]
+['HLA_A', 2554, 'GACACC', 'GACACACACA', 'GACACC'] [0, 20, 19, 0]
+['HLA_A', 2575, 'C', 'A', 'C'] [10, 0, 0, 7]
+['HLA_A', 2655, 'CT', 'CC', 'TC'] [17, 0, 0, 11]
+['HLA_A', 2698, 'CT', 'CC', 'TC'] [0, 15, 14, 0]
+['HLA_A', 2700, 'TCAGGGAA', 'TCAGGGACTAGAATTTTCCACGGAA', 'TCAGGGAA'] [15, 0, 0, 15]
+['HLA_A', 2711, 'A', 'G', 'A'] [12, 1, 0, 16]
+['HLA_A', 2761, 'T', 'C', 'T'] [18, 0, 0, 24]
+['HLA_A', 2774, 'G', 'A', 'G'] [18, 0, 0, 23]
+['HLA_A', 2798, 'G', 'A', 'G'] [25, 0, 0, 25]
+['HLA_A', 2807, 'C', 'T', 'C'] [0, 25, 25, 0]
+['HLA_A', 2808, 'G', 'A', 'G'] [0, 25, 27, 0]
+['HLA_A', 2815, 'T', 'A', 'T'] [23, 0, 0, 18]
+['HLA_A', 2850, 'TT', 'GA', 'TT'] [24, 0, 0, 19]
+['HLA_A', 2864, 'CGT', 'TGA', 'CGT'] [25, 0, 0, 17]
+['HLA_A', 2872, 'C', 'G', 'C'] [25, 0, 0, 16]
+['HLA_A', 2880, 'GACA', 'AACG', 'GACA'] [24, 0, 0, 15]
+['HLA_A', 2892, 'C', 'T', 'C'] [22, 0, 0, 17]
+['HLA_A', 2899, 'CCCA', 'GCTG', 'CCCA'] [22, 0, 0, 18]
+['HLA_A', 2916, 'G', 'A', 'G'] [0, 23, 24, 0]
+['HLA_A', 2922, 'C', 'T', 'C'] [24, 0, 0, 25]
+['HLA_A', 2928, 'G', 'A', 'G'] [0, 24, 21, 0]
+['HLA_A', 2941, 'G', 'A', 'G'] [0, 13, 16, 0]
+['HLA_A', 3012, 'C', 'T', 'C'] [12, 0, 0, 19]
+['HLA_A', 3057, 'G', 'A', 'G'] [19, 0, 0, 24]
+['HLA_A', 3069, 'G', 'A', 'G'] [0, 19, 25, 0]
+['HLA_A', 3079, 'G', 'C', 'G'] [22, 0, 0, 19]
+['HLA_A', 3118, 'C', 'T', 'C'] [21, 0, 0, 21]
+['HLA_A', 3159, 'T', 'C', 'T'] [24, 0, 0, 19]
+['HLA_A', 3175, 'C', 'T', 'C'] [22, 0, 0, 16]
+['HLA_A', 3198, 'TGGAGAC', 'TGAC', 'TGGAGAC'] [16, 0, 0, 9]
+['HLA_A', 3251, 'CA', 'CG', 'TG'] [0, 15, 15, 0]
+['HLA_A', 3268, 'A', 'G', 'A'] [0, 12, 9, 0]
+['HLA_A', 3304, 'C', 'T', 'C'] [0, 10, 12, 0]
+['HLA_A', 3357, 'G', 'C', 'G'] [0, 20, 15, 0]
+['HLA_A', 3369, 'A', 'G', 'A'] [15, 0, 0, 19]
+['HLA_A', 3384, 'TGGGGTC', 'TGGGTC', 'TGGGGTC'] [15, 0, 0, 15]
+['HLA_A', 3422, 'C', 'A', 'C'] [22, 0, 0, 17]
+['HLA_A', 3428, 'C', 'G', 'C'] [22, 0, 0, 21]
+['HLA_A', 3434, 'A', 'G', 'A'] [21, 0, 0, 20]
+['HLA_A', 3444, 'TCTCA', 'CCTCG', 'TCTCA'] [0, 19, 18, 0]
+['HLA_A', 3464, 'AC', 'AT', 'TT'] [0, 18, 21, 0]
+['HLA_A', 3473, 'C', 'T', 'C'] [20, 0, 0, 18]
+['HLA_A', 3481, 'G', 'T', 'G'] [0, 12, 12, 0]
+['HLA_A', 3533, 'TAA', 'GAC', 'TAA'] [19, 0, 0, 10]
+['HLA_A', 3565, 'C', 'T', 'C'] [0, 26, 16, 0]
+['HLA_A', 3566, 'G', 'A', 'G'] [0, 11, 23, 0]
+['HLA_A', 3620, 'G', 'C', 'G'] [26, 0, 0, 15]
+['HLA_A', 3623, 'CCT', 'CAGATC', 'CAGACC'] [25, 0, 0, 14]
+['HLA_A', 3639, 'GG', 'GA', 'TA'] [24, 0, 0, 21]
+['HLA_A', 3651, 'A', 'G', 'A'] [24, 0, 0, 24]
+['HLA_A', 3658, 'C', 'T', 'C'] [19, 0, 0, 22]
+['HLA_A', 3684, 'C', 'T', 'C'] [0, 12, 16, 0]
+['HLA_A', 3725, 'G', 'A', 'G'] [21, 0, 0, 16]
+['HLA_A', 3737, 'A', 'T', 'A'] [20, 0, 0, 9]
+['HLA_A', 3767, 'G', 'A', 'G'] [0, 6, 0, 0]
+['HLA_A', 3909, 'C', 'A', 'C'] [0, 4, 1, 0]
+['HLA_A', 4038, 'T', 'C', 'T'] [0, 6, 9, 0]
+['HLA_A', 4106, 'CCA', 'GCA', 'GCG'] [0, 7, 7, 0]
+['HLA_A', 4168, 'T', 'C', 'T'] [0, 10, 11, 0]
+['HLA_A', 4172, 'T', 'G', 'T'] [11, 0, 0, 8]
+['HLA_A', 4184, 'TAT', 'TT', 'TAT'] [3, 0, 0, 4]
+['HLA_A', 4315, 'G', 'A', 'G'] [2, 0, 0, 3]
+Rectifying is over! Next start phasing the main sequence.
+The main phasing is over!
+100 100 points num
+############break points: HLA_A 1574 10 0 0 9 9 1670 True 3 0
+############break points: HLA_A 1831 0 20 23 0 8 1862 True 3 0
+############break points: HLA_A 1917 0 13 19 0 2 1956 True 3 0
+############break points: HLA_A 2177 0 20 16 0 11 2209 True 3 0
+############break points: HLA_A 2314 0 15 22 0 3 2326 True 3 0
+############break points: HLA_A 2575 10 0 0 7 6 2655 True 3 0
+############break points: HLA_A 3684 0 12 16 0 50 3725 True 3 0
+############break points: HLA_A 3767 0 6 0 0 3 3909 False 4 0
+Start rephase!
+before rephase order: perl /home/wangmengyao/scripts/NeedleHLA/script/rephaseV1.pl /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_A_break_points.txt                    /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_A_break_points_phased.txt 200 1
+after rephase order: perl /home/wangmengyao/scripts/NeedleHLA/script/rephaseV1.pl /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_A_break_points.txt                    /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_A_break_points_phased.txt 200 1
+Rephase is over!
+new order 1574 ['0', '1']
+new order 1831 ['0', '1']
+new order 2177 ['0', '1']
+new order 2575 ['0', '1']
+new order 3684 ['0', '1']
+fresh_alpha [0.487805, 0.512195]
+snv of HLA_A is done!
+segment mapping {}
+####################################copy number []
+gene_area [1001, 4503]
+[]
+############normalregion [[1001, 4503]] [[1001, 4503, 'normal', '.']]
+[[1001, 4503]]
+430 436
+start split seg.
+gene_area [1001, 4503]
+[]
+############normalregion [[1001, 4503]] [[1001, 4503, 'normal', '.']]
+seg [1001, 4503, 'normal', '.']
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                 HLA_A:1001-4503  |/home/wangmengyao/miniconda2/bin/bcftools                consensus -H 1 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_A.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_A_0_seg.fa
+dict_keys(['1001_4503'])
+[1001, 4503, 'normal', '.'] 1001_4503
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                 HLA_A:1001-4503  |/home/wangmengyao/miniconda2/bin/bcftools                consensus -H 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_A.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_A_1_seg.fa
+dict_keys(['1001_4503'])
+[1001, 4503, 'normal', '.'] 1001_4503
+input_rephase_para:200	1
+2156
+HLA_B	1001	2156	region1
+2156	2196
+2156	4011
+HLA_B	2156	4011	region2
+100	0	1
+99.8920669185105	100	2
+HLA_B:2155-4009	0 1	100 100	new
+HLA_B	1001	2154	HLA_B	2155	4009	6	0	1
+4011
+HLA_B	2155	4011	region1
+HLA_B	4011	5081	region2
+100	100	11
+100	100	11
+HLA_B:4010-5079	10 10	100 100	new
+/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118
+/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel/HG00118.breakpoint.txt
+[]
+[]
+[]
+ordered deletion region: []
+hete loci number 35
+['HLA_B', 1104, 'CT', 'AC', 'CT'] [4, 0, 0, 3]
+['HLA_B', 1128, 'TTG', 'CTA', 'TTG'] [5, 0, 0, 7]
+['HLA_B', 1171, 'C', 'T', 'C'] [7, 0, 0, 13]
+['HLA_B', 1190, 'ATTGGATA', 'GTCGGGTG', 'ATTGGATA'] [5, 0, 0, 14]
+['HLA_B', 1224, 'C', 'T', 'C'] [11, 0, 0, 16]
+['HLA_B', 1267, 'G', 'A', 'G'] [16, 0, 0, 16]
+['HLA_B', 1289, 'T', 'G', 'T'] [20, 0, 0, 16]
+['HLA_B', 1295, 'TGGCG', 'CGGCA', 'TGGCG'] [9, 0, 0, 9]
+['HLA_B', 1373, 'G', 'C', 'G'] [18, 0, 0, 17]
+['HLA_B', 1390, 'CC', 'TG', 'CC'] [11, 0, 0, 18]
+['HLA_B', 1430, 'TGA', 'CGG', 'TGA'] [12, 0, 0, 18]
+['HLA_B', 1470, 'C', 'T', 'C'] [17, 0, 0, 22]
+['HLA_B', 1478, 'A', 'G', 'A'] [21, 0, 0, 13]
+['HLA_B', 1509, 'T', 'C', 'T'] [25, 0, 0, 19]
+['HLA_B', 1515, 'TCCG', 'GCCA', 'TCCG'] [20, 0, 0, 20]
+['HLA_B', 1554, 'TCA', 'ACC', 'TCA'] [24, 0, 0, 29]
+['HLA_B', 1577, 'CCA', 'GCT', 'CCA'] [24, 0, 0, 29]
+['HLA_B', 1605, 'G', 'A', 'G'] [28, 1, 0, 30]
+['HLA_B', 1616, 'AG', 'GA', 'AG'] [23, 0, 1, 30]
+['HLA_B', 1634, 'G', 'A', 'G'] [16, 0, 0, 20]
+['HLA_B', 1671, 'AAC', 'GAG', 'AAC'] [14, 0, 0, 20]
+['HLA_B', 1684, 'A', 'C', 'A'] [19, 0, 0, 22]
+['HLA_B', 1689, 'GCCCAGG', 'ACCAACA', 'GCCCAGG'] [19, 0, 0, 18]
+['HLA_B', 1704, 'G', 'T', 'G'] [6, 0, 0, 7]
+['HLA_B', 1845, 'CCT', 'ACC', 'CCT'] [7, 0, 0, 2]
+['HLA_B', 2020, 'C', 'G', 'C'] [16, 0, 0, 7]
+['HLA_B', 2069, 'G', 'A', 'G'] [13, 0, 0, 10]
+['HLA_B', 2156, 'A', 'T', 'A'] [29, 0, 0, 19]
+['HLA_B', 2169, 'G', 'T', 'G'] [29, 0, 0, 14]
+['HLA_B', 2184, 'A', 'T', 'A'] [30, 0, 0, 12]
+['HLA_B', 2196, 'G', 'T', 'G'] [0, 0, 0, 0]
+['HLA_B', 3996, 'T', 'G', 'T'] [26, 1, 0, 7]
+['HLA_B', 3999, 'C', 'G', 'C'] [21, 0, 2, 6]
+['HLA_B', 4011, 'TGGGT', 'GGGGG', 'TGGGT'] [0, 3, 0, 0]
+Rectifying is over! Next start phasing the main sequence.
+The main phasing is over!
+35 35 points num
+############break points: HLA_B 2156 29 0 0 19 28 2169 True 3 0
+############break points: HLA_B 2196 0 0 0 0 3 3996 False 5 0
+############break points: HLA_B 4011 0 3 0 0 3 4539 False 4 0
+Start rephase!
+before rephase order: perl /home/wangmengyao/scripts/NeedleHLA/script/rephaseV1.pl /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_B_break_points.txt                    /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_B_break_points_phased.txt 200 1
+after rephase order: perl /home/wangmengyao/scripts/NeedleHLA/script/rephaseV1.pl /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_B_break_points.txt                    /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_B_break_points_phased.txt 200 1
+Rephase is over!
+new order 2156 ['0', '1']
+fresh_alpha [0.463415, 0.536585]
+snv of HLA_B is done!
+segment mapping {}
+####################################copy number []
+gene_area [1001, 5081]
+[]
+############normalregion [[1001, 5081]] [[1001, 5081, 'normal', '.']]
+[[1001, 5081]]
+166 172
+start split seg.
+gene_area [1001, 5081]
+[]
+############normalregion [[1001, 5081]] [[1001, 5081, 'normal', '.']]
+seg [1001, 5081, 'normal', '.']
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                 HLA_B:1001-5081  |/home/wangmengyao/miniconda2/bin/bcftools                consensus -H 1 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_B.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_B_0_seg.fa
+dict_keys(['1001_5081'])
+[1001, 5081, 'normal', '.'] 1001_5081
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                 HLA_B:1001-5081  |/home/wangmengyao/miniconda2/bin/bcftools                consensus -H 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_B.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_B_1_seg.fa
+dict_keys(['1001_5081'])
+[1001, 5081, 'normal', '.'] 1001_5081
+input_rephase_para:200	1
+2330
+HLA_C	1001	2330	region1
+2330	4338
+HLA_C	2330	4338	region2
+100	0	1
+96.0159362549801	100	2
+HLA_C:2329-4336	0 1	100 100	new
+HLA_C	1001	2328	HLA_C	2329	4336	68	0	1
+4338
+HLA_C	2329	4338	region1
+4338	4483
+HLA_C	4338	5304	region2
+100	100	11
+100	100	11
+HLA_C:4337-5302	10 10	100 100	new
+/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118
+/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel/HG00118.breakpoint.txt
+[]
+[]
+[]
+ordered deletion region: []
+hete loci number 100
+['HLA_C', 1325, 'ACTTCTTCTCC', 'ACTTCTCC', 'ACTTCTTCTCC'] [0, 2, 2, 0]
+['HLA_C', 1407, 'G', 'A', 'G'] [5, 0, 0, 7]
+['HLA_C', 1448, 'A', 'G', 'A'] [0, 8, 7, 0]
+['HLA_C', 1476, 'G', 'C', 'G'] [13, 0, 0, 10]
+['HLA_C', 1489, 'C', 'G', 'C'] [12, 0, 0, 11]
+['HLA_C', 1517, 'A', 'G', 'A'] [15, 0, 0, 16]
+['HLA_C', 1523, 'A', 'C', 'A'] [16, 0, 1, 15]
+['HLA_C', 1542, 'C', 'G', 'C'] [0, 15, 19, 0]
+['HLA_C', 1568, 'T', 'G', 'T'] [22, 0, 1, 15]
+['HLA_C', 1592, 'G', 'T', 'A'] [1, 19, 10, 0]
+['HLA_C', 1622, 'G', 'T', 'G'] [10, 0, 0, 14]
+['HLA_C', 1663, 'A', 'T', 'A'] [9, 0, 0, 12]
+['HLA_C', 1722, 'TACACCGCT', 'GACACCGCC', 'TTCACATCC'] [0, 12, 14, 0]
+['HLA_C', 1751, 'A', 'G', 'A'] [19, 0, 0, 19]
+['HLA_C', 1759, 'G', 'A', 'G'] [21, 0, 0, 21]
+['HLA_C', 1767, 'T', 'G', 'T'] [0, 4, 2, 0]
+['HLA_C', 1914, 'A', 'G', 'A'] [10, 0, 0, 12]
+['HLA_C', 1966, 'C', 'A', 'C'] [12, 0, 0, 13]
+['HLA_C', 2009, 'T', 'C', 'T'] [21, 0, 0, 17]
+['HLA_C', 2038, 'CA', 'AG', 'CA'] [22, 0, 0, 21]
+['HLA_C', 2048, 'G', 'C', 'G'] [22, 0, 0, 22]
+['HLA_C', 2065, 'GAGGCT', 'AAGGTGGATCT', 'GAGGCT'] [19, 1, 0, 16]
+['HLA_C', 2112, 'A', 'G', 'A'] [16, 0, 0, 23]
+['HLA_C', 2134, 'A', 'G', 'A'] [12, 0, 0, 18]
+['HLA_C', 2189, 'G', 'T', 'G'] [0, 17, 25, 0]
+['HLA_C', 2224, 'CCC', 'TCA', 'CCC'] [0, 26, 15, 0]
+['HLA_C', 2239, 'A', 'C', 'G'] [0, 16, 25, 0]
+['HLA_C', 2250, 'C', 'G', 'C'] [0, 23, 10, 0]
+['HLA_C', 2290, 'A', 'C', 'A'] [0, 7, 19, 0]
+['HLA_C', 2330, 'C', 'T', 'C'] [27, 0, 0, 12]
+['HLA_C', 2357, 'C', 'G', 'C'] [0, 30, 15, 0]
+['HLA_C', 2383, 'G', 'T', 'G'] [16, 0, 0, 33]
+['HLA_C', 2398, 'A', 'C', 'A'] [0, 15, 26, 0]
+['HLA_C', 2430, 'AC', 'CT', 'AC'] [29, 0, 0, 15]
+['HLA_C', 2460, 'G', 'A', 'G'] [34, 0, 0, 19]
+['HLA_C', 2465, 'C', 'T', 'C'] [0, 29, 19, 0]
+['HLA_C', 2489, 'G', 'A', 'G'] [0, 16, 24, 0]
+['HLA_C', 2525, 'TA', 'TG', 'CG'] [0, 13, 16, 0]
+['HLA_C', 2578, 'GCTA', 'ACTG', 'GCTA'] [17, 0, 0, 23]
+['HLA_C', 2612, 'G', 'C', 'G'] [10, 0, 0, 16]
+['HLA_C', 2678, 'CT', 'TC', 'CT'] [0, 13, 17, 0]
+['HLA_C', 2708, 'G', 'A', 'G'] [0, 16, 18, 0]
+['HLA_C', 2727, 'C', 'T', 'C'] [13, 0, 0, 14]
+['HLA_C', 2805, 'G', 'A', 'G'] [20, 0, 0, 26]
+['HLA_C', 2816, 'T', 'C', 'T'] [16, 1, 0, 26]
+['HLA_C', 2848, 'TCG', 'GCA', 'TCG'] [7, 0, 0, 11]
+['HLA_C', 2963, 'G', 'C', 'G'] [15, 0, 0, 21]
+['HLA_C', 2968, 'C', 'G', 'C'] [0, 11, 16, 0]
+['HLA_C', 2995, 'A', 'G', 'A'] [0, 15, 15, 0]
+['HLA_C', 3022, 'T', 'C', 'T'] [15, 0, 0, 20]
+['HLA_C', 3032, 'G', 'C', 'G'] [17, 0, 0, 20]
+['HLA_C', 3043, 'A', 'G', 'A'] [16, 0, 0, 16]
+['HLA_C', 3081, 'A', 'C', 'A'] [22, 0, 0, 16]
+['HLA_C', 3106, 'TCCCG', 'CCCCC', 'TCCCG'] [13, 0, 0, 9]
+['HLA_C', 3185, 'T', 'C', 'T'] [18, 0, 0, 20]
+['HLA_C', 3202, 'AACT', 'GACC', 'AACT'] [0, 18, 20, 0]
+['HLA_C', 3214, 'C', 'T', 'C'] [0, 11, 8, 0]
+['HLA_C', 3287, 'G', 'C', 'G'] [11, 0, 0, 17]
+['HLA_C', 3311, 'G', 'A', 'G'] [14, 0, 0, 19]
+['HLA_C', 3330, 'CG', 'AA', 'CG'] [18, 0, 0, 20]
+['HLA_C', 3349, 'A', 'C', 'A'] [18, 0, 0, 20]
+['HLA_C', 3365, 'GATGA', 'AATGG', 'GATGA'] [22, 0, 0, 25]
+['HLA_C', 3375, 'GATGTG', 'CACATC', 'GATGTG'] [21, 0, 0, 27]
+['HLA_C', 3385, 'C', 'A', 'C'] [23, 0, 0, 31]
+['HLA_C', 3390, 'G', 'A', 'G'] [22, 0, 1, 29]
+['HLA_C', 3403, 'CCT', 'CCTTCT', 'CCT'] [0, 22, 29, 0]
+['HLA_C', 3420, 'G', 'A', 'G'] [0, 22, 15, 0]
+['HLA_C', 3461, 'C', 'T', 'C'] [21, 0, 0, 24]
+['HLA_C', 3479, 'G', 'A', 'G'] [16, 0, 0, 19]
+['HLA_C', 3504, 'G', 'A', 'G'] [17, 0, 0, 17]
+['HLA_C', 3535, 'C', 'T', 'C'] [20, 0, 0, 19]
+['HLA_C', 3551, 'A', 'T', 'A'] [21, 0, 0, 21]
+['HLA_C', 3563, 'GGCTGTTG', 'CACCGCTA', 'GGCTGTTG'] [11, 0, 0, 19]
+['HLA_C', 3610, 'GGAGT', 'AGAGC', 'GGAGT'] [13, 0, 0, 23]
+['HLA_C', 3634, 'T', 'C', 'T'] [12, 0, 0, 20]
+['HLA_C', 3673, 'ACCTC', 'GCCTT', 'ACCTC'] [15, 0, 0, 15]
+['HLA_C', 3745, 'G', 'T', 'G'] [22, 0, 0, 13]
+['HLA_C', 3757, 'ATGA', 'ATGTGA', 'ATGA'] [24, 0, 0, 11]
+['HLA_C', 3772, 'A', 'G', 'A'] [17, 0, 0, 6]
+['HLA_C', 3807, 'CTTGA', 'CTGA', 'CTTGA'] [0, 9, 10, 0]
+['HLA_C', 3873, 'GTC', 'CTC', 'CTT'] [0, 14, 15, 0]
+['HLA_C', 3887, 'G', 'A', 'G'] [14, 0, 0, 15]
+['HLA_C', 3899, 'G', 'A', 'G'] [13, 0, 0, 13]
+['HLA_C', 3931, 'A', 'G', 'A'] [12, 0, 0, 11]
+['HLA_C', 3983, 'G', 'A', 'G'] [0, 16, 18, 0]
+['HLA_C', 3994, 'C', 'A', 'C'] [0, 18, 15, 0]
+['HLA_C', 4003, 'T', 'A', 'T'] [15, 0, 0, 20]
+['HLA_C', 4013, 'C', 'T', 'C'] [5, 0, 0, 12]
+['HLA_C', 4081, 'T', 'C', 'T'] [4, 0, 0, 14]
+['HLA_C', 4103, 'CACC', 'TACT', 'CACC'] [6, 0, 0, 6]
+['HLA_C', 4174, 'C', 'G', 'C'] [12, 0, 0, 11]
+['HLA_C', 4212, 'G', 'A', 'G'] [7, 0, 0, 18]
+['HLA_C', 4275, 'A', 'G', 'A'] [10, 0, 0, 24]
+['HLA_C', 4288, 'C', 'T', 'C'] [11, 0, 0, 22]
+['HLA_C', 4309, 'A', 'G', 'A'] [11, 0, 0, 24]
+['HLA_C', 4319, 'AGCT', 'GGCC', 'AGCT'] [0, 10, 22, 0]
+['HLA_C', 4334, 'C', 'G', 'C'] [0, 23, 12, 0]
+['HLA_C', 4338, 'A', 'G', 'A'] [0, 0, 0, 2]
+['HLA_C', 4483, 'T', 'C', 'T'] [0, 0, 1, 1]
+Rectifying is over! Next start phasing the main sequence.
+The main phasing is over!
+100 100 points num
+############break points: HLA_C 2330 27 0 0 12 30 2357 True 3 0
+############break points: HLA_C 4338 0 0 0 2 68 4483 False 5 0
+############break points: HLA_C 4483 0 0 1 1 1 4840 False 5 0
+Start rephase!
+before rephase order: perl /home/wangmengyao/scripts/NeedleHLA/script/rephaseV1.pl /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_C_break_points.txt                    /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_C_break_points_phased.txt 200 1
+after rephase order: perl /home/wangmengyao/scripts/NeedleHLA/script/rephaseV1.pl /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_C_break_points.txt                    /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_C_break_points_phased.txt 200 1
+Rephase is over!
+new order 2330 ['0', '1']
+fresh_alpha [0.4375, 0.5625]
+snv of HLA_C is done!
+segment mapping {}
+####################################copy number []
+gene_area [1001, 5304]
+[]
+############normalregion [[1001, 5304]] [[1001, 5304, 'normal', '.']]
+[[1001, 5304]]
+379 477
+start split seg.
+gene_area [1001, 5304]
+[]
+############normalregion [[1001, 5304]] [[1001, 5304, 'normal', '.']]
+seg [1001, 5304, 'normal', '.']
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                 HLA_C:1001-5304  |/home/wangmengyao/miniconda2/bin/bcftools                consensus -H 1 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_C.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_C_0_seg.fa
+dict_keys(['1001_5304'])
+[1001, 5304, 'normal', '.'] 1001_5304
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                 HLA_C:1001-5304  |/home/wangmengyao/miniconda2/bin/bcftools                consensus -H 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_C.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_C_1_seg.fa
+dict_keys(['1001_5304'])
+[1001, 5304, 'normal', '.'] 1001_5304
+/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118
+/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel/HG00118.breakpoint.txt
+[]
+[]
+[]
+ordered deletion region: []
+hete loci number 0
+No hete locus
+segment mapping {}
+####################################copy number []
+gene_area [1001, 10775]
+[]
+############normalregion [[1001, 10775]] [[1001, 10775, 'normal', '.']]
+[[1001, 10775]]
+0 0
+start split seg.
+gene_area [1001, 10775]
+[]
+############normalregion [[1001, 10775]] [[1001, 10775, 'normal', '.']]
+seg [1001, 10775, 'normal', '.']
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                 HLA_DPA1:1001-10775  |/home/wangmengyao/miniconda2/bin/bcftools                consensus -H 1 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DPA1.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DPA1_0_seg.fa
+dict_keys(['1001_10775'])
+[1001, 10775, 'normal', '.'] 1001_10775
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                 HLA_DPA1:1001-10775  |/home/wangmengyao/miniconda2/bin/bcftools                consensus -H 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DPA1.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DPA1_1_seg.fa
+dict_keys(['1001_10775'])
+[1001, 10775, 'normal', '.'] 1001_10775
+input_rephase_para:200	1
+2169
+HLA_DPB1	1001	2169	region1
+2169	2458
+HLA_DPB1	2169	2458	region2
+99.6515679442509	100	2
+99.6515679442509	100	2
+HLA_DPB1:2168-2456	1 1	100 100	new
+HLA_DPB1	1001	2167	HLA_DPB1	2168	2456	2	1	0
+2458
+HLA_DPB1	2168	2458	region1
+2458	4133
+HLA_DPB1	2458	12468	region2
+99.5207189216176	99.560483468185	2
+99.5207189216176	99.560483468185	2
+HLA_DPB1:2457-12466	1 1	99.560483468185 99.560483468185	new
+HLA_DPB1	2168	2456	HLA_DPB1	2457	12466	2	1	0
+/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118
+/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel/HG00118.breakpoint.txt
+[]
+[]
+[]
+ordered deletion region: []
+hete loci number 5
+['HLA_DPB1', 2169, 'T', 'C', 'T'] [20, 0, 2, 0]
+['HLA_DPB1', 2200, 'T', 'C', 'T'] [6, 0, 0, 0]
+['HLA_DPB1', 2458, 'T', 'G', 'T'] [0, 0, 0, 0]
+['HLA_DPB1', 4133, 'AACGTTCTC', 'CAAGTTATA', 'AACGTTCTC'] [0, 0, 0, 0]
+Rectifying is over! Next start phasing the main sequence.
+The main phasing is over!
+5 5 points num
+############break points: HLA_DPB1 2169 20 0 2 0 1 2200 False 2 0
+############break points: HLA_DPB1 2458 0 0 0 0 2 4133 False 5 0
+############break points: HLA_DPB1 4133 0 0 0 0 1 9717 False 5 0
+Start rephase!
+before rephase order: perl /home/wangmengyao/scripts/NeedleHLA/script/rephaseV1.pl /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DPB1_break_points.txt                    /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DPB1_break_points_phased.txt 200 1
+after rephase order: perl /home/wangmengyao/scripts/NeedleHLA/script/rephaseV1.pl /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DPB1_break_points.txt                    /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DPB1_break_points_phased.txt 200 1
+Rephase is over!
+new order 2169 ['1', '0']
+new order 2458 ['0', '1']
+fresh_alpha [1.0, 0.0]
+snv of HLA_DPB1 is done!
+segment mapping {}
+####################################copy number []
+gene_area [1001, 12468]
+[]
+############normalregion [[1001, 12468]] [[1001, 12468, 'normal', '.']]
+[[1001, 12468]]
+30 26
+start split seg.
+gene_area [1001, 12468]
+[]
+############normalregion [[1001, 12468]] [[1001, 12468, 'normal', '.']]
+seg [1001, 12468, 'normal', '.']
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                 HLA_DPB1:1001-12468  |/home/wangmengyao/miniconda2/bin/bcftools                consensus -H 1 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DPB1.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DPB1_0_seg.fa
+dict_keys(['1001_12468'])
+[1001, 12468, 'normal', '.'] 1001_12468
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                 HLA_DPB1:1001-12468  |/home/wangmengyao/miniconda2/bin/bcftools                consensus -H 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DPB1.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DPB1_1_seg.fa
+dict_keys(['1001_12468'])
+[1001, 12468, 'normal', '.'] 1001_12468
+input_rephase_para:200	1
+/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118
+/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel/HG00118.breakpoint.txt
+[]
+[]
+[]
+ordered deletion region: []
+hete loci number 1
+Rectifying is over! Next start phasing the main sequence.
+The main phasing is over!
+1 1 points num
+Start rephase!
+before rephase order: perl /home/wangmengyao/scripts/NeedleHLA/script/rephaseV1.pl /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DQA1_break_points.txt                    /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DQA1_break_points_phased.txt 200 1
+after rephase order: perl /home/wangmengyao/scripts/NeedleHLA/script/rephaseV1.pl /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DQA1_break_points.txt                    /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DQA1_break_points_phased.txt 200 1
+Rephase is over!
+fresh_alpha [1.0, 0.0]
+snv of HLA_DQA1 is done!
+segment mapping {}
+####################################copy number []
+gene_area [1001, 7492]
+[]
+############normalregion [[1001, 7492]] [[1001, 7492, 'normal', '.']]
+[[1001, 7492]]
+20 24
+start split seg.
+gene_area [1001, 7492]
+[]
+############normalregion [[1001, 7492]] [[1001, 7492, 'normal', '.']]
+seg [1001, 7492, 'normal', '.']
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                 HLA_DQA1:1001-7492  |/home/wangmengyao/miniconda2/bin/bcftools                consensus -H 1 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DQA1.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DQA1_0_seg.fa
+dict_keys(['1001_7492'])
+[1001, 7492, 'normal', '.'] 1001_7492
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                 HLA_DQA1:1001-7492  |/home/wangmengyao/miniconda2/bin/bcftools                consensus -H 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DQA1.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DQA1_1_seg.fa
+dict_keys(['1001_7492'])
+[1001, 7492, 'normal', '.'] 1001_7492
+input_rephase_para:200	1
+1706
+HLA_DQB1	1001	1706	region1
+1706	3494
+1706	4847
+HLA_DQB1	4600	4847	region2
+100	100	11
+100	100	11
+HLA_DQB1:4599-4845	10 10	100 100	new
+4847
+HLA_DQB1	1001	4230	region1
+4230	5936
+4600	6004
+HLA_DQB1	4600	6004	region2
+99.3041057759221	99.8603351955307	2
+99.3041057759221	99.8603351955307	2
+HLA_DQB1:4599-6002	1 1	99.8603351955307 99.8603351955307	new
+HLA_DQB1	1001	4228	HLA_DQB1	4599	6002	7	1	0
+6004
+HLA_DQB1	4599	6004	region1
+HLA_DQB1	6004	8480	region2
+99.4674313805817	100	2
+99.4674313805817	100	2
+HLA_DQB1:6003-8478	1 1	100 100	new
+HLA_DQB1	4599	6002	HLA_DQB1	6003	8478	2	1	0
+Warning: trimming variant starting at HLA_DQB1:4231
+Warning: ignoring overlapping variant starting at HLA_DQB1:4231
+Warning: trimming variant starting at HLA_DQB1:4231
+Warning: ignoring overlapping variant starting at HLA_DQB1:4231
+/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118
+/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel/HG00118.breakpoint.txt
+[['4235', '4556', '.']]
+[[1, 4235], [4235, 4556]]
+[[4235, 4556]]
+ordered deletion region: [[4235, 4556]]
+SNV in deletion region, need edit HLA_DQB1	4237	.	A	T	203.317	PASS	AB=0.909091;ABP=19.0002;AC=2;AF=0.666667;AN=3;AO=10;CIGAR=1X;DP=11;DPB=11;DPRA=0;EPP=6.48466;EPPR=5.18177;GTI=0;LEN=1;MEANALT=1;MQM=60;MQMR=60;NS=1;NUMALT=1;ODDS=4.52565;PAIRED=1;PAIREDR=1;PAO=0;PQA=0;PQR=0;PRO=0;QA=300;QR=30;RO=1;RPL=10;RPP=24.725;RPPR=5.18177;RPR=0;RUN=1;SAF=7;SAP=6.48466;SAR=3;SRF=0;SRP=5.18177;SRR=1;TYPE=snp	GT:DP:AD:RO:QR:AO:QA	0/1/1:11:1,10:1:30:10:300
+
+hete loci number 19
+['HLA_DQB1', 1706, 'A', 'G', 'A'] [0, 0, 0, 0]
+['HLA_DQB1', 3494, 'CGGTGGG', 'CGGAGGG', 'CGGAGGT'] [0, 0, 0, 0]
+['HLA_DQB1', 4847, 'TAT', 'TATATCCTAAT', 'TAT'] [0, 0, 0, 0]
+['HLA_DQB1', 5936, 'C', 'G', 'C'] [0, 2, 0, 36]
+['HLA_DQB1', 5937, 'AATAACATTCTACT', 'AAGGCCTGCCTACT', 'AAGGCCTGCCTAAA'] [7, 0, 3, 16]
+['HLA_DQB1', 5989, 'TTTTG', 'ACTTT', 'TTTTG'] [35, 0, 0, 7]
+['HLA_DQB1', 6000, 'G', 'A', 'G'] [38, 0, 0, 5]
+['HLA_DQB1', 6002, 'T', 'A', 'T'] [39, 0, 0, 5]
+['HLA_DQB1', 6003, 'G', 'A', 'G'] [40, 0, 0, 5]
+['HLA_DQB1', 6004, 'T', 'A', 'T'] [0, 6, 0, 1]
+['HLA_DQB1', 6156, 'ACCTT', 'ATCCTT', 'ACCTT'] [0, 3, 24, 0]
+['HLA_DQB1', 6166, 'TGGTAGACGTGG', 'CAGCAGGCGTGC', 'CAGCAGGCATGC'] [0, 22, 5, 0]
+['HLA_DQB1', 6184, 'G', 'T', 'G'] [7, 0, 0, 24]
+['HLA_DQB1', 6204, 'A', 'G', 'A'] [8, 0, 0, 31]
+['HLA_DQB1', 6210, 'C', 'T', 'C'] [5, 0, 0, 16]
+['HLA_DQB1', 6322, 'C', 'G', 'C'] [3, 0, 0, 27]
+['HLA_DQB1', 6353, 'C', 'T', 'C'] [0, 2, 15, 0]
+['HLA_DQB1', 6419, 'C', 'T', 'C'] [11, 0, 0, 1]
+Rectifying is over! Next start phasing the main sequence.
+The main phasing is over!
+19 19 points num
+############break points: HLA_DQB1 1706 0 0 0 0 1 3494 True 5 0
+############break points: HLA_DQB1 3494 0 0 0 0 1 4847 True 5 0
+############break points: HLA_DQB1 4847 0 0 0 0 1 5936 False 5 0
+############break points: HLA_DQB1 5936 0 2 0 36 1 5937 False 4 0
+############break points: HLA_DQB1 6004 0 6 0 1 6 6156 False 4 0
+Start rephase!
+before rephase order: perl /home/wangmengyao/scripts/NeedleHLA/script/rephaseV1.pl /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DQB1_break_points.txt                    /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DQB1_break_points_phased.txt 200 1
+after rephase order: perl /home/wangmengyao/scripts/NeedleHLA/script/rephaseV1.pl /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DQB1_break_points.txt                    /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DQB1_break_points_phased.txt 200 1
+Rephase is over!
+new order 4847 ['1', '0']
+new order 6004 ['0', '1']
+fresh_alpha [0.225806, 0.774194]
+snv of HLA_DQB1 is done!
+segment mapping {}
+[4235, 4556]
+####################################copy number [[4235, 4556, 0]]
+gene_area [1001, 8480]
+[[4235, 4556, 0]]
+############normalregion [[1001, 4235], [4557, 8480]] [[1001, 4234, 'normal', '.'], [4235, 4556, 'deletion', 0], [4557, 8480, 'normal', '.']]
+[[1001, 4235], [4557, 8480]]
+90 125
+start split seg.
+gene_area [1001, 8480]
+[[4235, 4556, 0]]
+############normalregion [[1001, 4235], [4557, 8480]] [[1001, 4234, 'normal', '.'], [4235, 4556, 'deletion', 0], [4557, 8480, 'normal', '.']]
+seg [1001, 4234, 'normal', '.']
+seg [4235, 4556, 'deletion', 0]
+seg [4557, 8480, 'normal', '.']
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                 HLA_DQB1:1001-4234  HLA_DQB1:4235-4556  HLA_DQB1:4557-8480  |/home/wangmengyao/miniconda2/bin/bcftools                consensus -H 1 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DQB1.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DQB1_0_seg.fa
+dict_keys(['1001_4234', '4235_4556', '4557_8480'])
+[1001, 4234, 'normal', '.'] 1001_4234
+[4235, 4556, 'deletion', 0] 4235_4556
+### [0, 0]
+### [0, 0]
+hihihi 0 [0, 0]
+deletion assign_index 1
+[4557, 8480, 'normal', '.'] 4557_8480
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                 HLA_DQB1:1001-4234  HLA_DQB1:4235-4556  HLA_DQB1:4557-8480  |/home/wangmengyao/miniconda2/bin/bcftools                consensus -H 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DQB1.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DQB1_1_seg.fa
+dict_keys(['1001_4234', '4235_4556', '4557_8480'])
+[1001, 4234, 'normal', '.'] 1001_4234
+[4235, 4556, 'deletion', 0] 4235_4556
+### [0, 0]
+### [0, 0]
+hihihi 0 [0, 0]
+deletion assign_index 1
+[4557, 8480, 'normal', '.'] 4557_8480
+rm: cannot remove ‘/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DRB1_part_*_*_*.vcf’: No such file or directory
+Count:2
+/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118
+/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/Scanindel/HG00118.breakpoint.txt
+[]
+[]
+[]
+ordered deletion region: []
+hete loci number 1
+Rectifying is over! Next start phasing the main sequence.
+The main phasing is over!
+1 1 points num
+[[1001, 3950], [3950, 12229]]
+Start rephase!
+before rephase order: perl /home/wangmengyao/scripts/PHLAT/script/rephase.DRB1.pl /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DRB1_break_points.txt                    /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DRB1_break_points_phased.txt 200 1
+after rephase order: perl /home/wangmengyao/scripts/PHLAT/script/rephase.DRB1.pl /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DRB1_break_points.txt                    /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DRB1_break_points_phased.txt 200 1
+Rephase is over!
+fresh_alpha [1.0, 0.0]
+snv of HLA_DRB1 is done!
+segment mapping {}
+####################################copy number []
+gene_area [1001, 12229]
+[]
+############normalregion [[1001, 12229]] [[1001, 12229, 'normal', '.']]
+[[1001, 12229]]
+0 0
+start split seg.
+There are 2 dup types.
+gene_area [1001, 12229]
+[]
+############normalregion [[1001, 12229]] [[1001, 12229, 'normal', '.']]
+seg [1001, 12229, 'normal', '.']
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                 HLA_DRB1:1001-3898 HLA_DRB1:3898-4400 HLA_DRB1:4400-12229  |/home/wangmengyao/miniconda2/bin/bcftools                consensus -H 1 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DRB1.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DRB1_0_seg.fa
+dict_keys(['1001>', '1001=', '12229<'])
+[1001, 12229, 'dup', '.'] 1001_12229
+the seg contain dup region
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                 HLA_DRB1:1001-3898 HLA_DRB1:3898-4400 HLA_DRB1:4400-12229  |/home/wangmengyao/miniconda2/bin/bcftools                consensus -H 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DRB1.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DRB1_1_seg.fa
+dict_keys(['1001>', '1001=', '12229<'])
+[1001, 12229, 'dup', '.'] 1001_12229
+the seg contain dup region
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                    HLA_DRB1:6972-7241 |/home/wangmengyao/miniconda2/bin/bcftools                    consensus -H 1 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DRB1.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DRB1_1_exon.fa
+samtools faidx /home/wangmengyao/scripts/PHLAT/database/ref/extend/hla.ref.extend.fa                    HLA_DRB1:6972-7241 |/home/wangmengyao/miniconda2/bin/bcftools                    consensus -H 2 /mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DRB1.rephase.vcf.gz  >/mnt/delta_WS_1/wangmengyao/HLAPro/example/whole/output/HG00118/HLA_DRB1_2_exon.fa
+start assnotation.
+[fai_load] build FASTA index.
+[fai_load] build FASTA index.
+[fai_load] build FASTA index.
+[fai_load] build FASTA index.
+[fai_load] build FASTA index.
+[fai_load] build FASTA index.
+[fai_load] build FASTA index.
+[fai_load] build FASTA index.
+[fai_load] build FASTA index.
+[fai_load] build FASTA index.
+[fai_load] build FASTA index.
+[fai_load] build FASTA index.
+[fai_load] build FASTA index.
+[fai_load] build FASTA index.
+[fai_load] build FASTA index.
+[fai_load] build FASTA index.
+HG00118 is done.

@@ -29,19 +29,13 @@ def population_bool(x):
 
 Usage = \
 """
-python3 PHLA_multi_haps.py [options] -k/--strainsNum <strains number> -b/--bam <bam file> --ref <reference file>\
- -o/--outdir <output directory>
+python3 phase_exon.py [options] 
 
-Before using this script, you should map the reads to your reference, and call SNPs. \
-Then you can provide the reference and bam file. Once you have the prior knowledge \
-of the strains number, you can provie it to the script by -k/--strainsNum parameter. Otherwise,\
-it will choose the strains number itself. 
-
-Help information can be found by PHLA_multi_haps.py -h/--help, additional information can be found in \
-README.MD or www.xxx.com.
+Help information can be found by phase_exon.py -h/--help, additional information can be found in \
+README.MD or https://github.com/deepomicslab/HLAPro.
 """
 scripts_dir=sys.path[0]+'/'
-parser = ArgumentParser(description="PHLA: type HLA.",prog='python3 PHLA_multi_haps.py',usage=Usage)
+parser = ArgumentParser(description="HLAPro",prog='python3 phase_exon.py',usage=Usage)
 optional=parser._action_groups.pop()
 required=parser.add_argument_group('required arguments')
 flag_parser = parser.add_mutually_exclusive_group(required=False)
@@ -50,33 +44,16 @@ flag_data = parser.add_mutually_exclusive_group(required=False)
 required.add_argument("--ref",help="The hla reference file used in alignment",dest='ref',metavar='', type=str)
 required.add_argument("-b", "--bam",help="The bam file of the input samples.",dest='bamfile',metavar='')
 required.add_argument("-v", "--vcf",help="The vcf file of the input samples.",dest='vcf',metavar='')
-required.add_argument("-k", "--strainsNum",help="The number of haplotypes in the sample (default is chosen by elbow method)."\
-    ,dest='k',metavar='', default=0, type=int)
+required.add_argument("-a", "--phase",help="Choose phasing method, SpecHap if True, otherwise use PStrain.\
+     Default is SpecHap.",dest='phase_flag',metavar='',default=True,type=str2bool)
+# required.add_argument("-e", "--anno",help="Choose annotation, allele with population freq>0 if True, otherwise use all.\
+#      Default is True.",dest='anno_flag',metavar='',default=True,type=str2bool)
 required.add_argument("-o", "--outdir",help="The output directory.",dest='outdir',metavar='')
 #alternative parameter
-flag_parser.add_argument("-g", "--balance",help="The switch to determine if the sample is balance.\
-     True for balance samples and False for imbalance samples(default is False)."\
-     ,dest='germline',metavar='', default=False, type=str2bool)
-flag_data.add_argument("-d", "--database",help="the switch to determine whether use the information\
-     of prior database. true for using (default is false)."\
-    ,dest='database_flag',metavar='', default=False,type=str2bool)    
-optional.add_argument("-p", "--population",help="The population type of the given sample.\
-     The type should be one of Asian, Black or Caucasian. Default is Asian."\
-    ,dest='popu',metavar='',default='Asian', type=population_bool)
-optional.add_argument("-w", "--weight",help="The weight of genotype frequencies while computing\
-     loss, then the weight of linked read type frequencies is 1-w. The value is between 0~1.\
-      (default is 0.15)",dest='weight',metavar='',default=0, type=float)
-optional.add_argument("--freq_bias",help="freq_bias (default is 0.1)",dest='freq_bias',\
-    metavar='',default=0.1, type=float)
-optional.add_argument( "--lambda1",help="The weight of prior knowledge while rectifying genotype\
- frequencies. The value is between 0~1. (default is 0.0)",dest='lambda1',metavar='',default=0,\
-  type=float)
-optional.add_argument( "--lambda2",help="The weight of prior estimation while rectifying second\
- order genotype frequencies. The value is between 0~1. (default is 0.0)",dest='lambda2',\
- metavar='',default=0, type=float)
-optional.add_argument("--elbow",help="The cutoff of elbow method while identifying HLAs number. \
-If the loss reduction ratio is less than the cutoff, then the HLAs number is determined.",\
-    dest='elbow',metavar='',default=0.24, type=float)
+optional.add_argument("--freq_bias",help="freq_bias (default is 0.05)",dest='freq_bias',\
+    metavar='',default=0.05, type=float)
+flag_parser.add_argument("-g", "--pstrain_bk",help="Use Pstrain bk if True, else use spechap."
+     ,dest='pstrain_bk',metavar='', default=True, type=str2bool)  
 optional.add_argument("--snp_dp",help="The minimum depth of SNPs to be considered in HLAtyping\
      step (default is 5).",dest='snp_dp',metavar='',default=5, type=int)
 optional.add_argument("--allele_support",help="The minimum depth of allele to be considered as hete in HLAtyping\
@@ -87,7 +64,6 @@ optional.add_argument("--block_len",help="The minimum length for block to be con
      result (default is 300).",dest='block_len',metavar='',default=50, type=int)
 optional.add_argument("--points_num",help="The minimum hete loci number for block to be considered\
      in final result (default is 2).",dest='points_num',metavar='',default=3, type=int)
-optional.add_argument("--rlen",help="rlen",dest='rlen',metavar='',default=150, type=int)
 optional.add_argument("--prefix",help="sample name",dest='prefix',metavar='',default='sample', type=str)
 #break points
 optional.add_argument("--reads_num",help="The number of supporting reads between two adjcent loci\
@@ -97,11 +73,23 @@ optional.add_argument("--noise_num",help="If the haplotype number is 2, there wi
     types of linked reads. If the third type of reads number is over this value, then these two \
     loci will be regarded as break points.(default is 5)",dest='noise_num',metavar='',default=5, \
     type=int)
+optional.add_argument( "--lambda1",help="The weight of prior knowledge while rectifying genotype\
+ frequencies. The value is between 0~1. (default is 0.0)",dest='lambda1',metavar='',default=0,\
+  type=float)
+optional.add_argument( "--lambda2",help="The weight of prior estimation while rectifying second\
+ order genotype frequencies. The value is between 0~1. (default is 0.0)",dest='lambda2',\
+ metavar='',default=0, type=float)
+optional.add_argument("--elbow",help="The cutoff of elbow method while identifying HLAs number. \
+If the loss reduction ratio is less than the cutoff, then the HLAs number is determined.",\
+    dest='elbow',metavar='',default=0.24, type=float)
+optional.add_argument("-w", "--weight",help="The weight of genotype frequencies while computing\
+     loss, then the weight of linked read type frequencies is 1-w. The value is between 0~1.\
+      (default is 0)",dest='weight',metavar='',default=0, type=float)
 parser._action_groups.append(optional)
 args = parser.parse_args()
 
 def exon_region():
-    file = '/mnt/disk2_workspace/wangmengyao/NeedleHLA/simu_data/simu_20200318/exon/exon_extent.bed'
+    file = '%s/exon/exon_extent.bed'%(sys.path[0])
     exon_region_list = []
     for line in open(file, 'r'):
         line = line.strip()
@@ -118,6 +106,7 @@ def if_in_exon(chrom, locus, exon_region_list):
 
 def update_locus_for_exon(chrom, locus, exon_region_accumulate_list, ref='', alt_tuple=()):
     # print (chrom, locus, exon_region_accumulate_list)
+    new_alt_tuple = alt_tuple
     for exon in exon_region_accumulate_list:
         if chrom == exon[0] and float(locus) >= float(exon[1]) and float(locus) <= float(exon[2]):
             # locus = locus - float(exon[1]) + 1 + float(exon[3])
@@ -149,6 +138,7 @@ def update_locus_for_exon(chrom, locus, exon_region_accumulate_list, ref='', alt
         return chrom, str(int(locus))
     else:
         # print ('locus', ref, alt_tuple)
+        # print (chrom, str(int(locus)))
         return chrom, str(int(locus)), ref, new_alt_tuple
 
 def exon_accumulate_locus(exon_region_list):   
@@ -166,7 +156,7 @@ def exon_accumulate_locus(exon_region_list):
     return exon_region_list
     # print (exon_region_list)
 
-def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,chrom_name,freq_bias,strainsNum,mean_depth, std_depth):
+def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,chrom_name,freq_bias,strainsNum):
     exon_region_list = exon_region()
     exon_region_accumulate_list = exon_accumulate_locus(exon_region_list)
     pysam.index(bamfile)
@@ -278,7 +268,7 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,chrom_name,freq_bias,strain
         md_vcf.write(record)
     in_vcf.close()
     md_vcf.close()
-    print ("hete loci number",len(snp_list))
+    print ("The number of hete loci is %s."%(len(snp_list)))
     return snp_list, beta_set, allele_set
 
 def generate_geno(strainsNum, geno):
@@ -327,12 +317,11 @@ def delta(outdir,extractHAIRS,bamfile,beta_set,reffile,vcffile):
 def output(outdir,final_alpha,seq_list,snp_list,gene):
     exon_region_list = exon_region()
     exon_region_accumulate_list = exon_accumulate_locus(exon_region_list)
-    print ('##############################')
     ra_file=open(outdir+'/%s_freq.txt'%(gene),'w')    
     print ('# HLA\tFrequency',file=ra_file)
     seq=np.array(seq_list)
     seq=np.transpose(seq)
-    print (len(snp_list),len(seq),'points num')
+    # print (len(snp_list),len(seq),'points num')
     snp=snp_list  
     alpha=final_alpha   
     k=len(alpha) 
@@ -359,18 +348,14 @@ def output(outdir,final_alpha,seq_list,snp_list,gene):
             record.samples[sample]['GT']= tuple(phased_locus)
             record.samples[sample].phased=True
             he+=1
-        chrom, locus, record.ref, record.alts = update_locus_for_exon(record.chrom, float(record.pos), exon_region_accumulate_list, record.ref, record.alts)
-        record.chrom, record.pos = chrom, int(locus)
+        # chrom, locus, record.ref, record.alts = update_locus_for_exon(record.chrom, float(record.pos), exon_region_accumulate_list, record.ref, record.alts)
+        # record.chrom, record.pos = chrom, int(locus)
         out.write(record)
     m.close()
     out.close()
 
-def rectify(snp_list,beta_set,delta_set,lambda1,lambda2,germline_flag,database_flag):
+def rectify(snp_list,beta_set,delta_set,lambda1,lambda2,germline_flag):
     nucleotide={'A':0,'T':1,'C':2,'G':3}
-    if database_flag:
-        prior_first=first_database()
-    has_prior=['HLA_A','HLA_B','HLA_C','HLA_DQB1','HLA_DRB1','HLA_DQA1','HLA_DPA1','HLA_DPB1']
-    # rectify beta
     first_beta=[]
     for i in range(len(beta_set)):
         #prior freq
@@ -379,19 +364,7 @@ def rectify(snp_list,beta_set,delta_set,lambda1,lambda2,germline_flag,database_f
         ref=snp[2]
         alt=snp[3][0]
         # print (snp_list[i])
-        if len(ref) !=1 or len(alt) != 1 or len(snp[3]) >1 or str(snp[0]) not in has_prior or database_flag==False:
-            prior_f=np.array([1.0/len(beta_set[i])]*len(beta_set[i]))
-        else:
-            tag=str(snp[0])+'_'+str(snp[1]-1000)
-            prior=prior_first[tag]
-            ref_freq=prior[nucleotide[ref]]
-            alt_freq=prior[nucleotide[alt]]
-            prior_f=np.array([float(ref_freq),float(alt_freq)])
-            if sum(prior_f) > 0:
-                prior_f=prior_f/sum(prior_f)
-            else:
-                prior_f=np.array([1.0/len(beta_set[i])]*len(beta_set[i]))
-            # print (snp,prior,ref_freq,alt_freq,prior_f)
+        prior_f=np.array([1.0/len(beta_set[i])]*len(beta_set[i]))
         dp=sum(beta_set[i])
         hat_beta=np.array(beta_set[i])/dp
         beta=hat_beta*(1-lambda1/(1+dp))+prior_f*(lambda1/(1+dp))
@@ -412,14 +385,8 @@ def rectify(snp_list,beta_set,delta_set,lambda1,lambda2,germline_flag,database_f
             for n in range(len(first_beta[i+1])):
                 inde_delta.append(first_beta[i][m]*first_beta[i+1][n])
         inde_delta=np.array(inde_delta)
-        if  database_flag==False or str(snp_list[i][0]) not in has_prior or c>0:
-            # print (len(hat_delta),len(inde_delta),snp_list[i+1])
-            delta=inde_delta*(lambda2/(1+c)) + hat_delta*(1-lambda2/(1+c))  #retify
-        else:  #the distance of snp is too far thus we use the link info from database            
-            delta=second_prior(snp_list[i],snp_list[i+1])
-            if sum(delta) == 0: #no database or loci in different hla gene
-                delta=inde_delta            
-        # delta=hat_delta  #retify gate
+        delta=inde_delta*(lambda2/(1+c)) + hat_delta*(1-lambda2/(1+c))  #retify
+
         delta=np.round(delta,6)
         
         #turn the two biggest values to 0.5/0.5, used to handle normal samples
@@ -442,15 +409,6 @@ def rectify(snp_list,beta_set,delta_set,lambda1,lambda2,germline_flag,database_f
 
         sec_beta.append(delta.tolist())
     return first_beta,sec_beta
-
-def first_database():
-    prior_first={}
-    for line in open(sys.path[0]+'/'+'database/first_order.database'):
-        line=line.strip()
-        array=line.split()
-        tag=str(array[0])+'_'+str(array[1])
-        prior_first[tag]=array[2:]
-    return prior_first
 
 def extract(first,second,file): #the index of first and second should be 0-index
     allele_index={'A':0,'T':1,'C':2,'G':3}
@@ -695,7 +653,7 @@ def newphase(outdir,final_alpha,seq_list,snp_list,vcffile,gene):
 
     m.close()
     out.close()
-    os.system('tabix %s/%s.rephase.vcf.gz'%(outdir,gene))
+    os.system('%s/../bin/tabix %s/%s.rephase.vcf.gz'%(sys.path[0],outdir,gene))
     return update_seqlist
 
 def gene_phased(update_seqlist,snp_list):
@@ -720,15 +678,18 @@ def no_snv_gene_phased(vcffile, outdir, gene, strainsNum):
     # in_vcf = VariantFile(vcffile)
     in_vcf = VariantFile('%s/middle.vcf.gz'%(outdir))
     out_vcf = VariantFile('%s/%s.rephase.vcf.gz'%(outdir, gene),'w',header=in_vcf.header)
+    for_spec_vcf = VariantFile('%s/%s.vcf.gz'%(outdir, gene),'w',header=in_vcf.header)
     sample = list(in_vcf.header.samples)[0]
     for record in in_vcf.fetch():
         if record.chrom == gene:
             chrom, pos = update_locus_for_exon(record.chrom, float(record.pos), exon_region_accumulate_list)
             record.chrom, record.pos = chrom, int(pos)
             out_vcf.write(record)
+            for_spec_vcf.write(record)
     in_vcf.close()
     out_vcf.close()
-    os.system('tabix %s/%s.rephase.vcf.gz'%(outdir,gene))
+    for_spec_vcf.close()
+    os.system('%s/../bin/tabix %s/%s.rephase.vcf.gz'%(sys.path[0],outdir,gene))
     ra_file=open(outdir+'/%s_freq.txt'%(gene),'w')    
     print ('# HLA\tFrequency',file=ra_file)
     print ('str-'+str(1), 1, file=ra_file)
@@ -781,20 +742,31 @@ def generate_break_points(outdir,snp_list,delta_set,strainsNum):
             print (chrom, int(float(locus)), delta_set[i][0], delta_set[i][1],delta_set[i][2],delta_set[i][3],points_number,int(float(next_locus)),file=bp)
             b_hard = False
             rephase_break_point_list.append([chrom, int(float(locus))])
+            # break_points_index.append(int(float(locus)))
             break_points_index.append(i)
             points_number=0
     bp.close()
     return break_points_index
 
-def all_possibilities(break_points_index, strainsNum, snp_list, seq_list, final_alpha, gene): #need to update alpha finally
+def all_possibilities(break_points_index, strainsNum, snp_list, seq_list, final_alpha, gene, use_pstrain_break_point_flag): #need to update alpha finally
     my_table = all_table( len(break_points_index) + 1, 2)
     locus_seq = '' 
-    for i in range(len(snp_list)):
-        if i in break_points_index:
-            locus_seq += '|' + str(i)
-            locus_seq += '_'
-        else:
-            locus_seq += '|' + str(i)
+    if not use_pstrain_break_point_flag: #use spechap breakpoints
+        for i in range(len(snp_list)):
+            if int(snp_list[i][1]) in break_points_index:
+                locus_seq += '|' + str(i)
+                locus_seq += '_'
+            else:
+                locus_seq += '|' + str(i)
+    elif use_pstrain_break_point_flag: #use pstrain breakpoints
+        for i in range(len(snp_list)):
+            if i in break_points_index:
+                locus_seq += '|' + str(i)
+                locus_seq += '_'
+            else:
+                locus_seq += '|' + str(i)
+    else:
+        print ('Wrong bk flag, P or S.')
     locus_set = []
     for aa in locus_seq.split('_'):
         new_aa = []
@@ -806,8 +778,6 @@ def all_possibilities(break_points_index, strainsNum, snp_list, seq_list, final_
     for i in range(len(locus_set)):
         for j in range(len(locus_set[i])):
             index_set.append(i)
-    # print (locus_set, index_set)
-    # print ('mytable', my_table)
     new_seq_list_set = []
     for i in range(len(my_table)):
         combination = my_table[i]
@@ -817,6 +787,7 @@ def all_possibilities(break_points_index, strainsNum, snp_list, seq_list, final_
             seq = seq_list[j]
             new_seq = []
             for u in range(len(seq)):
+
                 order = reverse_order[index_set[u]]
                 if order == 0:
                     new_seq.append(seq[u])
@@ -825,9 +796,7 @@ def all_possibilities(break_points_index, strainsNum, snp_list, seq_list, final_
             new_seq_list.append(new_seq)
         rephase_output(outdir,final_alpha,new_seq_list,snp_list,vcffile,gene, i)
         new_seq_list_set.append(new_seq_list)
-    # print (seq_list)
-    # print (new_seq_list_set)
-                
+               
 def rephase_output(outdir,final_alpha,seq_list,snp_list,vcffile,gene, index):
     exon_region_list = exon_region()
     exon_region_accumulate_list = exon_accumulate_locus(exon_region_list)
@@ -870,21 +839,13 @@ def rephase_output(outdir,final_alpha,seq_list,snp_list,vcffile,gene, index):
 
     m.close()
     out.close()
-    os.system('tabix %s/%s.%s.rephase.vcf.gz'%(outdir, gene, index))
-    exon_ref = '/home/wangmengyao/scripts/NeedleHLA/script/database/exon/hla_exon_ref.fasta'
-    gene_ref = ' /%s.new.fasta'%(gene)
+    os.system('%s/../bin/tabix %s/%s.%s.rephase.vcf.gz'%(sys.path[0], outdir, gene, index))
+    exon_ref = '%s/../db/ref/hla_exon_ref.fasta'%(sys.path[0])
     for i in range(1, k+1):
-        fastq2 = '/home/wangmengyao/scripts/NeedleHLA/script/bin/samtools faidx %s %s | \
-        /home/wangmengyao/miniconda2/bin/bcftools consensus -H %s %s/%s.%s.rephase.vcf.gz\
-         >%s/%s.%s.%s.fasta'%(exon_ref, gene, i, outdir, gene, index, outdir, gene, index,i)
+        fastq2 = '%s/../bin/samtools faidx %s %s | \
+        %s/../bin/bcftools consensus -H %s %s/%s.%s.rephase.vcf.gz\
+         >%s/%s.%s.%s.fasta'%(sys.path[0], exon_ref, gene, sys.path[0], i, outdir, gene, index, outdir, gene, index,i)
         os.system(fastq2)
-        # fa = '%s/%s.%s.%s.fasta'%(outdir, gene, index,i)
-        # makedb = '/home/wangmengyao/packages/ncbi-blast-2.9.0+/bin/makeblastdb -in %s -dbtype nucl\
-        #  -parse_seqids -out %s'%(fa, fa)
-        # blast = '/home/wangmengyao/packages/ncbi-blast-2.9.0+/bin/blastn -query %s -out %s/%s.blast.%s.%s.out\
-        #      -db %s -outfmt 7 -num_threads 4 -max_target_seqs 3500'%(fa, outdir, gene, index, i, gene_ref)
-        # os.system(makedb)
-        # os.system(blast)
 
 def all_table(k,allele_num):
     mytable=[]
@@ -906,183 +867,113 @@ def all_table(k,allele_num):
     num = len(mytable)
     return mytable[:int(num/2)] 
 
-def coverage_filter(bamfile, outdir):
-    f = open(outdir + '/unreliable.genes.txt', 'w')
-    d = open(outdir + '/mean.depth.genes.txt', 'w')
-    print ('#gene mean median std', file = d)
+def convert(outdir, gene, invcf):
     exon_region_list = exon_region()
-    depth_file = '%s/bam.depth'%(outdir)
-    depth_order = 'samtools depth %s > %s'%(bamfile, depth_file)
-    os.system(depth_order)
-    depth_set = []
-    for gene in ['HLA_A','HLA_B','HLA_C','HLA_DQB1','HLA_DRB1','HLA_DQA1','HLA_DPA1','HLA_DPB1']:
-        locus_list = []
-        depth_list = []
-        for exon in exon_region_list:
-            if exon[0] == gene:
-                locus_list.append([exon[1], exon[2]])
-        low_depth_window = []
-        for line in open(depth_file, 'r'):
-            line = line.strip()
-            array = line.split()
-            array[1] = float(array[1])
-            array[2] = float(array[2])
-            if array[0] != gene:
-                continue
-            
-            exon_flag = False
-            for locus in locus_list:
-                if array[1] >= float(locus[0]) and array[1] <= float(locus[1]):
-                    exon_flag = True
-            if exon_flag == False:
-                continue
-            depth_set.append(array[2])
-            depth_list.append(array[2])
-            if float(array[2]) < 5:
-                if len(low_depth_window) == 0:
-                    low_depth_window.append(array[1])
-                elif float(array[1]) - low_depth_window[-1] == 1:
-                    low_depth_window.append(array[1])
-                else:
-                    low_depth_window = [array[1]]
-            if len(low_depth_window) > 10:
-                print (gene, file = f)
-                print ('%s coverage dirty!'%(gene), low_depth_window)
-                low_depth_window = []
-                # break
-        print (gene, round(np.mean(depth_list),1), np.median(depth_list), np.std(depth_list), file = d)
-    f.close()
-    d.close()
-    depth_set = np.array(depth_set)
-    mean_depth, std_depth = np.mean(depth_set), np.std(depth_set)
-    print ("depth, mean, std, median", mean_depth, std_depth, np.median(depth_set))
-    return mean_depth, std_depth
-            
-def edge_score(delta_set):
-    my_delta = delta_set[:]
-    score = 0  #only for two haplotypes
-    edge_num = len(my_delta)
-    for i in range(edge_num):
-        delta = my_delta[i]
-        if sum(delta) == 0:
-            score += 1 
-        else:
-            delta = np.array(delta)
-            delta = delta/sum(delta)
-            index_sort=np.argsort(delta)
-            noise = abs(delta[index_sort[3]] - 0.5) + abs(delta[3 - index_sort[3]] - 0.5)
-            # print (delta, index_sort, noise)
-            score += noise
-    # print (score)
-    if edge_num == 0:
-        r_score = 0
-    else:
-        r_score = float(score)/edge_num
-    return r_score
-        
-def choose_allele():
-    f = open('/home/wangmengyao/packages/hla-polysolver/data/HLA_FREQ.txt', 'r')
-    i = 1
-    for line in f:
-        line = line.strip()
-        array = line.split()
-        if i == 1:
-            freq_dict = {}
-            name_dict = {}
-            for j in range(1, len(array)):
-                freq_dict[j] = {}
-                name_dict[array[j]] = j
-                # print (freq_dict, name_dict)
-        else:
-            allele_name = array[0].upper()
-            name_array = allele_name.split('_')
-            allele_name =  '%s*%s:%s'%(name_array[1], name_array[2], name_array[3])            # ':'.join(allele_name.split('_'))
-            for j in range(1, len(array)):
-                freq_dict[j][allele_name] = float(array[j])
-            # print (allele_name)
-        i += 1
-    # print (freq_dict)
-    return freq_dict, name_dict
-
-def read_blast():
-    blast_file = '/home/wangmengyao/scripts/NeedleHLA/1000WES/noise_num/NA18943/HLA_A.blast.1.1.out'
-    for line in open(blast_file, 'r'):
-        if line[0] == '#':
+    exon_region_accumulate_list = exon_accumulate_locus(exon_region_list)
+    break_points_index = []
+    formate_vcf = outdir + '/%s.vcf.gz'%(gene)
+    bp = open(outdir + '/%s_break_points.txt'%(gene), 'w')
+    print ('#gene   locus   00      01      10      11      points_num      next_locus', file = bp)
+    m = VariantFile(invcf)
+    out = VariantFile(formate_vcf,'w',header=m.header)
+    sample = list(m.header.samples)[0]
+    add_block = 1
+    for record in m.fetch():
+        # if record.qual < 1
+        if record.chrom != gene:
             continue
-        array = line.strip().split()
-        match = re.search('(.*?)\*(\d+):(\d+)', array[1])
-        allele_name = '%s*%s:%s'%(match.group(1), match.group(2), match.group(3))
-        # print (line)
-        # print (allele_name)
-        return allele_name, float(array[2])
+        geno = record.samples[sample]['GT']    
+        depth = record.samples[sample]['AD']
+        if record.samples[sample].phased != True:
+            #record.samples[sample]['GT']= (1,1)
+            record.samples[sample].phased = True
+            record.samples[sample]['PS'] = add_block
+        if record.samples[sample]['PS'] != add_block:
+            print (record.chrom, record.pos, '- - - -', 20, record.pos + 100, file = bp)
+            add_block = record.samples[sample]['PS']
+        # if record.samples[sample].phased != True:
+        #     record.samples[sample].phased = True
+        #     if record.samples[sample]['GT'] != (1,1) and record.samples[sample]['GT'] != (0,0):
+        #         print (record.chrom, record.pos, '- - - -', 20, record.pos + 100, file = bp)
+            #record.samples[sample]['GT']= (1,1)
+        #     record.samples[sample].phased = True
+        #     record.samples[sample]['PS'] = add_block
+        # if record.samples[sample]['PS'] != add_block:
+        #     break_points_index.append(int(record.pos))
+        #     print (record.chrom, record.pos, '- - - -', 20, record.pos + 100, file = bp)
+        #     add_block = record.samples[sample]['PS']
+        # print (record.alts)
+        #convert pos
+        
+        chrom, locus, record.ref, record.alts = update_locus_for_exon(record.chrom, float(record.pos), exon_region_accumulate_list, record.ref, record.alts)
+        record.chrom, record.pos = chrom, int(locus)
+        
 
+        out.write(record)
+    m.close()
+    out.close()
+    bp.close()
+    return  break_points_index
+
+def read_spechap_seq(vcf, snp_list):
+    exon_region_list = exon_region()
+    exon_region_accumulate_list = exon_accumulate_locus(exon_region_list)
+    locus_list = []
+    for snp in snp_list:
+        chrom, locus, ref, alts = update_locus_for_exon(snp[0], float(snp[1]), exon_region_accumulate_list, 'T', ('A'))
+        locus_list.append(int(locus))
+
+    seq_list = [[],[]]
+    in_vcf = VariantFile(vcf)
+    sample = list(in_vcf.header.samples)[0]
+    for record in in_vcf.fetch():
+        geno = record.samples[sample]['GT']
+        #print (record)
+        # if geno == (1,1):
+        #     continue
+        # print (locus_list, record.pos)
+        if record.pos not in locus_list:
+            continue
+        if sum(geno) == 1:
+            for i in range(2):
+                seq_list[i].append(geno[i])
+        else: 
+            for i in range(2):
+                seq_list[i].append(geno[i] - 1)
+
+    return seq_list 
 
 if __name__ == "__main__":
     if len(sys.argv)==1:
         print (Usage%{'prog':sys.argv[0]})
     else: 
-        # '''
-        raw_bamfile,outdir,strainsNum,snp_dp,germline_flag,database_flag,indel_len,freq_bias=\
-            args.bamfile,args.outdir,args.k,args.snp_dp,args.germline,\
-            args.database_flag,args.indel_len,args.freq_bias           
-        os.system('rm %s/*fasta'%(outdir))
+        bamfile,outdir,snp_dp,use_pstrain_break_point_flag,indel_len,freq_bias,vcffile=\
+            args.bamfile,args.outdir,args.snp_dp,args.pstrain_bk,args.indel_len,args.freq_bias,args.vcf           
         if not os.path.exists(outdir):
-            os.system('mkdir '+ outdir) 
-        #######realign and find break points for SV
-        bamfile = raw_bamfile
-        vcffile = args.vcf
-        realign_and_sv_break.main_no_realign(raw_bamfile, outdir, args.rlen, 'WES')
-        # fq1 = outdir +'/sample.read1.fastq.gz'
-        # fq2 = outdir +'/sample.read2.fastq.gz'
-        # dup_file = outdir +'/select.DRB1.seq.txt'
-        sco = open(outdir + '/edge.score.txt', 'w')
-        #######realign and find break points for SV
-        # for gene in ['HLA_A:1504-1773']:
-        # gene = args.gene
-        mean_depth, std_depth = coverage_filter(bamfile, outdir)
-        
-        #for gene in ['HLA_A','HLA_B','HLA_C', 'HLA_DQB1','HLA_DRB1']:
-        os.system('rm %s/*.rephase.vcf.gz*'%(outdir))
-        os.system('rm %s/*.*.fasta'%(outdir))
-        for gene in ['HLA_A','HLA_B','HLA_C','HLA_DQB1','HLA_DRB1','HLA_DQA1','HLA_DPA1','HLA_DPB1']:
-        #for gene in ['HLA_A']:
+            os.system('mkdir '+ outdir)        
+        os.system('rm -f %s/*.rephase.vcf.gz*'%(outdir))
+        os.system('rm -f %s/*.*.fasta'%(outdir))
+        strainsNum = 2
 
-            ######for SNV
+
+        for gene in ['HLA_A','HLA_B','HLA_C','HLA_DQB1','HLA_DRB1','HLA_DQA1','HLA_DPA1','HLA_DPB1']:
+        # for gene in ['HLA_B']:
+
+            ######PStrain-filter-vcf
             snp_list,beta_set,allele_set = read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,\
-                freq_bias,strainsNum,mean_depth, std_depth)     
-            if germline_flag == True: 
-                #For germline, the first-order genotype frequency is 0.5 for all locus, 
-                #thus will not provide any info.
-                args.weight = 0.0
+                freq_bias,strainsNum)     
             if len(snp_list)==0:
-                #same seq for two haps, need change with >2 haps
+                #same seq for two haps
                 print ('No hete locus')
-                if strainsNum==0:
-                    strainsNum = 1
                 no_snv_gene_phased(vcffile, outdir, gene, strainsNum)
                 delta_set, seq_list, final_alpha = [], [[],[]], [0.5, 0.5] 
-                print (gene, 0, 0, 0, 0, file = sco)
             else:  
                 delta_set=second_beta(bamfile,snp_list)   
-                r_score = edge_score(delta_set)  #just for double haps
-                print (gene, r_score, len(delta_set), end= '\t', file = sco)
 
-                for i in range(len(snp_list)-1):
-                    print (snp_list[i], beta_set[i], delta_set[i])
-                    # index_sort=np.argsort(delta_set[i])
-                    # if index_sort[-1] + index_sort[-2] == 3:
-                    #     delta_set[i][index_sort[-3]] = 0
-                    # # for j in range(4):
-                    # #     if delta_set[i][j] > 3:
-                    # #         delta_set[i][j] = 6
-                    # #     else:
-                    # #         delta_set[i][j] = 0
-                    # print (snp_list[i], beta_set[i], delta_set[i])
-
+                # for i in range(len(snp_list)-1):
+                #     print (snp_list[i], beta_set[i], delta_set[i])
                 fir_beta,sec_beta=rectify(snp_list,beta_set,delta_set,args.lambda1,args.lambda2,\
-                    germline_flag,database_flag)
-                for i in range(len(snp_list)-1):
-                    print (snp_list[i], fir_beta[i], sec_beta[i])
+                    False)
                 if strainsNum==0:
                     wo=Workflow(fir_beta,sec_beta,delta_set,args.weight,args.elbow,allele_set)
                     final_alpha,seq_list,loss=wo.choose_k()
@@ -1090,41 +981,53 @@ if __name__ == "__main__":
                 else:
                     wo=Workflow(fir_beta,sec_beta,delta_set,args.weight,args.elbow,allele_set)
                     final_alpha,seq_list,loss = wo.given_k(strainsNum)  
-                print (loss, end= '\t', file = sco)
-                if len(snp_list)==0:
-                    print (0, file = sco)
-                else:
-                    print (float(loss)/len(snp_list), file = sco)
-                print ('Final alpha is %s.'%(final_alpha))
                 output(outdir,final_alpha,seq_list,snp_list,gene)
-            break_points_index = generate_break_points(outdir,snp_list,delta_set,strainsNum)
-            print ("#", len(break_points_index), file = sco)
-            if len(break_points_index) > 10:
+
+            #####Phase-with-SpecHap
+            if args.phase_flag == True:
+                my_new_vcf = '%s/%s.vcf.gz'%(outdir, gene)
+                os.system('gzip -f -d %s'%(my_new_vcf))
+                my_new_vcf = '%s/%s.vcf'%(outdir, gene)
+                hla_ref = '%s/../db/ref/hla.ref.extend.fa'%(sys.path[0])
+                order = '%s/../bin/extractHAIRS_spec --indels 1 --ref %s --bam %s --VCF %s --out %s/frament.file'%(sys.path[0], hla_ref, bamfile, my_new_vcf, outdir)
+                os.system(order)
+                os.system('sort -k3 %s/frament.file >%s/frament.sorted.file'%(outdir, outdir))
+                os.system('bgzip %s'%(my_new_vcf))
+                my_new_vcf = '%s/%s.vcf.gz'%(outdir, gene)
+                os.system('%s/../bin/tabix -f %s'%(sys.path[0],my_new_vcf))
+                os.system('cp %s/%s.vcf.gz %s/%s.vcf.pstain.gz'%(outdir, gene, outdir, gene))
+                order = '%s/../bin/SpecHap -w 15000 --vcf %s --frag %s/frament.sorted.file --out %s/specHap.phased.vcf'%(sys.path[0], my_new_vcf, outdir, outdir)
+                os.system(order)
+                break_points_index = convert(outdir, gene, '%s/specHap.phased.vcf'%(outdir))
+                os.system('%s/../bin/tabix -f %s'%(sys.path[0],my_new_vcf))
+                seq_list = read_spechap_seq('%s/%s.vcf.gz'%(outdir, gene), snp_list)
+            else:
+                use_pstrain_break_point_flag = True
+
+            # use_pstrain_break_point_flag = True
+            if use_pstrain_break_point_flag:
+                break_points_index = generate_break_points(outdir,snp_list,delta_set,strainsNum)
+            print ("The Number of break points is %s."%(len(break_points_index)))
+            if len(break_points_index) > 10:  #max break points number is 10.
                 break_points_index = break_points_index[:10]
-            all_possibilities(break_points_index, strainsNum, snp_list, seq_list, final_alpha, gene)   
-            print ('%s Done!'%(gene))
-            # read_blast()
-            # freq_dict, name_dict = choose_allele()
-        #annotation = 'perl /mnt/disk2_workspace/wangshuai/00.strain/08.NeedleHLA/wes/new_assign/select_db/anno_HLA_pop.pl %s 2 %s '%(outdir, args.popu)
-        annotation = 'perl /home/wangmengyao/scripts/NeedleHLA/script/anno_HLA_pop.pl %s %s %s %s '%(args.prefix, outdir, strainsNum, args.popu)
-        os.system(annotation)
-        os.system('cat %s/hla.result.txt'%(outdir))
-        #os.system('rm %s/*.rephase.vcf.gz*'%(outdir))
-        os.system('rm %s/HLA_*.*.fasta'%(outdir))
 
+            all_possibilities(break_points_index, strainsNum, snp_list, seq_list, final_alpha, gene, use_pstrain_break_point_flag)   
+            print ('Phasing for %s is Done.'%(gene))
 
+        # if args.anno_flag:
+        #     if args.phase_flag == True:
+        #         anno_parameter = 'spechap'
+        #     else:
+        #         anno_parameter = 'pstrain'
+        # else:
+        #     anno_parameter = 'all'
+        # annotation = 'perl %s/exon/anno_HLA_pop.pl %s %s %s %s '%(sys.path[0], args.prefix, outdir, args.popu, anno_parameter)
+        # os.system(annotation)
 
+        # os.system('cat %s/hla.result.txt'%(outdir))
+        # os.system('rm %s/*.rephase.vcf.gz*'%(outdir))
+        # os.system('rm %s/HLA_*.*.fasta'%(outdir))
 
-
-        #         reph='perl /home/wangmengyao/scripts/NeedleHLA/script/rephase_exonV1.pl %s/%s_break_points.txt\
-        #             %s %s %s/%s_break_points_phased.txt %s %s'%(outdir,gene,outdir,strainsNum,outdir,gene,\
-        #             args.block_len,args.points_num)
-        #         os.system(str(reph))
-        #         update_seqlist=newphase(outdir,final_alpha,seq_list,snp_list,vcffile,gene) 
-        # type_order = 'perl /home/wangmengyao/scripts/NeedleHLA/script/annoHLAexon.pl sample %s %s %s'%(outdir, outdir, strainsNum)
-        # os.system(type_order) 
-        # sco.close()
-        # '''       
 
 
 

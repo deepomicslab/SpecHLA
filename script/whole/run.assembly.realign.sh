@@ -47,7 +47,7 @@ else
         perl $sdir/blast2sam.pl $outdir/assembly.blast > $outdir/assembly.blast.sam
 
         $sdir/bwa index $outdir/assembly.fa
-        $sdir/bwa mem -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 $outdir/assembly.fa $outdir/extract.fa | $sdir/samtools view -Sb -F 4 - | $sdir/samtools sort - > $outdir/rematch.bam
+        $sdir/bwa mem -L 10000,10000 -O 7,7 -E 2,2 -A 2 -B 2 $outdir/assembly.fa $outdir/extract.fa | $sdir/samtools view -Sb -F 4 - | $sdir/samtools sort - > $outdir/rematch.bam
         $sdir/samtools view -F 0x800 $outdir/rematch.bam|cut -f 1,3,4,6 > $outdir/rematch.bam.txt
         perl $dir/../rematchblast.pl $outdir/assembly.blast.sam $outdir/extract.fa $outdir/rematch.bam.txt $outdir/rematch.read.format.txt 30
         cat $outdir/rematch.read.format.txt >>$outdir/rematch.total.read.format.txt
@@ -59,13 +59,13 @@ done
 
 python $dir/../realignblast.py -i $bam -o $outdir/$sample.realign.bam -r $outdir/rematch.total.read.format.txt
 $sdir/samtools sort $outdir/$sample.realign.bam > $outdir/$sample.realign.sort.bam
-#java -jar /home/BIOINFO_TOOLS/alignment_tools/Picard/picard-tools-2.1.0/picard.jar FixMateInformation I=$outdir/$sample.realign.sort.bam O=$outdir/$sample.realign.sort.fixmate.bam
+java -jar $sdir/picard.jar FixMateInformation I=$outdir/$sample.realign.sort.bam O=$outdir/$sample.realign.sort.fixmate.bam
 $sdir/samtools index $outdir/$sample.realign.sort.bam
 
 $sdir/freebayes -a -f $hla_fa -p 3 $outdir/$sample.realign.sort.bam > $outdir/$sample.realign.vcf && \
 rm -rf $outdir/$sample.realign.vcf.gz 
-$sdir/bgzip $outdir/$sample.realign.vcf
-$sdir/tabix $outdir/$sample.realign.vcf.gz
+bgzip -f $outdir/$sample.realign.vcf
+$sdir/tabix -f $outdir/$sample.realign.vcf.gz
 less $outdir/$sample.realign.vcf.gz |grep "#" > $outdir/$sample.realign.filter.vcf
-$sdir/bcftools filter -t HLA_A:1000-4503,HLA_B:1000-5081,HLA_C:1000-5304,HLA_DPA1:1000-10775,HLA_DPB1:1000-12468,HLA_DQA1:1000-7492,HLA_DQB1:1000-8480,HLA_DRB1:1000-12229 $outdir/$sample.realign.vcf.gz |grep -v "#" |awk '$6>0.01' >> $outdir/$sample.realign.filter.vcf  
+$sdir/bcftools filter -t HLA_A:1000-4503,HLA_B:1000-5081,HLA_C:1000-5304,HLA_DPA1:1000-10775,HLA_DPB1:1000-12468,HLA_DQA1:1000-7492,HLA_DQB1:1000-8480,HLA_DRB1:1000-12229 $outdir/$sample.realign.vcf.gz |grep -v "#"  >> $outdir/$sample.realign.filter.vcf  
 

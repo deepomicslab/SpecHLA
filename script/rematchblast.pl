@@ -62,6 +62,7 @@ foreach my $key(sort keys %hashe){
 		        my $dk = substr($cigarstring1,$k1) =~ tr/D/D/;
                         my $di = substr($cigarstring1,$k1) =~ tr/I/I/;
 		        my $dd =  $pos1 - $pos2 - $d12 + $d1 + $h + 1 + $d1-$dk ; 
+			next if(($end1-$pos2) > length($cigarstring2));
 			$cigarstring2 = substr($cigarstring2,$end1-$pos2);
 		        next if($dd < 50);	
 			my $ins = "I" x $dd;

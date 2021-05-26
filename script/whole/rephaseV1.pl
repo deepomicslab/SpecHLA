@@ -1,9 +1,10 @@
 #!/usr/bin/perl -w
+use FindBin qw($Bin);
 #perl rephase.pl break_points.txt ./ 2 prephase_breakpoints.txt 300 5
 my ($bfile, $vdir, $k, $outfile,$len, $point) = @ARGV;
 
-my $db="../../db/HLA";
-my $bin="../../bin";
+my $db="$Bin/../../db/HLA";
+my $bin="$Bin/../../bin";
 
 my $hla_ref="$db/hla.ref.extend.fa";
 my $outdir="$vdir/tmp";

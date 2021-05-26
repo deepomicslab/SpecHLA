@@ -1,9 +1,10 @@
 #!/usr/bin/perl -w
+use FindBin qw($Bin);
 #perl rephase.pl break_points.txt ./ 2 prephase_breakpoints.txt 300 5
 my ($bfile, $vdir, $k, $outfile,$len, $point) = @ARGV;
 
-my $db="../../db/HLA";
-my $bin="../../bin";
+my $db="$Bin/../../db/HLA";
+my $bin="$Bin/../../bin";
 
 my $hla_ref="$db/hla.ref.extend.fa";
 my $outdir="$vdir/tmp";
@@ -70,7 +71,7 @@ foreach my $contig(sort keys %hashf){
 	$ref = "$db/whole/HLA_DRB1";
         $start1 = $s;
 	`$bin/bcftools sort $vcf -O z -o $vcf.gz`;
-	`$bin/tabix $vcf.gz`;
+	`$bin/tabix -f $vcf.gz`;
 	$n=0;
 	while($n<=$#lines){
 	        ($break1,$num1) = (split /\s/, $lines[$n])[1,6];

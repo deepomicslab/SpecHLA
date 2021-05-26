@@ -7,15 +7,20 @@
 ###   sh HLAPro_exon.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
 ###
 ### Options:
-###   -n        Sample ID..
+###   -n        Sample ID.
 ###   -1        The first fastq file.
 ###   -2        The second fastq file.
-###   -p        The population of the sample: Asian, Black, or Caucasus. Use mean frequency 
+###   -p        The population of the sample: Asian, Black, or Caucasian. Use mean frequency 
 ###             if not provided.
+###   -f        True or False. The annotation database only includes the alleles with population 
+###             frequency higher than zero if set True. Otherwise, it includes all alleles. Default 
+###             is True.
 ###   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault 
-###             is 2. It should be set larger to infer novel alleles.
-###   -g        True or False. The ratio of two haplotype will be regarded the same if set True. 
-###             Otherwise, we will calculate the haplotype ratio. Default is False.
+###             is 3. It should be set larger to infer novel alleles.
+###   -g        True or False. Split more blocks if set True; then rely more on allele database. 
+###             Otherwise, split less blocks. Default is True.
+###   -s        True or False. Use SpecHap to phase if True, else use PStrain. Default is True.
+###             We recommend SpecHap.
 ###   -h        Show this message.
 
 help() {
@@ -27,7 +32,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
     exit 1
 fi
 
-while getopts ":n:1:2:p:" opt; do
+while getopts ":n:1:2:p:s:m:g:f:" opt; do
   case $opt in
     n) sample="$OPTARG"
     ;;
@@ -37,20 +42,18 @@ while getopts ":n:1:2:p:" opt; do
     ;;
     p) pop="$OPTARG"
     ;;
+    s) phase="$OPTARG"
+    ;;
     m) nm="$OPTARG"
     ;;
-    g) germline="$OPTARG"
+    g) pstrain_bk="$OPTARG"
+    ;;
+    f) annotation="$OPTARG"
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
   esac
 done
-#sample=$1
-#fq1=$2
-#fq2=$3
-#pop=$4
-#outdir=$5
-echo ${pop:-10000}
 dir=$(cd `dirname $0`; pwd)
 bin=$dir/../../bin
 db=$dir/../../db
@@ -60,7 +63,7 @@ outdir=$(pwd)/output/$sample
 
 mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
-#:<<!
+# :<<!
 ## remove the repeat read ##
 $bin/python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 $bin/python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
@@ -68,13 +71,11 @@ fq1=$outdir/$sample.uniq.name.R1.gz
 fq2=$outdir/$sample.uniq.name.R2.gz
 
 ## map the HLA reads to the allele database ##
-$bin/novoalign -d $db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.ndx -f $fq1 $fq2  -o SAM -o FullNW -r All 100000 --mCPU 10 -c 10  -g 20 -x 3  | $bin/samtools view -Sb - | $bin/samtools sort -  > $outdir/$sample.novoalign.bam
+$bin/novoalign -d $db/ref/hla_gen.format.filter.extend.DRB.no26789.ndx -f $fq1 $fq2  -o SAM -o FullNW -r All 100000 --mCPU 10 -c 10  -g 20 -x 3  | $bin/samtools view -Sb - | $bin/samtools sort -  > $outdir/$sample.novoalign.bam
 $bin/samtools index $outdir/$sample.novoalign.bam
-#$bin/samtools view -h -F 0x800 -F 4 -F 8 $outdir/$sample.novoalign.bam 
-#| $bin/samtools sort -n -O SAM -o $outdir/$sample.novoalign.sam
 
 ## assign the reads to corresponding gene ##
-$bin/python3 $dir/../assign_reads_to_genes.py -o $outdir -b ${outdir}/${sample}.novoalign.bam -nm ${nm:-2}
+$bin/python3 $dir/../assign_reads_to_genes.py -o $outdir -b ${outdir}/${sample}.novoalign.bam -nm ${nm:-3}
 $bin/python3 $dir/../check_assign.py $fq1 $fq2 $outdir
 #rm -rf $outdir/$sample.novoalign.sam
 
@@ -93,10 +94,29 @@ $bin/samtools index $outdir/$sample.merge.bam
 
 ## realignment ##
 sh $dir/run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70
+!
 
-#!
 ## phase, link blocks, calculate haplotype ratio, give typing results ##
-$bin/python3 $dir/../phase_exon.py -b $outdir/$sample.realign.sort.bam -v $outdir/$sample.realign.filter.vcf -o $outdir/ -k 2 -g ${germline:-False} --block_len 80 --points_num 1 --freq_bias 0.05 --reads_num 2 --rlen 90 
-sh $dir/../clear_output.sh $outdir/
-#perl $dir/anno_HLA_pop.pl $sample $outdir 2 $pop
+$bin/python3 $dir/../phase_exon.py -b $outdir/$sample.realign.sort.bam -v $outdir/$sample.realign.filter.vcf \
+-o $outdir/ -g ${pstrain_bk:-True} --snp_dp 0 --block_len 80 --points_num 1 --freq_bias 0.1 --reads_num 2 -a ${phase:-True} 
+
+# \
+# -e ${annotation:-True}
+
+if [ ${annotation:-True} == True ]
+then
+  if [ ${phase:-True} == True ]
+  then
+    annotation_parameter=spechap
+  else
+    annotation_parameter=pstrain
+  fi
+else
+  annotation_parameter=all
+fi
+
+echo perl $dir/anno_HLA_pop.pl $sample $outdir 2 $pop $annotation_parameter
+perl $dir/anno_HLA_pop.pl $sample $outdir 2 $pop $annotation_parameter
+cat $outdir/hla.result.txt
+# sh $dir/../clear_output.sh $outdir/
 echo $sample is done.

@@ -64,8 +64,9 @@ $sdir/samtools index $outdir/$sample.realign.sort.fixmate.bam
 
 $sdir/freebayes -a -f $hla_fa -p 3 $outdir/$sample.realign.sort.fixmate.bam > $outdir/$sample.realign.vcf && \
 rm -rf $outdir/$sample.realign.vcf.gz 
-$sdir/bgzip $outdir/$sample.realign.vcf
-$sdir/tabix $outdir/$sample.realign.vcf.gz
+bgzip -f $outdir/$sample.realign.vcf
+$sdir/tabix -f $outdir/$sample.realign.vcf.gz
+#cp $outdir/$sample.realign.vcf $outdir/$sample.realign.filter.vcf
 less $outdir/$sample.realign.vcf.gz |grep "#" > $outdir/$sample.realign.filter.vcf
-$sdir/bcftools filter -R $dir/exon_extent.V2.bed $outdir/$sample.realign.vcf.gz |grep -v "#" |awk '$6>0.01' >> $outdir/$sample.realign.filter.vcf  
+$sdir/bcftools filter -R $dir/exon_extent.bed $outdir/$sample.realign.vcf.gz |grep -v "#"  >> $outdir/$sample.realign.filter.vcf  
 
