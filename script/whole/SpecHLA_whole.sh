@@ -2,10 +2,10 @@
 
 
 ###
-### The Whole version of HLAPro, performs HLA assembly and HLA Typing with full-length.
+### The Whole version of SpecHLA, performs HLA assembly and HLA Typing with full-length.
 ###
 ### Usage:
-###   sh HLAPro_whole.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
+###   sh SpecHLA_whole.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
 ###
 ### Options:
 ###   -n        Sample ID.
@@ -23,6 +23,7 @@
 ###   -q        Minimum variant quality. Default is 0.01. Set larger in high quality samples.
 ###   -s        True or False. Use SpecHap to phase if True, else use PStrain. Default is True.
 ###             We recommend use SpecHap.
+###   -r        The minimum Minor Allele Frequency (MAF), default is 0.05.
 ###   -h        Show this message.
 
 help() {
@@ -34,7 +35,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
     exit 1
 fi
 
-while getopts ":n:1:2:p:f:m:s:v:q:" opt; do
+while getopts ":n:1:2:p:f:m:s:v:q:r:" opt; do
   case $opt in
     n) sample="$OPTARG"
     ;;
@@ -53,6 +54,8 @@ while getopts ":n:1:2:p:f:m:s:v:q:" opt; do
     v) long_indel="$OPTARG"
     ;;
     q) snp_quality="$OPTARG"
+    ;;
+    r) maf="$OPTARG"
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
@@ -73,7 +76,7 @@ outdir=$(pwd)/output/$sample
 echo Start profiling HLA for $sample. 
 mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
-:<<!
+# :<<!
 $bin/python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 $bin/python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
 fq1=$outdir/$sample.uniq.name.R1.gz
@@ -102,7 +105,7 @@ $bin/samtools index $outdir/$sample.merge.bam
 echo start realignment.
 #sh /mnt/disk2_workspace/wangmengyao/NeedleHLA/select_wgs/realign/run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70
 sh $dir/run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70
-!
+# !
 
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
@@ -122,7 +125,7 @@ echo start haplotyping.
 # hlas=(DQB1)
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
-hla_ref=$db/HLA_$hla.fa
+hla_ref=$db/ref/HLA_$hla.fa
 $bin/python3 $dir/../phase_whole.py \
 -o $outdir \
 -b $bam \
@@ -132,7 +135,7 @@ $bin/python3 $dir/../phase_whole.py \
 --fq2 $outdir/$hla.R2.fq.gz \
 --gene HLA_$hla \
 -a ${phase:-True} \
---freq_bias 0.05 \
+--freq_bias ${maf:-0.05} \
 --block_len 200 --points_num 1 --reads_num 2 --snp_qual ${snp_quality:-0.01} \
 --ref $hla_ref
 done

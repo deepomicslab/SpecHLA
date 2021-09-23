@@ -24,13 +24,13 @@ open OUT, ">$outdir/merge.hla.copy.txt";
 #my $head = join("\t",@hlas);
 print OUT "Sample\tHLA\tcopy_number\n";
 
-open IN, "$filelist" or die "$!\n";
+open IN, "$filelist" or die "$!\tfilelist\n";
 while(<IN>){
 	chomp;
 	my $file = $_;
 	my ($sample, $hla) = (split /\//,$file)[-2,-1];
 	$hla =~ s/_freq\.txt$//;
-	open LI, "$file" or die "$!\n";
+	open LI, "$file" or die "$!\tfile\n";
 	<LI>;
 	my $line1 = <LI>; my $line2 = <LI>;
 	chomp $line1; chomp $line2;
@@ -38,14 +38,14 @@ while(<IN>){
 	my $fre2 = (split /\s+/, $line2)[1];
         print OUT "$sample\t$hla";
         my $tfre;
-	if($fre1 ==0 || $fre2 ==0){print OUT "\t$ploidy:0";}
+	if($fre1 ==0 || $fre2 ==0){$ploidy = sprintf("%.0f",$ploidy); print OUT "\t$ploidy:0";}
 	else{
 		     if($fre1 > $fre2){$tfre = $fre1 / $fre2}
 		     else{$tfre = $fre2 / $fre1}
                 
 		     my ($a,$b);
                      $a = ($tfre * $ploidy + ($tfre -1) * (1/$purity - 1)) / ( 1 + $tfre );
-		     $a = sprintf("%.0f", $a);
+		     #$a = sprintf("%.0f", $a);
 	             $b = $ploidy - $a;
 		     if($b <0) { $b=0; $a = $ploidy}
 		     #if($b <0){ 
@@ -53,6 +53,8 @@ while(<IN>){
 		     #        $b = sprintf("%.0f", $b);
 		     #        $a = $ploidy - $b;
 		     #}
+		     $a = sprintf("%.0f",$a);
+		     $b = sprintf("%.0f",$b);
 		     print OUT "\t$a:$b";
 	}
 	

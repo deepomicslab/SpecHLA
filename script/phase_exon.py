@@ -35,7 +35,7 @@ Help information can be found by phase_exon.py -h/--help, additional information
 README.MD or https://github.com/deepomicslab/HLAPro.
 """
 scripts_dir=sys.path[0]+'/'
-parser = ArgumentParser(description="HLAPro",prog='python3 phase_exon.py',usage=Usage)
+parser = ArgumentParser(description="SpecHLA",prog='python3 phase_exon.py',usage=Usage)
 optional=parser._action_groups.pop()
 required=parser.add_argument_group('required arguments')
 flag_parser = parser.add_mutually_exclusive_group(required=False)
@@ -84,7 +84,7 @@ If the loss reduction ratio is less than the cutoff, then the HLAs number is det
     dest='elbow',metavar='',default=0.24, type=float)
 optional.add_argument("-w", "--weight",help="The weight of genotype frequencies while computing\
      loss, then the weight of linked read type frequencies is 1-w. The value is between 0~1.\
-      (default is 0)",dest='weight',metavar='',default=0, type=float)
+      (default is 1)",dest='weight',metavar='',default=1, type=float)
 parser._action_groups.append(optional)
 args = parser.parse_args()
 
@@ -268,6 +268,7 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,chrom_name,freq_bias,strain
         md_vcf.write(record)
     in_vcf.close()
     md_vcf.close()
+    # os.system('%s/../bin/tabix -f %s/middle.vcf.gz'%(sys.path[0],outdir))
     print ("The number of hete loci is %s."%(len(snp_list)))
     return snp_list, beta_set, allele_set
 
@@ -989,16 +990,16 @@ if __name__ == "__main__":
                 os.system('gzip -f -d %s'%(my_new_vcf))
                 my_new_vcf = '%s/%s.vcf'%(outdir, gene)
                 hla_ref = '%s/../db/ref/hla.ref.extend.fa'%(sys.path[0])
-                order = '%s/../bin/extractHAIRS_spec --indels 1 --ref %s --bam %s --VCF %s --out %s/frament.file'%(sys.path[0], hla_ref, bamfile, my_new_vcf, outdir)
+                order = '%s/../bin/ExtractHAIRs --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s --out %s/frament.file'%(sys.path[0], hla_ref, bamfile, my_new_vcf, outdir)
                 os.system(order)
                 os.system('sort -k3 %s/frament.file >%s/frament.sorted.file'%(outdir, outdir))
                 os.system('bgzip %s'%(my_new_vcf))
                 my_new_vcf = '%s/%s.vcf.gz'%(outdir, gene)
                 os.system('%s/../bin/tabix -f %s'%(sys.path[0],my_new_vcf))
                 os.system('cp %s/%s.vcf.gz %s/%s.vcf.pstain.gz'%(outdir, gene, outdir, gene))
-                order = '%s/../bin/SpecHap -w 15000 --vcf %s --frag %s/frament.sorted.file --out %s/specHap.phased.vcf'%(sys.path[0], my_new_vcf, outdir, outdir)
+                order = '%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/frament.sorted.file --out %s/%s.specHap.phased.vcf'%(sys.path[0], my_new_vcf, outdir, outdir,gene)
                 os.system(order)
-                break_points_index = convert(outdir, gene, '%s/specHap.phased.vcf'%(outdir))
+                break_points_index = convert(outdir, gene, '%s/%s.specHap.phased.vcf'%(outdir,gene))
                 os.system('%s/../bin/tabix -f %s'%(sys.path[0],my_new_vcf))
                 seq_list = read_spechap_seq('%s/%s.vcf.gz'%(outdir, gene), snp_list)
             else:

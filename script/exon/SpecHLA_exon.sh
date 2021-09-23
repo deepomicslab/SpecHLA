@@ -1,10 +1,10 @@
 #!/bin/bash
 
 ###
-### The Exon version of HLAPro, performs HLA assembly and HLA Typing. 
+### The Exon version of SpecHLA, performs HLA assembly and HLA Typing. 
 ###
 ### Usage:
-###   sh HLAPro_exon.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
+###   sh SpecHLA_exon.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
 ###
 ### Options:
 ###   -n        Sample ID.
@@ -63,7 +63,7 @@ outdir=$(pwd)/output/$sample
 
 mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
- :<<!
+# :<<!
 ## remove the repeat read ##
 $bin/python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 $bin/python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
@@ -94,7 +94,7 @@ $bin/samtools index $outdir/$sample.merge.bam
 
 ## realignment ##
 sh $dir/run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70
-!
+
 
 ## phase, link blocks, calculate haplotype ratio, give typing results ##
 $bin/python3 $dir/../phase_exon.py -b $outdir/$sample.realign.sort.bam -v $outdir/$sample.realign.filter.vcf \
@@ -118,5 +118,5 @@ fi
 echo perl $dir/anno_HLA_pop.pl $sample $outdir 2 $pop $annotation_parameter
 perl $dir/anno_HLA_pop.pl $sample $outdir 2 $pop $annotation_parameter
 cat $outdir/hla.result.txt
-# sh $dir/../clear_output.sh $outdir/
+sh $dir/../clear_output.sh $outdir/
 echo $sample is done.

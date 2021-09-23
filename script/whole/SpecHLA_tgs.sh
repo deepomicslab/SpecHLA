@@ -2,15 +2,24 @@
 
 
 ###
-### The Whole version of HLAPro, performs HLA assembly and HLA Typing with full-length.
+### The extended version of SpecHLA, performs HLA assembly and HLA Typing with full-length basd on NGS and TGS data.
+### This script can use PacBio, Nanopore, Hi-C, and 10X sequencing data to improve the phasing performance if provided.
+###
 ###
 ### Usage:
-###   sh HLAPro_whole.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
+###   sh SpecHLA_tgs.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
 ###
 ### Options:
-###   -n        Sample ID.
-###   -1        The first fastq file.
-###   -2        The second fastq file.
+###   -n        Sample ID. <required>
+###   -1        The first fastq file. <required>
+###   -2        The second fastq file. <required>
+###   -t        Pacbio TGS fastq file.
+###   -e        Nanopore TGS fastq file.
+###   -x        Path of folder created by 10x demultiplexing. Prefix of the filenames of FASTQs
+###             should be the same as Sample ID. You can regard reads as normal NGS reads and use 
+###             this parameter to adopt barcode information to improve phasing.
+###   -c        fwd hi-c fastq file.
+###   -d        rev hi-c fastq file.
 ###   -p        The population of the sample: Asian, Black, or Caucasian. Use mean frequency
 ###             if not provided.
 ###   -f        True or False. The annotation database only includes the alleles with population 
@@ -23,6 +32,8 @@
 ###   -q        Minimum variant quality. Default is 0.01. Set larger in high quality samples.
 ###   -s        True or False. Use SpecHap to phase if True, else use PStrain. Default is True.
 ###             We recommend use SpecHap.
+###   -a        Use this long InDel file if provided.
+###   -r        The minimum Minor Allele Frequency (MAF), default is 0.05.
 ###   -h        Show this message.
 
 help() {
@@ -34,7 +45,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
     exit 1
 fi
 
-while getopts ":n:1:2:p:f:m:s:v:q:" opt; do
+while getopts ":n:1:2:p:f:m:s:v:q:t:a:e:x:c:d:r:y:" opt; do
   case $opt in
     n) sample="$OPTARG"
     ;;
@@ -54,15 +65,25 @@ while getopts ":n:1:2:p:f:m:s:v:q:" opt; do
     ;;
     q) snp_quality="$OPTARG"
     ;;
+    t) tgs="$OPTARG"
+    ;;
+    a) sv="$OPTARG"
+    ;;
+    e) nanopore_data="$OPTARG"
+    ;;
+    x) tenx_data="$OPTARG"
+    ;;
+    c) hic_data_fwd="$OPTARG"
+    ;;
+    d) hic_data_rev="$OPTARG"
+    ;;
+    r) maf="$OPTARG"
+    ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
   esac
 done
-#sample=$1
-#fq1=$2
-#fq2=$3
-#pop=$4
-#outdir=$5
+
 
 dir=$(cd `dirname $0`; pwd)
 bin=$dir/../../bin
@@ -86,6 +107,7 @@ $bin/samtools index $outdir/$sample.novoalign.bam
 $bin/python3 $dir/../assign_reads_to_genes.py -o $outdir -b ${outdir}/${sample}.novoalign.bam -nm ${nm:-2}
 
 $bin/python3 $dir/../check_assign.py $fq1 $fq2 $outdir
+
 $bin/bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 | $bin/samtools view -H  >$outdir/header.sam
 #hlas=(A B C)
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
@@ -102,8 +124,8 @@ $bin/samtools index $outdir/$sample.merge.bam
 echo start realignment.
 #sh /mnt/disk2_workspace/wangmengyao/NeedleHLA/select_wgs/realign/run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70
 sh $dir/run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70
-!
 
+!
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
 
@@ -113,17 +135,37 @@ if [ ${long_indel:-False} == True ]
   port=$(date +%N|cut -c5-9)
   sh $dir/../ScanIndel/run_scanindel_sample.sh $sample $bam $outdir $port
   bfile=$outdir/Scanindel/$sample.breakpoint.txt
-  else
+
+  if [ ${tgs:-NA} != NA ]
+    then
+    $bin/pbmm2 align $hla_ref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --preset HIFI --sample $sample --rg '@RG\tID:movie1'
+    $bin/pbsv discover $outdir/$sample.movie1.bam $outdir/$sample.svsig.gz
+    $bin/pbsv call $hla_ref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
+    $bin/python3 vcf2bp.py $outdir/$sample.var.vcf $outdir/$sample.tgs.breakpoint.txt
+    cat $outdir/$sample.tgs.breakpoint.txt >>$bfile
+  fi
+else
   bfile=nothing
 fi
+# bfile=/mnt/disk2_workspace/wangmengyao/NeedleHLA/simu_data/simu_20201116/Scanindel/$sample/$sample.breakpoint.txt
+# bfile=/mnt/disk2_workspace/wangshuai/00.strain/08.NeedleHLA/tgs/Pbsv/$sample.breakpoint.txt
+# bfile=/mnt/disk2_workspace/wangshuai/00.strain/08.NeedleHLA/tgs/hifi_sv/$sample.breakpoint.txt
+if [ ${sv:-NA} != NA ]
+  then
+  bfile=$sv
+fi
+echo $bfile
 
 echo start haplotyping.
 
-# hlas=(DQB1)
+bam=$outdir/$sample.realign.sort.bam
+vcf=$outdir/$sample.realign.filter.vcf
+
+# hlas=(A)
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
-hla_ref=$db/HLA_$hla.fa
-$bin/python3 $dir/../phase_whole.py \
+hla_ref=$db/ref/HLA_$hla.fa
+$bin/python3 $dir/../phase_tgs.py \
 -o $outdir \
 -b $bam \
 -s $bfile \
@@ -132,10 +174,45 @@ $bin/python3 $dir/../phase_whole.py \
 --fq2 $outdir/$hla.R2.fq.gz \
 --gene HLA_$hla \
 -a ${phase:-True} \
---freq_bias 0.05 \
+--freq_bias ${maf:-0.05} \
 --block_len 200 --points_num 1 --reads_num 2 --snp_qual ${snp_quality:-0.01} \
---ref $hla_ref
+--ref $hla_ref \
+--tgs ${tgs:-NA} \
+--nanopore ${nanopore_data:-NA} \
+--hic_fwd ${hic_data_fwd:-NA} \
+--hic_rev ${hic_data_rev:-NA} \
+--tenx ${tenx_data:-NA} \
+--sa $sample
 done
+
+# --fq1 $fq1 \
+# --fq2 $fq2 \
+
+# hlas=(DRB1)
+# for hla in ${hlas[@]}; do
+# bfile=/mnt/disk2_workspace/wangmengyao/NeedleHLA/simu_data/simu_20201116/Scanindel/$sample/$sample.breakpoint.txt
+# #bfile=/mnt/disk2_workspace/wangmengyao/NeedleHLA/select_wgs/Scanindel/breakpoint.txt
+# #bfile=$indir/Scanindel/$sample.breakpoint.txt
+# hla_ref=/home/wangmengyao/scripts/PHLAT/database/ref/extend/HLA_$hla.fa
+# strainsNum=2
+# /home/wangshuai/softwares/Python-3.7.0/bin/python3 /mnt/disk2_workspace/wangshuai/00.strain/08.NeedleHLA/scripts/PHLA_WGS_no_realign_phase_sv8_yonghan3.py  \
+# -k $strainsNum \
+# -o $outdir \
+# -b $bam \
+# -s $bfile \
+# -v $vcf \
+# --fq1 $indir/$hla.R1.fq.gz \
+# --fq2 $indir/$hla.R2.fq.gz \
+# --gene HLA_$hla \
+# -d F \
+# -g T \
+# --freq_bias 0.01 \
+# --rlen 150 \
+# --block_len 200 --points_num 1 --reads_num 2 \
+# --ref $hla_ref \
+# --snp_qual 5
+# done
+
 
 echo start annotation.
 if [ ${annotation:-True} == True ]

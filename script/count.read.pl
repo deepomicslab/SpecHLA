@@ -1,7 +1,11 @@
 #!/usr/bin/perl -w
-my $dir=shift;
+use FindBin qw($Bin);
+
+my ($dir) = @ARGV;
+my $db="$Bin/../db/ref";
 my %hash;
-open LI, "/mnt/disk2_workspace/wangmengyao/NeedleHLA/GA_rich/DRB1/bwa/DRB1_dup_extract_ref.fasta.fai" or die "$!\n";
+open LI, "$db/DRB1_dup_extract_ref.fasta.fai" or die "$!\tfile1\n";
+#open LI, "/mnt/disk2_workspace/wangmengyao/NeedleHLA/GA_rich/DRB1/bwa/DRB1_dup_extract_ref.fasta.fai" or die "$!\n";
 while(<LI>){
 	chomp;
 	my ($hla, $len) = (split /\t/, $_)[0,1];
@@ -10,7 +14,8 @@ while(<LI>){
 close LI;
 my %hash1;
 my %hashfa;
-open CI, "/mnt/disk2_workspace/wangmengyao/NeedleHLA/GA_rich/DRB1/DRB1_dup_extract.fasta" or die "$!\n";
+open CI, "$db/DRB1_dup_extract.fasta" or die "$!\tfile2\n";
+#open CI, "/mnt/disk2_workspace/wangmengyao/NeedleHLA/GA_rich/DRB1/DRB1_dup_extract.fasta" or die "$!\n";
 while(<CI>){
 	chomp;
 	if(/^>HLA/){
@@ -32,26 +37,34 @@ while(<CI>){
 close CI;
 my %hashl;
 my %hashr;
-open IN, "$dir/extract.read.blast" or die "$!\n";
+my (%hasha,%hashb);
+open IN, "$dir/extract.read.blast" or die "$!\tfile3\n";
 while(<IN>){
 	chomp;
-	my @temp = split;
+	my ($id,$hla,$score) = (split)[0,1,2];
+	if(exists $hasha{$id}){
+		if($score > $hasha{$id}){$hashb{$id} = $_;$hasha{$id} = $score}
+	}else{$hasha{$id} = $score; $hashb{$id} = $_}
+}
+close IN;
+foreach my $kk(sort keys %hashb){
+	my @temp = split /\t/,$hashb{$kk};
+	#print "$hashb{$kk}\n";
 	next if($temp[2] < 95);
-	next if($temp[3] < 100);
+	#next if($temp[3] < 100);
 	next if($temp[4] >4);
 	next if($temp[5] >2);
         my $reg = "$temp[8]"."_"."$temp[9]";
 	$hashl{$temp[1]} .= "\t$reg";
 	$hashr{$temp[1]} .= "$temp[0]".";";
 }
-close IN;
+
 open OUT, ">$dir/DRB1.hla.count";
 foreach my $hla(sort keys %hash){
 	if(!exists $hashl{$hla}){
-		#print OUT "$hla\t$hash{$hla}\t0\n";
-		}
-
-	else{
+		#print "$hla\t$hash{$hla}\t0\n";
+	}
+	else{ 
               my @arrs = (split /\t/, $hashl{$hla});
 	      shift @arrs;
 	      my $count=0;

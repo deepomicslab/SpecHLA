@@ -1,6 +1,7 @@
 outdir=$1
 
 rm -f  $outdir/HLA_*.vcf.gz
+rm -f  $outdir/HLA_*.fasta
 rm -f  $outdir/assembly*
 rm -f  $outdir/*bam
 rm -f  $outdir/*bai

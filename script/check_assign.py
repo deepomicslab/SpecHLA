@@ -24,8 +24,8 @@ def filter_fq(file, gene, outdir, index, dict):
                 read_name = line.split()[0][1:-2]
             else:
                 read_name = line.split()[0][1:]
-            if re.search('HSQ1004:134:C0D8DACXX:4:2308:9795:171485', line):
-                print (line, read_name)
+            #if re.search('HSQ1004:134:C0D8DACXX:4:2308:9795:171485', line):
+            #    print (line, read_name)
             if read_name in dict.keys() and dict[read_name] == gene:
                 flag = True
                 num = 1

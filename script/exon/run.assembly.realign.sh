@@ -15,8 +15,8 @@ do
 hla=`echo $pos|cut -d ":" -f 1`
 ref=$db/HLA/$hla/$hla
 
-samtools view -f 64 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##1 "$2,$3}' > $outdir/extract.fa
-samtools view -f 128 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##2 "$2,$3}' >> $outdir/extract.fa
+$sdir/samtools view -f 64 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##1 "$2,$3}' > $outdir/extract.fa
+$sdir/samtools view -f 128 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##2 "$2,$3}' >> $outdir/extract.fa
 
 $sdir/fermikit/fermi.kit/fermi2.pl unitig -s3g -t4 -T 10 -2 -l $rlen -p $outdir/prefix2 $outdir/extract.fa > $outdir/prefix2.mak
 
@@ -57,7 +57,7 @@ fi
 rm -rf $outdir/prefix2* $outdir/id.list
 done
 
-python $dir/../realignblast.py -i $bam -o $outdir/$sample.realign.bam -r $outdir/rematch.total.read.format.txt
+$sdir/python3 $dir/../realignblast.py -i $bam -o $outdir/$sample.realign.bam -r $outdir/rematch.total.read.format.txt
 $sdir/samtools sort $outdir/$sample.realign.bam > $outdir/$sample.realign.sort.bam
 java -jar $sdir/picard.jar FixMateInformation I=$outdir/$sample.realign.sort.bam O=$outdir/$sample.realign.sort.fixmate.bam
 $sdir/samtools index $outdir/$sample.realign.sort.fixmate.bam

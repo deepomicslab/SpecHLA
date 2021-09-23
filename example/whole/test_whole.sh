@@ -1,1 +1,1 @@
-sh  ../../script/whole/HLAPro_whole.sh -n HG00118 -1 /mnt/disk2_workspace/wangmengyao/NeedleHLA/WGS/fastp/HG00118/HG00118_1.filter.fastq.gz -2 /mnt/disk2_workspace/wangmengyao/NeedleHLA/WGS/fastp/HG00118/HG00118_2.filter.fastq.gz -p Caucasian
+bash  ../../script/whole/HLAPro_whole.sh -n HG00118 -1 HG00118_1.filter.fastq.gz -2 HG00118_2.filter.fastq.gz -p Caucasian

@@ -47,9 +47,10 @@ done
 #sampleid=$1
 #bam_path=$2
 #ref=$3
+dir=$(cd `dirname $0`; pwd)
 
-samtools_bin=../bin/samtools
-bamUtil=../bin/bam
+samtools_bin=$dir/../bin/samtools
+bamUtil=$dir/../bin/bam
 
 if [ ! -x "$samtools_bin" ]  || [ ! -x "$bamUtil" ];then
     echo "Please make sure samtools and bamUtil are installed"
@@ -57,7 +58,6 @@ if [ ! -x "$samtools_bin" ]  || [ ! -x "$bamUtil" ];then
 fi
 
 #$samtools_bin index $bam_path
-
 if [ $ref == "hg38" ]; then
   
 	echo ">>>>>>>>>>>>>>>> extracting reads mapping to HLA loci and ALT contigs (hg19)"

@@ -47,6 +47,7 @@ After that, please install Novoalign and Tabix by yourself. And link the binary 
     * Tabix-Version: 1.9
     * ScanIndel v1.3
     * Fermikit-0.13
+    * SpecHap v1.0.1
 
 Then you can test HLAPro in the example/ folder. 
 
@@ -121,6 +122,63 @@ Options:
   -h        Show this message.
 ```
 
+### Extended Mode (integrating TGS, 10X, Hi-C reads)
+Users can integrate the PacBio, Nanopore, 10X linked-reads, Hi-C data to improve performance in this mode.
+```
+
+The extended version of SpecHLA, performs HLA assembly and HLA Typing with full-length basd on NGS and TGS data.
+This script can use PacBio, Nanopore, Hi-C, and 10X sequencing data to improve the phasing performance if provided.
+
+
+Usage:
+  sh SpecHLA_tgs.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
+
+Options:
+  -n        Sample ID. <required>
+  -1        The first fastq file. <required>
+  -2        The second fastq file. <required>
+  -t        Pacbio TGS fastq file.
+  -e        Nanopore TGS fastq file.
+  -x        Path of folder created by 10x demultiplexing. Prefix of the filenames of FASTQs
+            should be the same as Sample ID. You can regard reads as normal NGS reads and use
+            this parameter to adopt barcode information to improve phasing.
+  -c        fwd hi-c fastq file.
+  -d        rev hi-c fastq file.
+  -p        The population of the sample: Asian, Black, or Caucasian. Use mean frequency
+            if not provided.
+  -f        True or False. The annotation database only includes the alleles with population
+            frequency higher than zero if set True. Otherwise, it includes all alleles. Default
+            is True.
+  -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
+            is 2. It should be set larger to infer novel alleles.
+  -v        True or False. Consider long InDels if True, else only consider short variants.
+            Default is False.
+  -q        Minimum variant quality. Default is 0.01. Set larger in high quality samples.
+  -s        True or False. Use SpecHap to phase if True, else use PStrain. Default is True.
+            We recommend use SpecHap.
+  -a        Use this long InDel file if provided.
+  -r        The minimum Minor Allele Frequency (MAF), default is 0.05.
+  -h        Show this message.
+```
+To use PacBio reads, you should install Minimap 2.17-r941, pbmm2-1.4.0, and pbsv Version 2.6.2 in the bin/ folder.
+To use Nanopore ONT reads, you need to install Minimap 2.17-r941.
+You need LongRanger2.1.2 to adopt 10X reads.
+
+
+### Pedigree phasing
+After performing haplotyping, User can afford pedigree information to update the results.
+```
+Example: python3 phase_pedigree.py --trio NA12878:NA12891:NA12892 --workdir output/
+
+required arguments:
+  --trio           The trio infromation; give sample names in the order of
+                   child:mother:father. Example: NA12878:NA12891:NA12892
+  -o , --workdir   The directory consists of all samples' results. The workdir
+                   running previous scipts.
+```
+The fresh reconstructed sequences can be found in the trio/ folder at each original sample's output folder.
+
+
 ### Detect HLA LOH in cancer samples
 If the purity of cancer sample and the ploidy of HLA region are known, we can infer HLA LOH event.
 ```
@@ -141,8 +199,8 @@ HLAPro will automaticly build a folder named output/ in the current path. In the
 In the directory of one specific sample, you will find the below files:
 ```
 "hla.result.txt" contains the Typing results of each allele.
-"result.HLA_*.fasta" contains the Haplotyping sequence results of each allele.
-"HLA_*_freq.txt" contains the Haplotype Ratios of each gene.
+"hla.allele.*.HLA_*.fasta" contains the Haplotyping sequence results of each allele.
+"HLA_*_freq.txt" contains the Haplotype Ratios in each gene.
 
 ```
 An example for the formats of "hla.result.txt" is as below:
