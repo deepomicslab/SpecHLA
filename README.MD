@@ -32,7 +32,18 @@ HLAPro needs a HLA allele database. Please download db/ folder from https://driv
 ### Third party packages
 Please download the folder bin/ from https://drive.google.com/drive/folders/1M5GSF-oDTJ-tWgHt30TskOTWZvGBrD0Y?usp=sharing, and put it in the same path with the script/ folder. 
 
-After that, please install Novoalign and Tabix by yourself. And link the binary files of novoalign, novoalign.lic, Tabix, python2, and python3 to the db/ folder. HLAPro will use them by default.
+After that, please apply and install Novoalign by yourself. And link novoalign.lic (license file) and the binary files of novoalign, python2, and python3 to the db/ folder. HLAPro will use them by default.
+
+The folder should be like
+```
+.
+├── README.MD
+├── bin
+├── db
+├── example
+├── script
+└── simulation
+```
 
 * Third party packages:
     * SamTools-1.3.1
@@ -162,7 +173,13 @@ Options:
 ```
 To use PacBio reads, you should install Minimap 2.17-r941, pbmm2-1.4.0, and pbsv Version 2.6.2 in the bin/ folder.
 To use Nanopore ONT reads, you need to install Minimap 2.17-r941.
-You need LongRanger2.1.2 to adopt 10X reads.
+You need LongRanger2.1.2 as well as BarcodeExtract of SpecHap to adopt 10X reads.
+
+Please note that it is necessary to provide NGS sequencing reads, due to SpecHLA uses NGS data to detect variants.
+If you do not have simple NGS reads, you only have 10X reads. You can convert a copy of 10X reads to normal NGS reads, then you can run SpecHLA using paired-end reads and barcode linking information by
+```
+sh SpecHLA_tgs.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -x <10X reads folder>.
+```
 
 
 ### Pedigree phasing
@@ -201,8 +218,15 @@ In the directory of one specific sample, you will find the below files:
 "hla.result.txt" contains the Typing results of each allele.
 "hla.allele.*.HLA_*.fasta" contains the Haplotyping sequence results of each allele.
 "HLA_*_freq.txt" contains the Haplotype Ratios in each gene.
+"HLA_*.rephase.vcf.gz" contains the phasing result of small variants.
 
 ```
+If you performed pedigree phasing, you will find below files in the output/ folder.
+```
+"trio/HLA_*.rephase.vcf.gz" contains the updated phasing result after pedigree phasing.
+"trio/hla.allele.*.HLA_*.fasta" contains the Haplotyping sequence results after pedigree phasing.
+```
+
 An example for the formats of "hla.result.txt" is as below:
 ```
 Sample  HLA_A_1 HLA_A_2 HLA_B_1 HLA_B_2 HLA_C_1 HLA_C_2 HLA_DPA1_1      HLA_DPA1_2      HLA_DPB1_1      HLA_DPB1_2      HLA_DQA1_1      HLA_DQA1_2      HLA_DQB1_1      HLA_DQB1_2      HLA_DRB1_1      HLA_DRB1_2
