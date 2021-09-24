@@ -226,7 +226,7 @@ USAGE: <PATH-TO>/simu.hla.sh -n <sample_size> -r <read_length> -1 <depth of hapl
  -2        : depth of haplotype2 [required]
 ```
 
-## Tree structure of the bin/ folder
+## An example of tree structure in the bin/ folder
 ```
 .
 |-- ExtractHAIRs
@@ -262,18 +262,18 @@ USAGE: <PATH-TO>/simu.hla.sh -n <sample_size> -r <read_length> -1 <depth of hapl
 |-- gfServer
 |-- inchworm
 |-- install_readme.txt
-|-- longranger -> /home/BIOINFO_TOOLS/alignment_tools/LongRanger/longranger-2.1.2/longranger
+|-- longranger -> longranger-2.1.2/longranger
 |-- makeblastdb
 |-- minimap2
-|-- novoalign -> /home/wangmengyao/packages/Novoalign/novocraft/novoalign
-|-- novoalign.lic -> /home/wangmengyao/packages/Novoalign/novocraft/novoalign.lic
+|-- novoalign -> Novoalign/novocraft/novoalign
+|-- novoalign.lic -> Novoalign/novocraft/novoalign.lic
 |-- pbmm2
 |-- pbsv
 |-- picard.jar
 |-- python2 -> /usr/bin/python
-|-- python3 -> /home/wangshuai/softwares/Python-3.7.0/bin/python3
+|-- python3 -> Python-3.7.0/bin/python3
 |-- samtools
-|-- tabix -> /home/wangmengyao/miniconda2/bin/tabix
+|-- tabix
 |-- twoBitToFa
 `-- vcf-combine.py
 ```
