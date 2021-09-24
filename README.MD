@@ -47,7 +47,7 @@ After that, please install Novoalign and Tabix by yourself. And link the binary 
     * Tabix-Version: 1.9
     * ScanIndel v1.3
     * Fermikit-0.13
-    * SpecHap v1.0.1
+    * SpecHap v1.0.1 and ExtractHAIRs
 
 Then you can test HLAPro in the example/ folder. 
 
@@ -224,6 +224,58 @@ USAGE: <PATH-TO>/simu.hla.sh -n <sample_size> -r <read_length> -1 <depth of hapl
  -1        : depth of haplotype1 [required]
 
  -2        : depth of haplotype2 [required]
+```
+
+## Tree structure of the bin/ folder
+```
+.
+|-- ExtractHAIRs
+|-- SpecHap
+|-- bam
+|-- bcftools
+|-- bedtools
+|-- blast2sam.pl
+|-- blastn
+|-- blat
+|-- bwa
+|-- dwgsim
+|-- faToTwoBit
+|-- fermikit
+|   |-- Makefile
+|   |-- NEWS.md
+|   |-- README.md
+|   |-- bfc
+|   |-- bwa
+|   |-- fermi.kit
+|   |-- fermi2
+|   |-- hapdip
+|   |-- htsbox
+|   |-- k8-0.2.2.tar.bz2
+|   |-- ropebwt2
+|   |-- run-calling
+|   |-- seqtk
+|   |-- test
+|   |-- tex
+|   `-- trimadap
+|-- freebayes
+|-- gfClient
+|-- gfServer
+|-- inchworm
+|-- install_readme.txt
+|-- longranger -> /home/BIOINFO_TOOLS/alignment_tools/LongRanger/longranger-2.1.2/longranger
+|-- makeblastdb
+|-- minimap2
+|-- novoalign -> /home/wangmengyao/packages/Novoalign/novocraft/novoalign
+|-- novoalign.lic -> /home/wangmengyao/packages/Novoalign/novocraft/novoalign.lic
+|-- pbmm2
+|-- pbsv
+|-- picard.jar
+|-- python2 -> /usr/bin/python
+|-- python3 -> /home/wangshuai/softwares/Python-3.7.0/bin/python3
+|-- samtools
+|-- tabix -> /home/wangmengyao/miniconda2/bin/tabix
+|-- twoBitToFa
+`-- vcf-combine.py
 ```
 
 ## Getting help
