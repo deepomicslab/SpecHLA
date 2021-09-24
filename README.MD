@@ -1,18 +1,18 @@
-# HLAPro: a hybrid framework for novel HLA allele discovery and allele-specific HLA LOH inference
+# SpecHLA: a hybrid method for allele-specific HLA haplotyping and LOH inference
 
 ## Install  
 ```
 * Exon Mode
-cd HLAPro/script/exon/
-sh HLAPro_exon.sh -h
+cd SpecHLA/script/exon/
+sh SpecHLA_exon.sh -h
 
 * Whole Mode
-cd HLAPro/script/whole/
-sh HLAPro_whole.sh -h
+cd SpecHLA/script/whole/
+sh SpecHLA_whole.sh -h
 
 * Detect LOH events
 ls output/*/*_freq.txt >freq.list
-perl HLAPro/script/cal.hla.copy.pl  -purity <Purity> -ploidy <Ploidy> -F freq.list -O <Outdir>
+perl SpecHLA/script/cal.hla.copy.pl  -purity <Purity> -ploidy <Ploidy> -F freq.list -O <Outdir>
 
 ```
 ## Dependencies 
@@ -27,12 +27,12 @@ perl HLAPro/script/cal.hla.copy.pl  -purity <Purity> -ploidy <Ploidy> -F freq.li
 * Perl 5 or above
 
 ### Reference database
-HLAPro needs a HLA allele database. Please download db/ folder from https://drive.google.com/drive/folders/1M5GSF-oDTJ-tWgHt30TskOTWZvGBrD0Y?usp=sharing, and put it in the same path with the script/ folder. HLAPro will use it by default. 
+SpecHLA needs a HLA allele database. Please download db/ folder from https://drive.google.com/drive/folders/1M5GSF-oDTJ-tWgHt30TskOTWZvGBrD0Y?usp=sharing, and put it in the same path with the script/ folder. SpecHLA will use it by default. 
 
 ### Third party packages
 Please download the folder bin/ from https://drive.google.com/drive/folders/1M5GSF-oDTJ-tWgHt30TskOTWZvGBrD0Y?usp=sharing, and put it in the same path with the script/ folder. 
 
-After that, please apply and install Novoalign by yourself. And link novoalign.lic (license file) and the binary files of novoalign, python2, and python3 to the db/ folder. HLAPro will use them by default.
+After that, please apply and install Novoalign by yourself. And link novoalign.lic (license file) and the binary files of novoalign, python2, and python3 to the db/ folder. SpecHLA will use them by default.
 
 The folder should be like
 ```
@@ -60,7 +60,7 @@ The folder should be like
     * Fermikit-0.13
     * SpecHap v1.0.1 and ExtractHAIRs
 
-Then you can test HLAPro in the example/ folder. 
+Then you can test SpecHLA in the example/ folder. 
 
 Also, you can install them by yourself, and link the binary files to the bin/ folder. 
 
@@ -75,7 +75,7 @@ If you install successfully, you will find results in the example/exon/output/ o
 
 ## Basic Usage  
 ### Extract HLA-related reads
-Before profiling the HLA, we should first extract HLA reads. Then we use the extracted HLA reads to do the following steps. Please first map the fastq reads to hg19 or hg38, then use the ExtractHLAread.sh in script/ folder to extract HLA-related reads. We use the script of Kourami with minor revision for this step. 
+Before profiling the HLA, we should first extract HLA reads if provided enrichment-free data. Then we use the extracted HLA reads to do the following steps. Please first map the fastq reads to hg19 or hg38, then use the ExtractHLAread.sh in script/ folder to extract HLA-related reads. We use the script of Kourami with minor revision for this step. 
 ```
 USAGE: 
     sh ExtractHLAread.sh <sample_id> <bamfile> <refGenome>
@@ -89,10 +89,10 @@ USAGE:
 ```
 ### Exon Mode (profile HLA in exons)
 ```
-The Exon version of HLAPro, performs HLA assembly and HLA Typing.
+The Exon version of SpecHLA, performs HLA assembly and HLA Typing.
 
 Usage:
-  sh HLAPro_exon.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
+  sh SpecHLA_exon.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
 
 Options:
   -n        Sample ID.
@@ -112,10 +112,10 @@ Options:
   -h        Show this message.
 ```
 ### Whole Mode (profile HLA with full length)
-The Whole version of HLAPro, performs HLA assembly and HLA Typing with full-length.
+The Whole version of SpecHLA, performs HLA assembly and HLA Typing with full-length.
 ```
 Usage:
-  sh HLAPro_whole.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
+  sh SpecHLA_whole.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
 
 Options:
   -n        Sample ID.
@@ -211,7 +211,7 @@ OPTIONS:
 ```
 
 ## Interpret output
-HLAPro will automaticly build a folder named output/ in the current path. In the output/ folder, the results of each sample are saved in a folder named as the sample ID.  
+SpecHLA will automaticly build a folder named output/ in the current path. In the output/ folder, the results of each sample are saved in a folder named as the sample ID.  
 
 In the directory of one specific sample, you will find the below files:
 ```
