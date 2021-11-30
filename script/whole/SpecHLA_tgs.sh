@@ -94,7 +94,7 @@ outdir=$(pwd)/output/$sample
 echo Start profiling HLA for $sample. 
 mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
-:<<!
+# :<<!
 $bin/python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 $bin/python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
 fq1=$outdir/$sample.uniq.name.R1.gz
@@ -125,7 +125,7 @@ echo start realignment.
 #sh /mnt/disk2_workspace/wangmengyao/NeedleHLA/select_wgs/realign/run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70
 sh $dir/run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70
 
-!
+# !
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
 
@@ -141,7 +141,7 @@ if [ ${long_indel:-False} == True ]
     $bin/pbmm2 align $hla_ref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --preset HIFI --sample $sample --rg '@RG\tID:movie1'
     $bin/pbsv discover $outdir/$sample.movie1.bam $outdir/$sample.svsig.gz
     $bin/pbsv call $hla_ref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
-    $bin/python3 vcf2bp.py $outdir/$sample.var.vcf $outdir/$sample.tgs.breakpoint.txt
+    $bin/python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $outdir/$sample.tgs.breakpoint.txt
     cat $outdir/$sample.tgs.breakpoint.txt >>$bfile
   fi
 else
