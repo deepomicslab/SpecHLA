@@ -19,11 +19,10 @@
 ###             frequency higher than zero if set True. Otherwise, it includes all alleles. Default 
 ###             is True.
 ###   -v        True or False. Consider long InDels if True, else only consider short variants. 
-###             Default is False.
+###             Default is True.
 ###   -q        Minimum variant quality. Default is 0.01. Set larger in high quality samples.
 ###   -s        True or False. Use SpecHap to phase if True, else use PStrain. Default is True.
 ###             We recommend use SpecHap.
-###   -a        Use this long InDel file if provided.
 ###   -r        The minimum Minor Allele Frequency (MAF), default is 0.05.
 ###   -h        Show this message.
 
@@ -82,50 +81,42 @@ echo Start profiling HLA for $sample.
 mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
 
-# $bin/python3 $dir/../general_pipeline.py $sample $tgs $outdir
+$bin/python3 $dir/../general_pipeline.py $sample $tgs $outdir
+$bin/minimap2 -a $hlaref $tgs | $bin/samtools view -H  >$outdir/header.sam
 
-
-# $bin/minimap2 -a $hlaref $tgs | $bin/samtools view -H  >$outdir/header.sam
-
-# hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
-# for hla in ${hlas[@]}; do
-#         hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-#         $bin/minimap2 -a $hla_ref $outdir/$hla.fq.gz | $bin/samtools view -bS -F 0x800 -| $bin/samtools sort - >$outdir/$hla.bam
-#         $bin/samtools index $outdir/$hla.bam
-# done
-# $bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.merge.bam $outdir/A.bam $outdir/B.bam $outdir/C.bam $outdir/DPA1.bam $outdir/DPB1.bam $outdir/DQA1.bam $outdir/DQB1.bam $outdir/DRB1.bam
-# $bin/samtools index $outdir/$sample.merge.bam
-# longshot --bam $outdir/$sample.merge.bam --ref $db/ref/hla.ref.extend.fa --out $outdir/$sample.longshot.vcf -F
+hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
+for hla in ${hlas[@]}; do
+        hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
+        $bin/minimap2 -a $hla_ref $outdir/$hla.fq.gz | $bin/samtools view -bS -F 0x800 -| $bin/samtools sort - >$outdir/$hla.bam
+        $bin/samtools index $outdir/$hla.bam
+done
+$bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.merge.bam $outdir/A.bam $outdir/B.bam $outdir/C.bam $outdir/DPA1.bam $outdir/DPB1.bam $outdir/DQA1.bam $outdir/DQB1.bam $outdir/DRB1.bam
+$bin/samtools index $outdir/$sample.merge.bam
+longshot --bam $outdir/$sample.merge.bam --ref $db/ref/hla.ref.extend.fa --out $outdir/$sample.longshot.vcf -F
 bgzip -f $outdir/$sample.longshot.vcf
 $bin/tabix -f $outdir/$sample.longshot.vcf.gz
 
 bam=$outdir/$sample.merge.bam
 vcf=$outdir/$sample.longshot.vcf.gz
 
-
-if [ ${long_indel:-False} == True ]
-  then
-  bfile=$outdir/Scanindel/$sample.breakpoint.txt
-  $bin/pbmm2 align $hla_ref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --preset HIFI --sample $sample --rg '@RG\tID:movie1'
-  $bin/pbsv discover $outdir/$sample.movie1.bam $outdir/$sample.svsig.gz
-  $bin/pbsv call $hla_ref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
-  $bin/python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $bfile
-else
-  bfile=nothing
-fi
-
-
-if [ ${sv:-NA} != NA ]
-  then
-  bfile=$sv
-fi
-echo $bfile
-
 echo start haplotyping.
 
-# hlas=(B)
+# hlas=(DRB1)
+bfile=nothing
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
+
+if [ ${long_indel:-True} != False ]
+  then
+bfile=$outdir/$sample.$hla.breakpoint.txt
+hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
+$bin/pbmm2 align $hla_ref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --preset HIFI --sample $sample --rg '@RG\tID:movie1'
+$bin/pbsv discover $outdir/$sample.movie1.bam $outdir/$sample.svsig.gz
+$bin/pbsv call $hla_ref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
+$bin/python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $bfile
+echo -----------------
+fi
+
 hla_ref=$db/ref/HLA_$hla.fa
 $bin/python3 $dir/../single_tgs.py \
 -o $outdir \

@@ -135,8 +135,6 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,chrom_name,freq_bias,strain
             continue
         if record.chrom != chrom_name:
             continue
-        if record.chrom == 'HLA_DRB1' and record.pos >= 3898 and record.pos <= 4400:
-            continue
         if dp < snp_dp:
             continue
         if len(record.ref) > indel_len:
@@ -929,6 +927,8 @@ class Share_reads():
                 rivet_points=False
                 support_alleles=[]
                 support_loci=[]
+                if not read.query_sequence:
+                    continue
                 for i in range(len(self.normal_sequence[0])):
                     snv=self.normal_sequence[0][i]
                     if len(snv[2]) != 1 or len(snv[3]) != 1:
@@ -1016,9 +1016,6 @@ class Share_reads():
         return new_drb1_complex_seq
 
     def split_seg(self):
-        # print ('start split seg.')
-        if self.gene == 'HLA_DRB1':
-            my_drb1_complex_seq = self.dup_assign()
         normal_region, segs = self.generate_normal_region()
         id_name = {}
         gap = ''
@@ -1027,20 +1024,8 @@ class Share_reads():
             print ('seg', seg)
             if seg[2] == 'insertion':
                 continue
-            if self.gene == 'HLA_DRB1' and seg[0] < 3898 and seg[1] > 4400:
-                contain_dup_seg = seg
-                seg[2] = 'dup'
-                seg_region = ' %s:%s-3898 %s:3898-4400 %s:4400-%s '%(self.gene,\
-                seg[0],self.gene,self.gene,seg[1])
-                seg_region_front = ' %s:%s-3898 '%(self.gene, seg[0])
-                seg_region_dup = ' %s:3898-4400 '%(self.gene)
-                seg_region_behind = ' %s:4400-%s '%(self.gene,seg[1])
-                id_name[seg_region_front.strip()] = str(seg[0])+'>'
-                id_name[seg_region_dup.strip()] = str(seg[0])+'='
-                id_name[seg_region_behind.strip()] = str(seg[1])+'<'
-            else:
-                seg_region = ' %s:%s-%s '%(self.gene,seg[0],seg[1])
-                id_name[seg_region.strip()] = str(seg[0]) + '_' + str(seg[1]) 
+            seg_region = ' %s:%s-%s '%(self.gene,seg[0],seg[1])
+            id_name[seg_region.strip()] = str(seg[0]) + '_' + str(seg[1]) 
             gap += seg_region
         for i in range(self.strainsNum):
             order='%s/../bin/samtools faidx %s/../db/ref/hla.ref.extend.fa\
@@ -1397,22 +1382,6 @@ def sv2fasta(ref, seg_order, index_locus, ins_seq, outdir):
         print (hap_seq, file = out)
         out.close()
 
-
-def dup_region_type(outdir, strainsNum, bamfile):
-    order = r"""
-        bam=%s
-        outdir=%s
-        k=%s
-        pos=HLA_DRB1:3898-4400        
-        ref=%s/../db/ref/DRB1_dup_extract_ref.fasta
-        %s/../bin/samtools view -f 64 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##1 "$2,$3}' > $outdir/extract.fa
-        %s/../bin/samtools view -f 128 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##2 "$2,$3}' >> $outdir/extract.fa
-        %s/../bin/blastn -query $outdir/extract.fa -out $outdir/extract.read.blast -db $ref -outfmt 6 -strand plus  -penalty -1 -reward 1 -gapopen 4 -gapextend 1
-        perl %s/count.read.pl $outdir
-        less $outdir/DRB1.hla.count| sort -k3,3nr -k4,4nr | head -n $k |awk '$3>0.7'|awk '$4>5' >$outdir/select.DRB1.seq.txt
-        """%(bamfile, outdir, strainsNum, sys.path[0], sys.path[0], sys.path[0],sys.path[0], sys.path[0])
-    os.system(order)
-
 def long_InDel_breakpoints(bfile):
     sv_dict = {}
     if not os.path.isfile(bfile):
@@ -1756,14 +1725,10 @@ if __name__ == "__main__":
 
             ######Link blocks    
             print ('Start link blocks with database...')
-            if gene == 'HLA_DRB1':
-                reph='perl %s/whole/rephase.DRB1.pl %s/%s_break_points.txt\
-                    %s %s %s/%s_break_points_phased.txt %s %s'%(sys.path[0], outdir,gene,outdir,strainsNum,outdir,\
-                    gene,args.block_len,args.points_num)
-            else:
-                reph='perl %s/whole/rephaseV1.pl %s/%s_break_points.txt\
-                    %s %s %s/%s_break_points_phased.txt %s %s'%(sys.path[0],outdir,gene,outdir,strainsNum,outdir,\
-                    gene,args.block_len,args.points_num)
+
+            reph='perl %s/whole/rephaseV1.pl %s/%s_break_points.txt\
+                %s %s %s/%s_break_points_phased.txt %s %s'%(sys.path[0],outdir,gene,outdir,strainsNum,outdir,\
+                gene,args.block_len,args.points_num)
             os.system(str(reph))
 
 
@@ -1789,15 +1754,12 @@ if __name__ == "__main__":
         deletion_region = sv_copy_number_old(outdir, deletion_region, gene, ins_seq)
         # deletion_region = sv_copy_number(deletion_region, sv_result)
 
-        if gene == 'HLA_DRB1':
-            dup_region_type(outdir, strainsNum, bamfile)
-            dup_file = outdir +'/select.DRB1.seq.txt'
         if len(ins_seq) > 0:
             phase_insertion(gene, outdir, args.ref, sys.path[0])
 
         sh = Share_reads(deletion_region, outdir, strainsNum, gene, gene_profile, ins_seq)
         # print (deletion_region)
         sh.split_seg()
-        print (f"{gene} gene is done!!")
+        print (f"{gene} gene is done.")
 
 

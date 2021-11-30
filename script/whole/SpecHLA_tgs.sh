@@ -138,18 +138,16 @@ if [ ${long_indel:-False} == True ]
 
   if [ ${tgs:-NA} != NA ]
     then
-    $bin/pbmm2 align $hla_ref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --preset HIFI --sample $sample --rg '@RG\tID:movie1'
+    $bin/pbmm2 align $hlaref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --preset HIFI --sample $sample --rg '@RG\tID:movie1'
     $bin/pbsv discover $outdir/$sample.movie1.bam $outdir/$sample.svsig.gz
-    $bin/pbsv call $hla_ref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
+    $bin/pbsv call $hlaref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
     $bin/python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $outdir/$sample.tgs.breakpoint.txt
     cat $outdir/$sample.tgs.breakpoint.txt >>$bfile
   fi
 else
   bfile=nothing
 fi
-# bfile=/mnt/disk2_workspace/wangmengyao/NeedleHLA/simu_data/simu_20201116/Scanindel/$sample/$sample.breakpoint.txt
-# bfile=/mnt/disk2_workspace/wangshuai/00.strain/08.NeedleHLA/tgs/Pbsv/$sample.breakpoint.txt
-# bfile=/mnt/disk2_workspace/wangshuai/00.strain/08.NeedleHLA/tgs/hifi_sv/$sample.breakpoint.txt
+
 if [ ${sv:-NA} != NA ]
   then
   bfile=$sv
