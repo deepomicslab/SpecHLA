@@ -101,7 +101,7 @@ vcf=$outdir/$sample.longshot.vcf.gz
 
 echo start haplotyping.
 
-# hlas=(DRB1)
+# hlas=(B)
 bfile=nothing
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do

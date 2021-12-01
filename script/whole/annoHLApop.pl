@@ -130,7 +130,7 @@ foreach my $class(@hlas){
               }
               close IN2;
 	      #`rm -rf $workdir/blast.out1 $workdir/blast.out2`;
-              $score=90;
+              $score=60;
 	      my $ff=0;
               foreach my $key(sort keys %hash11){
 		      next if(!exists $hash21{$key});
