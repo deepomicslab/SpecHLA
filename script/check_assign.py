@@ -17,7 +17,12 @@ def filter_fq(file, gene, outdir, index, dict):
     outfile = outdir + '/%s.R%s.fq'%(gene, index)
     out = open(outfile, 'w')
     flag = False
-    for line in gzip.open(file,'rt'):
+    # for line in gzip.open(file,'rt'):
+    if file.split(".")[-1] == "gz":
+        f = gzip.open(file,'rt')
+    else:
+        f = open(file)
+    for line in f:
         line = line.strip()
         if i % 4 == 0:
             if re.search('/1',line) or re.search('/2',line):

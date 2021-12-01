@@ -5,7 +5,6 @@ from my_imports import *
 import time
 import re
 from itertools import combinations, permutations
-import realign_and_sv_break
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -28,6 +27,7 @@ optional=parser._action_groups.pop()
 required=parser.add_argument_group('required arguments')
 flag_parser = parser.add_mutually_exclusive_group(required=False)
 flag_data = parser.add_mutually_exclusive_group(required=False)
+
 #necessary parameter
 required.add_argument("--ref",help="The hla reference file used in alignment",dest='ref',metavar='', type=str)
 required.add_argument("-b", "--bam",help="The bam file of the input samples.",dest='bamfile',metavar='')
@@ -35,16 +35,15 @@ required.add_argument("-v", "--vcf",help="The vcf file of the input samples.",de
 required.add_argument("--sa",help="Sample ID",dest='sample_id',metavar='', type=str)
 required.add_argument("-s", "--sv",help="Long Indel file after scanindel, we will not consider long InDel \
     if not afforded.",dest='sv',metavar='')
-required.add_argument("-a", "--phase",help="Choose phasing method, SpecHap if True, otherwise use PStrain.\
-     Default is SpecHap.",dest='phase_flag',metavar='',default=True,type=str2bool)
 required.add_argument("--gene",help="gene",dest='gene',metavar='', type=str)
 required.add_argument("--tgs",help="PACBIO TGS fastq",dest='tgs',metavar='', type=str)
-required.add_argument("--nanopore",help="NANOPORE TGS fastq",dest='nanopore',metavar='', type=str)
-required.add_argument("--hic_fwd",help="fwd_hic.fastq",dest='hic_fwd',metavar='', type=str)
-required.add_argument("--hic_rev",help="rev_hic.fastq",dest='hic_rev',metavar='', type=str)
-required.add_argument("--tenx",help="10X data",dest='tenx',metavar='', type=str)
 required.add_argument("-o", "--outdir",help="The output directory.",dest='outdir',metavar='')
+
 #alternative parameter
+optional.add_argument("--nanopore",help="NANOPORE TGS fastq",dest='nanopore',metavar='', type=str)
+optional.add_argument("--hic_fwd",help="fwd_hic.fastq",dest='hic_fwd',metavar='', type=str)
+optional.add_argument("--hic_rev",help="rev_hic.fastq",dest='hic_rev',metavar='', type=str)
+optional.add_argument("--tenx",help="10X data",dest='tenx',metavar='', type=str)
 optional.add_argument("--freq_bias",help="freq_bias (default is 0.05)",dest='freq_bias',\
     metavar='',default=0.05, type=float)
 optional.add_argument("--snp_dp",help="The minimum depth of SNPs to be considered in HLAtyping\
@@ -57,26 +56,9 @@ optional.add_argument("--block_len",help="The minimum length for block to be con
      result (default is 300).",dest='block_len',metavar='',default=300, type=int)
 optional.add_argument("--points_num",help="The minimum hete loci number for block to be considered\
      in final result (default is 2).",dest='points_num',metavar='',default=2, type=int)
-#break points
 optional.add_argument("--reads_num",help="The number of supporting reads between two adjcent loci\
      lower than this value will be regard as break points.(default is 10)",dest='reads_num',\
      metavar='',default=10, type=int)
-optional.add_argument("--noise_num",help="If the haplotype number is 2, there will be at most two \
-    types of linked reads. If the third type of reads number is over this value, then these two \
-    loci will be regarded as break points.(default is 5)",dest='noise_num',metavar='',default=5, \
-    type=int)
-optional.add_argument( "--lambda1",help="The weight of prior knowledge while rectifying genotype\
- frequencies. The value is between 0~1. (default is 0.0)",dest='lambda1',metavar='',default=0,\
-  type=float)
-optional.add_argument( "--lambda2",help="The weight of prior estimation while rectifying second\
- order genotype frequencies. The value is between 0~1. (default is 0.0)",dest='lambda2',\
- metavar='',default=0, type=float)
-optional.add_argument("--elbow",help="The cutoff of elbow method while identifying HLAs number. \
-If the loss reduction ratio is less than the cutoff, then the HLAs number is determined.",\
-    dest='elbow',metavar='',default=0.24, type=float)
-optional.add_argument("-w", "--weight",help="The weight of genotype frequencies while computing\
-     loss, then the weight of linked read type frequencies is 1-w. The value is between 0~1.\
-      (default is 1)",dest='weight',metavar='',default=1, type=float)
 parser._action_groups.append(optional)
 args = parser.parse_args()
 
@@ -184,39 +166,6 @@ def generate_geno(strainsNum, geno):
         genotype.append(geno)
     return tuple(genotype)
 
-def delta(outdir,extractHAIRS,bamfile,beta_set,reffile):
-    hapcut_order='%s --bam %s --VCF %s/filter.vcf --indels 1 --ref %s --out %s/vcf.conn'%(extractHAIRS,bamfile,outdir,reffile,outdir)
-    os.system(hapcut_order)
-    snp_num=len(beta_set)
-    delta_set=[]
-    for i in range(snp_num-1):
-        delta_set.append([0]*(len(beta_set[i])*len(beta_set[i+1])))
-    for line in open('%s/vcf.conn'%(outdir)):
-        line=line.strip()
-        array=line.split()
-        if array[0] == '1': 
-            delta_index=int(array[2])-1
-            geno_type=array[3]
-            for i in range(len(geno_type)-1):
-                fol_allele=len(beta_set[delta_index+i+1])
-                array_index=int(geno_type[i])*fol_allele+int(geno_type[i+1])
-                delta_set[delta_index+i][array_index]+=1
-                # delta_set[delta_index+i][int(geno_type[i])][int(geno_type[i+1])]+=1
-    for i in range(len(delta_set)):
-        delta=delta_set[i]
-    # for delta in delta_set:
-        delta=np.array(delta)
-        sum_dp=sum(delta)
-        if sum_dp>4:
-            delta=delta/sum_dp
-            delta=np.round(delta,6).tolist()
-            # delta_set[i]=delta
-            # print (delta)
-        else:
-            delta=[0]*len(delta)
-        delta_set[i]=delta
-    return delta_set 
-
 def freq_output(outdir, gene, final_alpha, germline_flag):
     # if germline_flag:
     #     final_alpha = [0.5, 0.5]
@@ -225,137 +174,7 @@ def freq_output(outdir, gene, final_alpha, germline_flag):
     for j in range(len(final_alpha)):
         print ('str-'+str(j+1),final_alpha[j],file=ra_file)
     ra_file.close()
-
-def rectify(snp_list,beta_set,delta_set,lambda1,lambda2,germline_flag):
-    nucleotide={'A':0,'T':1,'C':2,'G':3}
-    # rectify beta
-    first_beta=[]
-    for i in range(len(beta_set)):
-        #prior freq
-        snp=snp_list[i]
-        pos=int(snp[1])
-        ref=snp[2]
-        alt=snp[3][0]
-        # print (snp_list[i])
-
-        prior_f=np.array([1.0/len(beta_set[i])]*len(beta_set[i]))
-
-        dp=sum(beta_set[i])
-        hat_beta=np.array(beta_set[i])/dp
-        beta=hat_beta*(1-lambda1/(1+dp))+prior_f*(lambda1/(1+dp))
-        beta=beta/sum(beta)
-        beta=np.round(beta,6)
-        first_beta.append(beta.tolist())
-
-    # rectify beta^2
-    sec_beta=[]
-    for i in range(len(delta_set)):
-        c=sum(delta_set[i])
-        if c==0:
-            hat_delta=np.array(delta_set[i])
-        else:
-            hat_delta=np.array(delta_set[i])/sum(delta_set[i])
-        inde_delta=[]
-        for m in range(len(first_beta[i])):
-            for n in range(len(first_beta[i+1])):
-                inde_delta.append(first_beta[i][m]*first_beta[i+1][n])
-        inde_delta=np.array(inde_delta)
-        delta=inde_delta*(lambda2/(1+c)) + hat_delta*(1-lambda2/(1+c))  #retify
-        delta=np.round(delta,6)
-        
-        #turn the two biggest values to 0.5/0.5, used to handle normal samples
-        index_sort=np.argsort(delta)
-        if germline_flag :
-            index_sort=np.argsort(delta)
-            delta[index_sort[0]],delta[index_sort[1]]=0,0
-            delta[index_sort[2]],delta[index_sort[3]]=0.5,0.5
-
-
-        sec_beta.append(delta.tolist())
-    return first_beta,sec_beta
-
-def first_database():
-    prior_first={}
-    for line in open(sys.path[0]+'/'+'database/first_order.database'):
-        line=line.strip()
-        array=line.split()
-        tag=str(array[0])+'_'+str(array[1])
-        prior_first[tag]=array[2:]
-    return prior_first
-
-def extract(first,second,file): #the index of first and second should be 0-index
-    allele_index={'A':0,'T':1,'C':2,'G':3}
-    dict={}
-    i=0
-    hla_name=[]
-    for line in open(file,'r'):
-        i+=1
-        line=line.strip()
-        array=line.split()
-        if i==1 or array[1] in hla_name:
-            continue
-        hla_name.append(array[1])        
-        freq=0
-        for j in range(2,len(array)):
-            if array[j] != '-' and isfloat(array[j]) :
-                freq+=float(array[j])
-        if i == 2:
-            ref_seq=array[22]
-            ref_index=[]
-            for z in range(len(ref_seq)):
-                if ref_seq[z] != '.' and ref_seq[z] != '|':
-                    ref_index.append(z)
-        new_first=ref_index[first]
-        new_second=ref_index[second]
-        seq=array[22]
-        first_allele=seq[new_first]
-        second_allele=seq[new_second]
-        if first_allele == '-':
-            first_allele=ref_seq[new_first]
-        if second_allele == '-':
-            second_allele=ref_seq[new_second]
-        key=first_allele+second_allele
-        if key in dict.keys():
-            dict[key]+=freq
-        else:
-            dict[key]=freq
-    return dict
-        
-def isfloat(x):
-    try:
-        float(x)
-        return True
-    except ValueError:
-        return False
-
-def second_prior(snp1,snp2):
-    allele_index={'A':0,'T':1,'C':2,'G':3}
-    if str(snp1[0]) !=  str(snp2[0]) or str(snp1[0]) not in ['HLA_A','HLA_B','HLA_C','HLA_DQB1','HLA_DRB1']:
-        return np.array([0])
-    first=int(snp1[1])-1-1000
-    second=int(snp2[1])-1-1000
-    snp1_allele=[snp1[2][0]]+[snp1[3][0]]
-    snp2_allele=[snp2[2][0]]+[snp2[3][0]]
-
-    file=sys.path[0]+'/'+'database/%s.fre.alignments.mat.txt'%(str(snp1[0]))
-    dict=extract(first,second,file)
-    prior_sec=[]
-    for i in range(len(snp1_allele)):
-        for j in range(len(snp2_allele)):           
-            link_type=snp1_allele[i]+snp2_allele[j]
-            #print (link_type,dict)
-            if link_type in dict.keys():
-                prior_sec.append(float(dict[link_type]))
-            else:
-                prior_sec.append(0)
-    #print (snp1,snp2,snp1_allele,snp2_allele,prior_sec)
-    prior_sec=np.array(prior_sec)
-    if sum(prior_sec) != 0:
-        prior_sec=prior_sec/sum(prior_sec)
-    else:
-        prior_sec=np.array([0])
-    return prior_sec
-
+      
 def reads_support(samfile,first):   
     reads_list=[]
     allele_num=len(first[3])+1
@@ -437,14 +256,6 @@ def link_reads(samfile,left,right,new_left,snp_index_dict,f):
             same_num=len(reads_name)
             delta_count.append(same_num)
     return delta_count,right_reads
-
-def second_beta(bamfile,snp_list,snp_index_dict,outdir):
-    delta_set=[]
-    for i in range(len(snp_list)-1):  
-
-        delta_set.append([0, 0,0,0])
-
-    return delta_set
 
 def isin(x,seq):
     try:
@@ -561,13 +372,10 @@ def relate_order_other(file, snp_list):
     # print (block_dict)
     return block_dict
 
-def newphase(outdir,seq_list,snp_list,vcffile,gene):
+def newphase(outdir,seq_list,snp_list,gene):
     file=outdir+'/%s_break_points_phased.txt'%(gene)
-    print (file)
+    # print (file)
     if os.path.isfile(file):
-        # if gene == 'HLA_DRB1':
-        #     block_dict=relate_order(file, snp_list)
-        # else:
         block_dict=relate_order_other(file, snp_list)
     else:
         block_dict={gene:{}}
@@ -576,8 +384,6 @@ def newphase(outdir,seq_list,snp_list,vcffile,gene):
     snp=snp_list  
     update_seqlist=[]  
     k=2
-    ##############################
-
     if gene in block_dict.keys():
         gene_dict=block_dict[gene]
     else:
@@ -625,13 +431,8 @@ def newphase(outdir,seq_list,snp_list,vcffile,gene):
     os.system('%s/../bin/tabix -f %s/%s.rephase.vcf.gz'%(sys.path[0],outdir,gene))
     return update_seqlist
 
-def newalpha(update_seqlist, sec_beta, strainsNum, allele_set, weight, fir_beta):
-    return alpha_step(sec_beta, update_seqlist, strainsNum, allele_set, weight, fir_beta)
-
 def gene_phased(update_seqlist,snp_list, gene):
     gene_profile={}
-    # gene_name=['HLA_A','HLA_B','HLA_C','HLA_DQB1','HLA_DRB1','HLA_DQA1','HLA_DPA1','HLA_DPB1']
-    # for gene in gene_name:
     gene_snp=[]
     gene_seq=[]
     for i in range(len(snp_list)):
@@ -672,14 +473,6 @@ def no_snv_gene_phased(vcffile, outdir, gene, strainsNum):
         gene_seq=[]
         gene_profile[gene] = [gene_snp,gene_seq]
     return gene_profile
-
-def read_dup():
-    dup_dict={}
-    for line in open(sys.path[0]+'/complex_region.txt','r'):
-        line=line.strip()
-        array=line.split()
-        dup_dict[array[0]]=array[1:]
-    return dup_dict
 
 ########align the segs from SV haps result
 def isOut(index, myset):
@@ -758,119 +551,6 @@ def alignments_seg(seg_set):
     return new_seg_set
 ########align the segs from SV haps result
 
-class AddSV():
-    def __init__(self,balance_lh,hap,vcffile,strainsNum,ins):
-        self.balance_lh,self.hap,self.vcffile = balance_lh,hap,vcffile 
-        self.ins = ins 
-        self.strainsNum=strainsNum
-        self.copy_num,self.index_locus,self.source,self.sink=self.read_balanced()
-        self.segs=list(self.copy_num.keys())  
-        self.ins_seq = self.read_ins()
-
-    def read_balanced(self):
-        #read the copy number of each seg, and record multicopy segs and corresponding copy number.
-        copy_num={}
-        index_locus={}
-        for line in open(self.balance_lh,'r'):
-            line=line.strip()
-            array=line.split()
-            if str(array[0]) == 'SOURCE':
-                locus=array[1].split(':')
-                source = locus[1]
-            elif str(array[0]) == 'SINK':
-                locus=array[1].split(':')
-                sink = locus[1]
-            elif str(array[0]) == 'SEG':
-                locus=array[1].split(':')
-                index_locus[locus[1]] = [int(locus[3]),int(locus[4])]
-                copy_num[locus[1]] = float(array[3])
-        return copy_num,index_locus,source,sink
-
-    def if_normal(self):  #regard the seg with one copy in each hap as normal segs, abnormal otherwise.
-        line=open(self.hap,'r').readline().strip()
-        seg_order=[]
-        array = line.split()
-        hap_num = 0
-        for i in range(len(array)):
-            if array[i] == self.source + '+':
-                new_hap = array[i] + ' '
-                if self.source == self.sink:
-                    seg_order.append(new_hap)
-                    hap_num += 1
-            elif array[i] == self.sink + '+':
-                new_hap = new_hap + array[i] + ' '
-                seg_order.append(new_hap)
-                hap_num += 1
-            else:
-                new_hap = new_hap + array[i] + ' '
-            if hap_num == self.strainsNum:
-                break
-        normal_seg=[]
-        abnormal_seg=[]
-        for seg in self.segs:
-            num=0
-            fresh_copy=0  #count the copy number once again.
-            for arr in seg_order:
-                if str(seg)+'+' in arr.split() or str(seg)+'-' in arr.split():
-                    num+=1
-                for mysegs in arr.split():
-                    if str(seg)+'+' == mysegs or str(seg)+'-' == mysegs:
-                        fresh_copy += 1
-            # if num == self.strainsNum and self.copy_num[seg] == self.strainsNum:
-            #     normal_seg.append(seg)
-            if num == self.strainsNum and fresh_copy == self.strainsNum:
-                normal_seg.append(seg)
-            else:
-                abnormal_seg.append(seg)
-        # print ('if normal', normal_seg, abnormal_seg)
-
-        #insertion locus
-        # ins_locus = {}
-        # for i in range(len(array)):
-        #     if array[i][:-1] in self.ins_seq.keys() and array[i][:-1] not in ins_locus.keys():
-        #         ins_locus[array[i][:-1]] = self.index_locus[array[i-1][:-1]][1]
-        # print ('insert',ins_locus)
-
-        return seg_order,normal_seg,abnormal_seg,self.copy_num,self.index_locus,self.ins_seq
-
-    def read_seg(self):
-        index_locus={}       
-        i=0
-        for line in open(self.seg_file,'r'):
-            if line[0] == 'I':
-                continue
-            line=line.strip()
-            array=line.split()
-            if i == 0:
-                fir_extend=array[0]
-            sec_extend=array[0]
-            index_locus[array[0]] = [array[2],array[3]]
-            i+=1
-        # del index_locus[fir_extend]
-        # del index_locus[sec_extend]
-        return index_locus
-
-    def read_ins(self):
-        ins_seq={}
-        if os.path.isfile(self.ins):
-            for line in open(self.ins,'r'):
-                if line[0] == 'I':
-                    continue
-                array=line.strip().split()
-                seg_ID = array[1].split('_')
-                ins_seq[seg_ID[1]] = array[-1]
-        else:
-            print ('no insertion for this gene')
-        return ins_seq
-
-    def deletion_locus(self):
-        deletion_region = []
-        for seg_ID in self.index_locus.keys():
-            if float(self.copy_num[seg_ID]) < self.strainsNum and seg_ID not in self.ins_seq.keys():
-                deletion_region.append(self.index_locus[seg_ID])
-                # print ('deletion', seg_ID, self.index_locus[seg_ID])    
-        return deletion_region
-
 def focus_region():
     return {'HLA_A':[1000,4503],'HLA_B':[1000,5081],'HLA_C':[1000,5304],'HLA_DPA1':[1000,10775],\
         'HLA_DPB1':[1000,12468],'HLA_DQA1':[1000,7492],'HLA_DQB1':[1000,8480],'HLA_DRB1':[1000,12229]}
@@ -879,8 +559,8 @@ class Share_reads():
 
     def __init__(self, deletion_region, outdir, strainsNum, gene, gene_profile, ins_seq):
         self.deletion_region = deletion_region
-        print ('initial', self.deletion_region)
         self.bamfile = outdir + '/newref_insertion.bam'
+        self.ins_bam = outdir + '/newins_insertion.bam'
         self.vcf = outdir + '/%s.insertion.phased.vcf.gz'%(gene)
         self.strainsNum = strainsNum
         self.gene = gene
@@ -944,6 +624,7 @@ class Share_reads():
                     hap_belong=self.check_hap(support_alleles,support_loci)[0]
                     if hap_belong != 'NA':
                         reads_support[hap_belong].append(read.query_name)
+        # print ("normal reads support", reads_support[0], reads_support[1])
         return reads_support
 
     def check_hap(self,support_alleles,support_loci):
@@ -982,38 +663,19 @@ class Share_reads():
         link_reads=[]  #the reads number that shared with different haps, the copy number may be 0
         for i in range(self.strainsNum):
             link_reads.append(0)
-        samfile = pysam.AlignmentFile(self.bamfile, "rb")
+        samfile = pysam.AlignmentFile(self.ins_bam, "rb")
         for read in samfile.fetch('%s_%s'%(self.gene,self.deletion_region[deletion_index][0])):
+            # print (read.query_name)
             for i in range(self.strainsNum):
                 if read.query_name in self.reads_support[i]:
                     link_reads[i] += 1
+        print ("insertion reads", deletion_index, link_reads[0], link_reads[1])
         return self.most_support(link_reads)
 
     def deletion_phase(self):
         for deletion_index in range(len(self.deletion_region)):
             # print (self.deletion_region[deletion_index])
             self.deletion_reads(deletion_index)
-
-    def dup_assign(self):       
-        #uniq reads for each dup type
-        drb1_complex_seq, uniq_drb1_complex_reads = DRB1_complex_region(self.dup_file)
-        #the relation between dup type and snv-haplotype
-        share_num = []
-        new_drb1_complex_seq = []
-        for i in range(self.strainsNum):
-            max_num = 0
-            max_seq = ''
-            for j in range(len(drb1_complex_seq)):
-                num = 0
-                for re in uniq_drb1_complex_reads[j]:
-                    if re in self.reads_support[i]:
-                        num+=1
-                if num >= max_num:
-                    max_num = num
-                    max_seq = drb1_complex_seq[j]
-                    print ('DRB1 assignment', i, j, max_num, len(drb1_complex_seq))
-            new_drb1_complex_seq.append(max_seq)
-        return new_drb1_complex_seq
 
     def split_seg(self):
         normal_region, segs = self.generate_normal_region()
@@ -1054,17 +716,12 @@ class Share_reads():
                     # continue
                     deletion_index = seg[3]
                     assign_index = self.insertion_reads(deletion_index)[0]
-                    print ('###########insertion', seg, assign_index, self.deletion_region[deletion_index][2])
+                    # print ('###########insertion', seg, assign_index, self.deletion_region[deletion_index][2])
                     insertion_seg = '%s_%s'%(self.gene, seg[0])
                     if self.deletion_region[deletion_index][2] == 2:                        
                         insert_seq = self.link_diploid_insertion(insertion_seg)
-                        hap_seq += insert_seq[i]
-                        # print ('#2 copy insertion', seg, assign_index,self.deletion_region[deletion_index][2])
-                        # hap_seq += self.ins_seq[seg[0]]
-                        
+                        hap_seq += insert_seq[i]                       
                     elif  i == assign_index and self.deletion_region[deletion_index][2] == 1:
-                        # hap_seq += self.ins_seq[seg[0]]
-                        # print ('#1 copy insertion', seg, assign_index,self.deletion_region[deletion_index][2])
                         hap_seq += self.consensus_insertion(insertion_seg)
 
                 elif seg[2] == 'dup':
@@ -1092,7 +749,6 @@ class Share_reads():
         insert_phase_result = [[],[]]
         for record in in_vcf.fetch():
             geno = record.samples[sample]['GT']    
-            depth = record.samples[sample]['AD']
             if record.chrom !=  insertion_seg:
                 continue
             if geno == (1, 1):
@@ -1104,10 +760,10 @@ class Share_reads():
                 insert_phase_result[1].append([record.pos, record.ref])
                 insert_phase_result[0].append([record.pos, record.alts[0]])  
             if len(insert_phase_result[0]) > 0:
-                if len(insert_phase_result[1][-1][1]) != 1 or  len(insert_phase_result[0][-1][1]) != 1:
+                if len(insert_phase_result[1][-1][1]) != 1 or len(insert_phase_result[0][-1][1]) != 1:
                     continue          
 
-        samfile = pysam.AlignmentFile(self.bamfile, "rb")
+        samfile = pysam.AlignmentFile(self.ins_bam, "rb")
         for read in samfile.fetch(insertion_seg):
             rivet_points=False
             support_alleles=[]
@@ -1121,6 +777,7 @@ class Share_reads():
                         insert_reads_support[0].append(read.query_name)
                     elif read.query_sequence[reads_index] == snv2[1]:
                         insert_reads_support[1].append(read.query_name)
+        print ("-------------------------", len(insert_reads_support[0]), len(insert_reads_support[1]))
         r00 = 0
         for i in range(2):
             for j in range(len(insert_reads_support[i])):
@@ -1134,11 +791,11 @@ class Share_reads():
         fastq_seq = []
         for i in range(2):
             order = """
-            samtools faidx %s/newref_insertion.fa %s|bcftools consensus -H %s %s  >%s/seq_%s_%s.fa
-            """%(self.outdir, insertion_seg, i+1, self.vcf, self.outdir, i, insertion_seg)
+            %s/../bin/samtools faidx %s/newref_insertion.fa %s|%s/../bin/bcftools consensus -H %s %s  >%s/seq_%s_%s.fa
+            """%(sys.path[0], self.outdir, insertion_seg, sys.path[0], i+1, self.vcf, self.outdir, i, insertion_seg)
             os.system(order)
             fastq_seq.append(read_fasta('%s/seq_%s_%s.fa'%(self.outdir, i, insertion_seg)))
-        print ('rrrrrrrrrrrrrr', r00, r01)
+        print ('link sv support reads number', r00, r01)
         if  r01 > r00:
             return [fastq_seq[1], fastq_seq[0]]
         else:
@@ -1146,8 +803,8 @@ class Share_reads():
 
     def consensus_insertion(self, insertion_seg):
         order = """
-        samtools faidx %s/newref_insertion.fa %s|bcftools consensus -H %s %s  >%s/seq
-        """%(self.outdir, insertion_seg, 1, self.vcf, self.outdir)
+        %s/../bin/samtools faidx %s/newref_insertion.fa %s|%s/../bin/bcftools consensus -H %s %s  >%s/seq
+        """%(sys.path[0], self.outdir, insertion_seg, sys.path[0], 1, self.vcf, self.outdir)
         os.system(order)
         cons_seq = read_fasta('%s/seq'%(self.outdir))
         return cons_seq
@@ -1199,7 +856,6 @@ def segment_mapping_pre(tgs, ins_seq, outdir, gene, gene_ref):
     newref=outdir+'/newref_insertion.fa'
     os.system('cp %s %s'%(gene_ref, newref))
     for seg in ins_seq.keys():
-
         f = open(newref, 'a')
         print ('>%s_%s\n%s'%(gene, int(seg), ins_seq[seg]), file = f)
         f.close()
@@ -1210,26 +866,26 @@ def segment_mapping_pre(tgs, ins_seq, outdir, gene, gene_ref):
     outdir={outdir}
     bin={sys.path[0]}/../bin
     sample='newref_insertion'
+    $bin/samtools faidx $ref
     $bin/minimap2 -a $ref $fq > $outdir/$sample.tgs.sam
     $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
     $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
     $bin/samtools index $outdir/$sample.tgs.sort.bam
-    longshot --bam $outdir/$sample.tgs.sort.bam --ref $ref--out $outdir/$sample.freebayes.vcf -F
+    longshot --bam $outdir/$sample.tgs.sort.bam --ref $ref --out $outdir/$sample.freebayes.vcf -F
+    echo longshot --bam $outdir/$sample.tgs.sort.bam --ref $ref --out $outdir/$sample.freebayes.vcf -F
     bgzip -f $outdir/$sample.freebayes.vcf 
     tabix -f $outdir/$sample.freebayes.vcf.gz
-    echo new alignment done.
+    echo alignment done....
     """
 
     print ('New mapping starts to link long InDels.')
     os.system(alignment_order)
-    # print (ins_seq)
     for ins in ins_seq.keys():
         ins_call = """%s/../bin/samtools faidx %s/newref_insertion.fa %s_%s |%s/../bin/bcftools consensus -H 1 %s/newref_insertion.freebayes.vcf.gz  >%s/fresh_ins.fa
         """%(sys.path[0],outdir,gene,int(ins),sys.path[0],outdir,outdir)
-        # print ('#####################', ins, ins_call)
+        print (ins_call)
         os.system(ins_call)
         ins_seq[ins] = read_fasta('%s/fresh_ins.fa'%(outdir))
-    # print (ins_seq)
     return ins_seq
   
 def segment_mapping(tgs, ins_seq, outdir, gene, gene_ref):
@@ -1248,66 +904,34 @@ def segment_mapping(tgs, ins_seq, outdir, gene, gene_ref):
     outdir={outdir}
     bin={sys.path[0]}/../bin
     sample='newref_insertion'
-    $bin/minimap2 -a $ref $fq > $outdir/$sample.tgs.sam
-    $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
-    $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
-    $bin/samtools index $outdir/$sample.tgs.sort.bam
-    longshot --bam $outdir/$sample.tgs.sort.bam --ref $ref--out $outdir/$sample.freebayes.vcf -F
+    $bin/samtools faidx $ref
+    $bin/minimap2 -a $ref $fq > $outdir/$sample.sam
+    $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.sam > $outdir/$sample.unsort.bam
+    $bin/samtools sort $outdir/$sample.unsort.bam -o $outdir/$sample.bam
+    $bin/samtools index $outdir/$sample.bam
+    longshot --bam $outdir/$sample.bam --ref $ref --out $outdir/$sample.freebayes.vcf -F
+    echo new realignment done.
+    """
+    os.system(map_call)
+    map_call = f"""
+    fq={tgs}
+    ref={outdir}/fresh_ins.fa
+    outdir={outdir}
+    bin={sys.path[0]}/../bin
+    sample='newins_insertion'
+    $bin/samtools faidx $ref
+    $bin/minimap2 -a $ref $fq > $outdir/$sample.sam
+    $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.sam > $outdir/$sample.unsort.bam
+    $bin/samtools sort $outdir/$sample.unsort.bam -o $outdir/$sample.bam
+    $bin/samtools index $outdir/$sample.bam
+    longshot --bam $outdir/$sample.bam --ref $ref --out $outdir/$sample.ins.freebayes.vcf -F
     echo new realignment done.
     """
     os.system(map_call)
 
-def sv_copy_number_old(outdir, deletion_region, gene, ins_seq):
-    os.system('%s/../bin/samtools depth -a %s/newref_insertion.bam >%s/newref_insertion.depth'%(sys.path[0],outdir, outdir))
-    normal_depth = []
-    deletions_depth_list = []
-    for i in range(len(deletion_region)):
-        deletions_depth_list.append([])
-
-    for line in open('%s/newref_insertion.depth'%(outdir)):
-        array = line.strip().split()
-        if array[0] != gene:
-            continue
-        deletion_flag = False
-        for i in range(len(deletion_region)):
-            if float(array[1]) >= float(deletion_region[i][0]) and float(array[1]) < float(deletion_region[i][1]):
-                deletions_depth_list[i].append(float(array[2]))
-                deletion_flag = True
-        if deletion_flag == False:
-            normal_depth.append(float(array[2]))
-
-    insertions_depth_list = {}
-    for seg in ins_seq.keys():
-        chrom_name = '%s_%s'%(gene, int(seg))
-        insertions_depth_list[chrom_name] = []
-    # print (insertions_depth_list.keys())
-    
-    for line in open('%s/newref_insertion.depth'%(outdir)):
-        array = line.strip().split()
-        if array[0] in insertions_depth_list.keys():
-            insertions_depth_list[array[0]].append(float(array[2]))
-
-
-    for i in range(len(deletion_region)):
-        # deletion_region[i] += [np.mean(deletions_depth_list[i])/np.mean(normal_depth), zero_per(deletions_depth_list[i])]
-        if float(deletion_region[i][0]) == float(deletion_region[i][1]):
-            chrom_name = '%s_%s'%(gene, int(deletion_region[i][0]))
-            # print ('compute assign index', np.mean(insertions_depth_list[chrom_name]),np.mean(normal_depth))
-            if np.mean(insertions_depth_list[chrom_name])/np.mean(normal_depth) > 0.5:
-                deletion_region[i] += [2]
-            else:
-                deletion_region[i] += [1]
-        else:
-            print ('compute copy number for deletion', deletion_region[i], zero_per(deletions_depth_list[i]))
-            if zero_per(deletions_depth_list[i]) > 0.2:
-                deletion_region[i] += [0]
-            else:
-                deletion_region[i] += [1]
-        print ('### copy number', deletion_region[i])
-    
-    return deletion_region
-
 def sv_copy_number(deletion_region, sv_list):
+    print (deletion_region)
+    print (sv_list)
     for i in range(len(deletion_region)):
         deletion_region[i] += [0]
     for i in range(len(deletion_region)):
@@ -1317,7 +941,7 @@ def sv_copy_number(deletion_region, sv_list):
                 # break
         if deletion_region[i][2] > 2:
             deletion_region[i][2] = 2
-        print ('### copy number', deletion_region[i])
+        print (deletion_region[i], '### copy number', deletion_region[i][2])
     return deletion_region
 
 def zero_per(list):
@@ -1345,43 +969,6 @@ def uniq_reads(raw_reads_set):
     # print ('uniq reads', len(uniq_reads_set[0]), len(uniq_reads_set[1]))
     return uniq_reads_set
 
-def DRB1_complex_region(drb1_complex_file):
-    drb1_complex_seq = []
-    drb1_complex_reads = []
-    for line in open(drb1_complex_file, 'r'):
-        line = line.strip()
-        array = line.split()
-        drb1_complex_seq.append(array[5])
-        reads_list = []
-        raw_reads_list = array[6].split(';')
-        for reads in raw_reads_list[:-1]:
-            reads_list.append(reads[:-3])
-        drb1_complex_reads.append(reads_list)
-    # print ('There are %s dup types.'%(len(drb1_complex_seq)))
-    uniq_drb1_complex_reads = uniq_reads(drb1_complex_reads)
-    return drb1_complex_seq, uniq_drb1_complex_reads
-
-def sv2fasta(ref, seg_order, index_locus, ins_seq, outdir):
-    ref_seq = read_fasta(ref)
-    normal_dict = {}
-    for seg in index_locus.keys():
-        if seg in ins_seq.keys():
-            continue
-        normal_dict[seg] = ref_seq[index_locus[seg][0]-1 : index_locus[seg][1]-1]
-    for i in range(len(seg_order)):
-        seg_array = seg_order[i].strip().split()
-        hap_seq = '>sv_hap_%s\n'%(i)
-        out = open(outdir + '/sv_hap_%s.fa'%(i), 'w')
-        for arr in seg_array:
-            seg_name = arr[:-1]
-            if seg_name in ins_seq.keys():
-                my_seq = ins_seq[seg_name]
-            else:
-                my_seq = normal_dict[seg_name]
-            hap_seq += my_seq
-        print (hap_seq, file = out)
-        out.close()
-
 def long_InDel_breakpoints(bfile):
     sv_dict = {}
     if not os.path.isfile(bfile):
@@ -1397,88 +984,12 @@ def long_InDel_breakpoints(bfile):
                 continue
             if int(array[4]) > 3800 and int(array[4]) < 4500:
                 continue
-        sv = [array[1], array[4], array[6]]
-        #sv = [array[1], array[4], array[6], int(array[7])]
+        sv = [array[1], array[4], array[6], int(array[7])]
         if array[0] not in sv_dict:
             sv_dict[array[0]] = [sv]
         else:
             sv_dict[array[0]].append(sv)
     return sv_dict
-
-def find_deletion_region_BK(sv_list):
-    # print (sv_list)
-    deletion_region = []
-    ins_seq = {}
-    insertion = []
-    points = []
-    new_deletion_region = []
-    for sv in sv_list:
-        if sv[0] != sv[1]:
-            points.append(int(float(sv[0])))
-            points.append(int(float(sv[1])))
-            deletion_region.append([int(float(sv[0])), int(float(sv[1]))])
-            # deletion_region.append([int(float(sv[0])), int(float(sv[1])), int(sv[3])])
-        else:
-
-            # new_deletion_region.append([int(float(sv[0])), int(float(sv[1])), int(sv[3])])
-            # seg = float(sv[0])
-            # ins_seq[seg] = sv[2]
-
-            #remove redundant insertions
-            uniq_ins = True
-            for region in new_deletion_region:
-                if region[0] != region[1]:
-                    continue
-                if abs(int(sv[0]) - region[0]) < 50:
-                    uniq_ins = False
-            if uniq_ins:
-                # new_deletion_region.append([int(float(sv[0])), int(float(sv[1])), int(sv[3])])
-                new_deletion_region.append([int(float(sv[0])), int(float(sv[1]))])
-                seg = float(sv[0])
-                ins_seq[seg] = sv[2]                
-
-
-    start = 1
-    split_segs = []
-    for p in sorted(points):
-        if start == p:
-            continue
-        split_segs.append([start, p])
-        start = p
-    # print (split_segs)
-    # print (new_deletion_region)
-    
-    
-    for segs in split_segs:
-        delete_flag = False
-        for re in deletion_region:
-            if segs[0] >= re[0] and segs[1] <= re[1]:
-                delete_flag = True
-        if delete_flag and segs[1] - segs[0] > 4:
-            new_deletion_region.append(segs)
-    deletion_region = new_deletion_region
-    # print ('new_deletion_region',deletion_region)
-    while True:
-        flag = True
-        new_deletion_region = deletion_region[:]
-        for i in range(len(deletion_region) - 1):
-            if deletion_region[i+1][0] < deletion_region[i][0]:
-                flag = False
-                new_deletion_region[i] = deletion_region[i+1]
-                new_deletion_region[i+1] = deletion_region[i]
-                # print ('ite', i, new_deletion_region)
-                break
-            elif deletion_region[i][1] > deletion_region[i+1][1]:
-                new_deletion_region[i] = [deletion_region[i][0], deletion_region[i+1][0]]
-                new_deletion_region[i+1] = [deletion_region[i+1][0], deletion_region[i+1][1]]
-                new_deletion_region.append([deletion_region[i+1][1], deletion_region[i][1]])
-                break
-        deletion_region = new_deletion_region[:]
-        # print (deletion_region)
-        if flag:
-            break
-    print ('#ordered deletion region:', deletion_region)
-    return deletion_region, ins_seq
 
 def find_deletion_region(sv_list):
     # print (sv_list)
@@ -1493,28 +1004,18 @@ def find_deletion_region(sv_list):
             points.append(int(float(sv[1])))
             deletion_region.append([int(float(sv[0])), int(float(sv[1])), int(sv[3])])
         else:
-            # points.append(sv[0])
             deletion_region.append([int(float(sv[0])), int(float(sv[1])), int(sv[3])])
             seg = float(sv[0])
             ins_seq[seg] = sv[2]
-
-
     print ('ordered deletion region:', deletion_region)
     return deletion_region, ins_seq
 
 def split_vcf(gene, outdir, deletion_region):
     vcf = '%s/%s.vcf.gz'%(outdir,gene)
     os.system('%s/../bin/tabix -f %s'%(sys.path[0], vcf))
-    # if len(deletion_region) == 0:
-    #     print ('no sv!')
-    #     return 0
     vcf_gap = []
     start = 1001
     break_points_list = [3950]
-    # for dele in deletion_region:
-    #     if abs(start - dele[0]) < 1:
-    #         continue
-    #     break_points_list.append(dele[0])
     break_points_list = sorted(break_points_list)
     start = 1001
     for b_point in break_points_list: 
@@ -1534,7 +1035,7 @@ def split_vcf(gene, outdir, deletion_region):
         order = "%s/../bin/bcftools filter -t %s:%s-%s %s -o %s/%s_part_%s_%s_%s.vcf"%(sys.path[0],gene, gap[0], gap[1], vcf, outdir, gene, i, gap[0], gap[1])
         os.system(order)
         i+=1
-    print (vcf_gap)
+    # print (vcf_gap)
     return break_points_list
 
 def convert(outdir, gene, invcf, seq_list, snp_list):
@@ -1582,41 +1083,14 @@ def convert(outdir, gene, invcf, seq_list, snp_list):
     out.close()
     bp.close()
 
-def merge_break_points(outdir, gene, snp_list):
-    bk_list = []
-
-    ps = open(outdir + '/%s_break_points_spechap.txt'%(gene), 'r')
-    for line in ps:
-        if line[0] == '#':
-            continue
-        array = line.strip().split()
-        bk_list.append(int(array[1]))
-    ps.close()
-
-    bk_list = sorted(bk_list)
-    bp = open(outdir + '/%s_break_points.txt'%(gene), 'w')
-    print ('#gene   locus   00      01      10      11      points_num      next_locus', file = bp)
-    points_num = 0
-    for i in range(len(snp_list)):
-    # for i in range(len(bk_list)):
-        points_num += 1
-        if int(snp_list[i][1]) in bk_list:
-            # print (snp_list[i])
-            if i < len(snp_list) -1:
-                print (gene, int(snp_list[i][1]), '- - - -', points_num, snp_list[i+1][1], file = bp)
-            else:
-                print (gene, int(snp_list[i][1]), '- - - -', points_num, snp_list[i][1], file = bp)
-            points_num = 0          
-    bp.close()
-
 def phase_insertion(gene, outdir, hla_ref, shdir):
     order = """
     sample=%s
     outdir=%s
-    ref=%s
-    cat $outdir/newref_insertion.freebayes.vcf|grep '#'>$outdir/filter_newref_insertion.freebayes.vcf
-    awk -F'\t' '{if($6>5) print $0}' $outdir/newref_insertion.freebayes.vcf|grep -v '#' >>$outdir/filter_newref_insertion.freebayes.vcf
-    /home/yuyonghan/project/hla_extract/extracthairs/build/ExtractHAIRs --triallelic 1 --mbq 4 --mmq 0 --indels 1 \
+    ref=%s/fresh_ins.fa
+    cat $outdir/newins_insertion.ins.freebayes.vcf|grep '#'>$outdir/filter_newref_insertion.freebayes.vcf
+    awk -F'\t' '{if($6>5) print $0}' $outdir/newins_insertion.ins.freebayes.vcf|grep -v '#' >>$outdir/filter_newref_insertion.freebayes.vcf
+    %s/../bin/ExtractHAIRs --triallelic 1 --pacbio 1 --mbq 4 --mmq 0 --indels 1 \
     --ref $ref --bam $outdir/newref_insertion.bam --VCF $outdir/filter_newref_insertion.freebayes.vcf --out $outdir/$sample.fragment.file > spec.log 2>&1
     sort -n -k3 $outdir/$sample.fragment.file >$outdir/$sample.fragment.sorted.file
     bgzip -f $outdir/filter_newref_insertion.freebayes.vcf
@@ -1625,29 +1099,9 @@ def phase_insertion(gene, outdir, hla_ref, shdir):
     cat $outdir/$sample.insertion.phased.raw.vcf| sed -e 's/1\/1/1\|1/g'>$outdir/$sample.insertion.phased.vcf
     bgzip -f $outdir/$sample.insertion.phased.vcf
     tabix -f $outdir/$sample.insertion.phased.vcf.gz
-    """%(gene, outdir, hla_ref, shdir)
+    """%(gene, outdir, outdir, sys.path[0], shdir)
     os.system(order)
     print ('insertion phasing done.')
-
-def clean(outdir, gene):
-
-
-    formate_vcf = outdir + '/%s.vcf.gz'%(gene)
-    new_vcf = outdir + '/%s.new.vcf.gz'%(gene)
-    m = VariantFile(formate_vcf)
-    out = VariantFile(new_vcf,'w',header=m.header)
-    sample = list(m.header.samples)[0]
-
-    for record in m.fetch():
-        # if record.qual < 1
-        if record.chrom != gene:
-            continue
-        record.samples[sample].phased = False
-        out.write(record)
-    m.close()
-    out.close()
-    return new_vcf
-
 
 if __name__ == "__main__":   
     if len(sys.argv)==1:
@@ -1658,107 +1112,62 @@ if __name__ == "__main__":
             args.bamfile,args.outdir,args.snp_dp,args.indel_len,args.freq_bias           
         snp_qual,gene,vcffile = args.snp_qual,args.gene,args.vcf
         strainsNum = 2
-        germline_flag = False
         if not os.path.exists(outdir):
             os.system('mkdir '+ outdir) 
-        new_formate = False
-        if args.hic_fwd != 'NA' or args.tenx != 'NA':
-            new_formate = True
         sv_dict = long_InDel_breakpoints(args.sv)
         if gene in sv_dict.keys():
             sv_result = sv_dict[gene]
         else:
             sv_result = []
-        # deletion_region, ins_seq = find_deletion_region(sv_result)
-        deletion_region, ins_seq = find_deletion_region_BK(sv_result)
+        
+        deletion_region, ins_seq = find_deletion_region(sv_result)
 
         
-        ######PStrain-filter-SNV
+        ######phase small variants
         snp_list,beta_set,allele_set,snp_index_dict = read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,\
             freq_bias,strainsNum,deletion_region, snp_qual)   
-        if germline_flag == True: 
-            args.weight = 0.0
+        # hla_ref = '%s/../db/ref/hla.ref.extend.fa'%(sys.path[0])
+        hla_ref = '%s/../db/ref/%s.fa'%(sys.path[0], gene)
         if len(snp_list)==0:
             print ('No heterozygous locus, no need to phase.')
             gene_profile = no_snv_gene_phased(vcffile, outdir, gene, strainsNum)
-        else:  
-            ######PStrain-phasing
-            delta_set=second_beta(bamfile,snp_list,snp_index_dict,outdir)   
-            # for i in range(len(delta_set)):
-            #     print (snp_list[i], delta_set[i])
-            fir_beta,sec_beta=rectify(snp_list,beta_set,delta_set,args.lambda1,args.lambda2,\
-                germline_flag)
-            ######SpecHap-phasing
-            hla_ref = '%s/../db/ref/hla.ref.extend.fa'%(sys.path[0])
-
-
+        else:
             my_new_vcf = '%s/middle.vcf.gz'%(outdir)
             os.system('%s/../bin/tabix -f %s'%(sys.path[0], my_new_vcf))
-            # os.system('gzip -f -d %s'%(my_new_vcf))
-            # my_new_vcf = '%s/%s.vcf'%(outdir, gene)
-            
-
-            extract_order = '%s/../bin/ExtractHAIRs --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, my_new_vcf, outdir)
-            os.system(extract_order)  
-            print (extract_order)    
-            os.system('sort -n -k3 %s/fragment.file >%s/fragment.sorted.file'%(outdir, outdir))
-            
+            extract_order = '%s/../bin/ExtractHAIRs --pacbio 1 --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, my_new_vcf, outdir)
+            os.system(extract_order)    
+            os.system('sort -n -k3 %s/fragment.file >%s/fragment.sorted.file'%(outdir, outdir))           
             spec_order='%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/fragment.sorted.file --out %s/%s.specHap.phased.vcf'%(sys.path[0],my_new_vcf, outdir, outdir,gene) 
-            
-
-            print (spec_order)
-            os.system('%s/../bin/tabix -f %s'%(sys.path[0], my_new_vcf))
             os.system(spec_order)
-            print ("############")
-            seq_list = read_spechap_seq('%s/%s.specHap.phased.vcf'%(outdir, gene), snp_list)
-            print ('%s/%s.specHap.phased.vcf'%(outdir,gene))
-            
+            seq_list = read_spechap_seq('%s/%s.specHap.phased.vcf'%(outdir, gene), snp_list)           
             convert(outdir, gene, '%s/%s.specHap.phased.vcf'%(outdir,gene), seq_list, snp_list)
-            os.system('%s/../bin/tabix -f %s'%(sys.path[0], my_new_vcf))
 
-            os.system('cat %s/%s_break_points_spechap.txt'%(outdir, gene))
-         
-            ######Split blocks
-            merge_break_points(outdir, gene, snp_list)
             if gene == 'HLA_DRB1':
                 split_vcf(gene, outdir, deletion_region)
-
-            ######Link blocks    
-            print ('Start link blocks with database...')
-
-            reph='perl %s/whole/rephaseV1.pl %s/%s_break_points.txt\
+            reph='perl %s/whole/rephaseV1.pl %s/%s_break_points_spechap.txt\
                 %s %s %s/%s_break_points_phased.txt %s %s'%(sys.path[0],outdir,gene,outdir,strainsNum,outdir,\
                 gene,args.block_len,args.points_num)
             os.system(str(reph))
-
-
-            seq_list = read_spechap_seq('%s/%s.vcf.gz'%(outdir, gene), snp_list)
-            print ("################")  
-            print (seq_list)
-            update_seqlist=newphase(outdir,seq_list,snp_list,vcffile,gene)   #need to refresh alpha with new result.
-            print (update_seqlist)
-            fresh_alpha = newalpha(update_seqlist, sec_beta, strainsNum, allele_set, args.weight, fir_beta)
-            freq_output(outdir, gene, fresh_alpha, germline_flag)
+            update_seqlist=newphase(outdir,seq_list,snp_list,gene)  
+            # print (update_seqlist) 
             gene_profile=gene_phased(update_seqlist,snp_list,gene)
-            print ('Phasing of %s is done! Haplotype ratio is %s:%s'%(gene, fresh_alpha[0], fresh_alpha[1]))
+
 
         ######link long indels
         if len(ins_seq) > 0:
+            print ("segment_mapping_pre")
             ins_seq = segment_mapping_pre(args.tgs, ins_seq, outdir, gene, hla_ref)
-            # print (ins_seq)
+            # print ("-----------------", ins_seq)
             segment_mapping(args.tgs, ins_seq, outdir, gene, hla_ref)
+            print ("segment_mapping")
         else:
             os.system('cp %s/%s.bam %s/newref_insertion.bam'%(outdir, gene.split('_')[-1], outdir))
             os.system('%s/../bin/samtools index %s/newref_insertion.bam'%(sys.path[0], outdir))
             os.system('cp %s %s/newref_insertion.freebayes.vcf'%(vcffile, outdir))
-        deletion_region = sv_copy_number_old(outdir, deletion_region, gene, ins_seq)
-        # deletion_region = sv_copy_number(deletion_region, sv_result)
-
+        deletion_region = sv_copy_number(deletion_region, sv_result)
         if len(ins_seq) > 0:
             phase_insertion(gene, outdir, args.ref, sys.path[0])
-
         sh = Share_reads(deletion_region, outdir, strainsNum, gene, gene_profile, ins_seq)
-        # print (deletion_region)
         sh.split_seg()
         print (f"{gene} gene is done.")
 

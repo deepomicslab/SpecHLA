@@ -108,11 +108,12 @@ for hla in ${hlas[@]}; do
 
 if [ ${long_indel:-True} != False ]
   then
-bfile=$outdir/$sample.$hla.breakpoint.txt
+bfile=$outdir/$sample.$hla.sv.breakpoint.txt
 hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
 $bin/pbmm2 align $hla_ref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --preset HIFI --sample $sample --rg '@RG\tID:movie1'
 $bin/pbsv discover $outdir/$sample.movie1.bam $outdir/$sample.svsig.gz
-$bin/pbsv call $hla_ref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
+$bin/pbsv call -m 150 --max-ins-length 4000 -t DEL,INS $hla_ref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
+echo $bin/pbsv call -m 150 --max-ins-length 4000 -t DEL,INS $hla_ref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
 $bin/python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $bfile
 echo -----------------
 fi
@@ -124,11 +125,10 @@ $bin/python3 $dir/../single_tgs.py \
 -s $bfile \
 -v $vcf \
 --gene HLA_$hla \
--a ${phase:-True} \
 --freq_bias ${maf:-0.05} \
 --block_len 200 --points_num 1 --reads_num 2 --snp_qual ${snp_quality:-0.01} \
 --ref $hla_ref \
---tgs ${tgs:-NA} \
+--tgs $outdir/$hla.fq.gz \
 --nanopore ${nanopore_data:-NA} \
 --hic_fwd ${hic_data_fwd:-NA} \
 --hic_rev ${hic_data_rev:-NA} \
@@ -138,20 +138,10 @@ done
 
 
 echo start annotation.
-if [ ${annotation:-True} == True ]
-then
-  if [ ${phase:-True} == True ]
-  then
-    annotation_parameter=spechap
-  else
-    annotation_parameter=pstrain
-  fi
-else
-  annotation_parameter=all
-fi
 
-# echo perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop $annotation_parameter
-perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop $annotation_parameter
+
+rm $outdir/hla.allele.*.HLA_*.fasta.fai
+perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop spechap
 
 # sh $dir/../clear_output.sh $outdir/
 cat $outdir/hla.result.txt

@@ -3,8 +3,8 @@ import os
 import pysam
 import gzip
 
-Min_score = 0.5
-Min_diff = 0.02
+Min_score = 0.01  #the read is too long, so the score can be very low.
+Min_diff = 0.001
 
 class Read_Obj():
     def __init__(self, read):
@@ -26,8 +26,8 @@ class Read_Obj():
         self.read_name = read.query_name
         self.allele_name = read.reference_name
         self.mismatch_num = mis_NM
-        self.mismatch_rate = round(float(mis_NM)/self.read_length, 2)
-        self.match_rate = round(float(self.match_num)/self.read_length, 2)
+        self.mismatch_rate = round(float(mis_NM)/self.read_length, 6)
+        self.match_rate = round(float(self.match_num)/self.read_length, 6)
         self.loci_name = self.allele_name.split("*")[0]
 
 class Score_Obj():
@@ -39,7 +39,7 @@ class Score_Obj():
     
     def add_read(self, read_obj):
         self.reads_len_dict[read_obj.read_name] = read_obj.read_length
-        score = round(read_obj.match_rate * (1 - read_obj.mismatch_rate), 2)
+        score = round(read_obj.match_rate * (1 - read_obj.mismatch_rate), 6)
         if read_obj.read_name not in self.loci_score:
             self.loci_score[read_obj.read_name] = {}
             self.loci_score[read_obj.read_name][read_obj.loci_name] = score
@@ -53,6 +53,8 @@ class Score_Obj():
         f = open(assign_file, 'w')
         for read_name in self.loci_score:
             gene_score = sorted(self.loci_score[read_name].items(), key=lambda item: item[1], reverse = True)
+            # if gene_score[0][0] == "B" or gene_score[0][0] == "C":
+            #     print (read_name, gene_score)
             if gene_score[0][1] < Min_score:
                 continue
             if len(gene_score) == 1:
@@ -60,6 +62,8 @@ class Score_Obj():
             else:
                 if gene_score[0][1] - gene_score[1][1] >= Min_diff:
                     assigned_locus = gene_score[0][0]
+                else:
+                    continue
             print (read_name, assigned_locus, file = f)
             self.read_loci[read_name] = assigned_locus
         f.close()

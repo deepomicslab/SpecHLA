@@ -1245,11 +1245,11 @@ class Share_reads():
         fastq_seq = []
         for i in range(2):
             order = """
-            samtools faidx %s/newref_insertion.fa %s|bcftools consensus -H %s %s  >%s/seq_%s_%s.fa
-            """%(self.outdir, insertion_seg, i+1, self.vcf, self.outdir, i, insertion_seg)
+            %s/../bin/samtools faidx %s/newref_insertion.fa %s|%s/../bin/bcftools consensus -H %s %s  >%s/seq_%s_%s.fa
+            """%(sys.path[0], self.outdir, insertion_seg, sys.path[0], i+1, self.vcf, self.outdir, i, insertion_seg)
             os.system(order)
             fastq_seq.append(read_fasta('%s/seq_%s_%s.fa'%(self.outdir, i, insertion_seg)))
-        print ('rrrrrrrrrrrrrr', r00, r01)
+        print ('link long indel supporting reads', r00, r01)
         if  r01 > r00:
             return [fastq_seq[1], fastq_seq[0]]
         else:
@@ -1257,8 +1257,8 @@ class Share_reads():
 
     def consensus_insertion(self, insertion_seg):
         order = """
-        samtools faidx %s/newref_insertion.fa %s|bcftools consensus -H %s %s  >%s/seq
-        """%(self.outdir, insertion_seg, 1, self.vcf, self.outdir)
+        %s/../bin/samtools faidx %s/newref_insertion.fa %s|%s/../bin/bcftools consensus -H %s %s  >%s/seq
+        """%(sys.path[0], self.outdir, insertion_seg, sys.path[0], 1, self.vcf, self.outdir)
         os.system(order)
         cons_seq = read_fasta('%s/seq'%(self.outdir))
         return cons_seq
@@ -1797,7 +1797,7 @@ def phase_insertion(gene, outdir, hla_ref, shdir):
     ref=%s
     cat $outdir/newref_insertion.freebayes.vcf|grep '#'>$outdir/filter_newref_insertion.freebayes.vcf
     awk -F'\t' '{if($6>5) print $0}' $outdir/newref_insertion.freebayes.vcf|grep -v '#' >>$outdir/filter_newref_insertion.freebayes.vcf
-    /home/yuyonghan/project/hla_extract/extracthairs/build/ExtractHAIRs --triallelic 1 --mbq 4 --mmq 0 --indels 1 \
+    %s/../bin/ExtractHAIRs --triallelic 1 --mbq 4 --mmq 0 --indels 1 \
     --ref $ref --bam $outdir/newref_insertion.bam --VCF $outdir/filter_newref_insertion.freebayes.vcf --out $outdir/$sample.fragment.file > spec.log 2>&1
     sort -n -k3 $outdir/$sample.fragment.file >$outdir/$sample.fragment.sorted.file
     bgzip -f $outdir/filter_newref_insertion.freebayes.vcf
@@ -1806,7 +1806,7 @@ def phase_insertion(gene, outdir, hla_ref, shdir):
     cat $outdir/$sample.insertion.phased.raw.vcf| sed -e 's/1\/1/1\|1/g'>$outdir/$sample.insertion.phased.vcf
     bgzip -f $outdir/$sample.insertion.phased.vcf
     tabix -f $outdir/$sample.insertion.phased.vcf.gz
-    """%(gene, outdir, hla_ref, shdir)
+    """%(gene, outdir, hla_ref, sys.path[0], shdir)
     os.system(order)
     print ('insertion phasing done.')
 
