@@ -1,4 +1,4 @@
-# SpecHLA: a hybrid method for allele-specific HLA haplotyping and LOH inference
+# SpecHLA: a comprehensive package for HLA haplotyping and LOH inference
 
 ## Install  
 ```
@@ -133,7 +133,7 @@ Options:
   -h        Show this message.
 ```
 
-### Extended Mode (integrating TGS, 10X, Hi-C reads)
+### Integrating Mode (integrating TGS, 10X, Hi-C reads)
 Users can integrate the PacBio, Nanopore, 10X linked-reads, Hi-C data to improve performance in this mode.
 ```
 
@@ -181,6 +181,12 @@ If you do not have simple NGS reads, you only have 10X reads. You can convert a 
 sh SpecHLA_tgs.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -x <10X reads folder>.
 ```
 
+### TGS Mode 
+If you only have PacBio or Nanopore reads, you can perform haplotyping with
+```
+sh SpecHLA_single.sh -n <sample> -t <sample.pacbio.fq.gz> -p <Asian>
+```
+Please install Longshot 0.4.1 to call small variants. Please use "sh SpecHLA_single.sh -h" to see detailed usage information.
 
 ### Pedigree phasing
 After performing haplotyping, User can afford pedigree information to update the results.

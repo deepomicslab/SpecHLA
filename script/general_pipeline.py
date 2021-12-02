@@ -3,7 +3,7 @@ import os
 import pysam
 import gzip
 
-Min_score = 0.01  #the read is too long, so the score can be very low.
+Min_score = 0.1  #the read is too long, so the score can be very low.
 Min_diff = 0.001
 
 class Read_Obj():
@@ -80,7 +80,7 @@ class Pacbio_Binning():
         self.ID = ID
         self.db = f"{sys.path[0]}/../db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta"
    
-        self.map2db()
+        # self.map2db()
         self.sam = f"{self.outdir}/{self.ID}.db.sam"
         self.bamfile = pysam.AlignmentFile(self.sam, 'r')   
         self.assign_file = f"{self.outdir}/{self.ID}.assign.txt"

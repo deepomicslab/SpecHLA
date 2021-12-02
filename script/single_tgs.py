@@ -95,6 +95,7 @@ def read_spechap_seq(vcf, snp_list):
     return seq_list 
 
 def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,chrom_name,freq_bias,strainsNum,deletion_region,snp_qual):
+    # for longshot output snps
     snp_index = 1
     snp_index_dict = {}
     pysam.index(bamfile)
@@ -113,8 +114,6 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,chrom_name,freq_bias,strain
         if record.qual == None:
             print ('WARNING: no vcf quality value.')
             continue
-        if record.qual < snp_qual:
-            continue
         if record.chrom != chrom_name:
             continue
         if dp < snp_dp:
@@ -128,6 +127,8 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,chrom_name,freq_bias,strain
             if len(alt_allele) > indel_len:
                 alt_too_long = True
         if alt_too_long:
+            continue
+        if not (record.filter.keys()[0] == 'PASS' or record.qual > snp_qual):
             continue
         ##########after filter snp################
         snp_index_dict[record.pos] = snp_index

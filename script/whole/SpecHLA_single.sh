@@ -101,7 +101,7 @@ vcf=$outdir/$sample.longshot.vcf.gz
 
 echo start haplotyping.
 
-# hlas=(B)
+# hlas=(A)
 bfile=nothing
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
@@ -133,6 +133,7 @@ $bin/python3 $dir/../single_tgs.py \
 --hic_fwd ${hic_data_fwd:-NA} \
 --hic_rev ${hic_data_rev:-NA} \
 --tenx ${tenx_data:-NA} \
+--snp_qual 5 \
 --sa $sample
 done
 
