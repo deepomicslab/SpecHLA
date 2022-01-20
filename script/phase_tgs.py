@@ -2002,14 +2002,22 @@ if __name__ == "__main__":
                     gene=%s
                     echo $gene
                     
-                    bam=/mnt/d/HLAPro_backup/insert/tenx_run/fasta_merge/%s/outs/phased_possorted_bam.bam
+                    if [ $gene == "HLA_A" ];
+                        then
+                            $bin/longranger wgs --id=1 --fastqs=$fq --reference=%s/../db/ref/refdata-hla.ref.extend --sample=$sample --sex m --localcores=8 --localmem=32 --jobmode=local --vconly
+                    fi
+                    if [ $gene == "HLA_DRB1" ];
+                    then
+                    rm -r ./1
+                    fi
+                    bam=./1/outs/phased_possorted_bam.bam
 
                     $bin/extractHAIRS  --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam --VCF %s --out $outdir/fragment.tenx.file
                     $bin/BarcodeExtract $bam $outdir/barcode_spanning.bed
                     bgzip -f -c $outdir/barcode_spanning.bed > $outdir/barcode_spanning.bed.gz
                     $bin/tabix -f -p bed $outdir/barcode_spanning.bed.gz
                     
-                    """%(args.tenx, hla_ref, outdir, sys.path[0], gene, args.sample_id.split('_')[1], my_new_vcf)
+                    """%(args.tenx, hla_ref, outdir, sys.path[0], gene, sys.path[0], my_new_vcf)
                     print ('extract linkage info from 10 X data.')
                     print (tgs)
                     os.system(tgs)
