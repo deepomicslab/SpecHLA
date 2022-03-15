@@ -186,7 +186,7 @@ If you only have PacBio or Nanopore reads, you can perform haplotyping with
 ```
 sh SpecHLA_single.sh -n <sample> -t <sample.pacbio.fq.gz> -p <Asian>
 ```
-Please install Longshot 0.4.1 to call small variants. Please use "sh SpecHLA_single.sh -h" to see detailed usage information.
+Please install Longshot 0.4.1 and add it to the system path to call small variants with TGS data. Please use "sh SpecHLA_single.sh -h" to see detailed usage information.
 
 ### Pedigree phasing
 After performing haplotyping, User can afford pedigree information to update the results.
