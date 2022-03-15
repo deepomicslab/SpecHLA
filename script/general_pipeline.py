@@ -80,7 +80,7 @@ class Pacbio_Binning():
         self.ID = ID
         self.db = f"{sys.path[0]}/../db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta"
    
-        # self.map2db()
+        self.map2db()
         self.sam = f"{self.outdir}/{self.ID}.db.sam"
         self.bamfile = pysam.AlignmentFile(self.sam, 'r')   
         self.assign_file = f"{self.outdir}/{self.ID}.assign.txt"
