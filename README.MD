@@ -201,6 +201,54 @@ required arguments:
 ```
 The fresh reconstructed sequences can be found in the trio/ folder at each original sample's output folder.
 
+### Assembly-based Typing (for TGS data)
+To assemble the TGS reads, and perform HLA typing based on the contigs, please use /script/assembly/MHC.TGS.mapping.sh. 
+```
+USAGE: <PATH-TO>/MHC.TGS.mapping.sh -s <sample_id> -f <mhc.read> -v <mhc.vcf> -r <refGenomedir> -t <Sequencer>
+
+-s     : sample name (ex: H002) [required]
+
+-f     : extracted MHC reads (ex: mhc.read.fastq.gz) [required]
+
+-v     : extracted MHC snv vcf (ex: mhc.deepvariant.vcf) [required]
+
+-r     : reference dir (dir/hs37d5.fa) [required]
+
+-t     : sequencer (ex: Pacbio/ONT/10X) [required]
+```
+To run MHC.TGS.mapping.sh, some dependencies are needed:
+```
+mkdir bin
+conda install -c bioconda -y minimap2 samtools pbmm2 pbsv pysam whatshap bcftools bamtools
+install Peregrine
+git clone https://github.com/cschin/Peregrine.git
+cd Peregrine
+git clone -b peregrine https://github.com/cschin/pypeFLOW.git
+conda install -c conda-forge -y pypy3.6
+
+
+mkdir ref
+cd ref
+wget http://ftp.ebi.ac.uk:/pub/databases/ipd/imgt/hla/fasta/hla_gen.fasta
+less hla_gen.fasta | tr " " "_" > tmp
+mv tmp hla_gen.fasta
+wget http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz
+
+
+# Extract MHC reads snps
+
+echo '{ "filters" : [ { "id" : "inHP1", "tag" : "HP:1" }, { "id" : "inHP2", "tag" : "HP:2" } ], "rule" : "!(inHP1 | inHP2)" }' > filter_script.json
+
+samtools view -bh $bam 6:28477797-33448354 | bamtools filter -in stdin -tag HP:1 | samtools bam2fq - | bgzip -c > tmp.HP1.fastq.gz
+
+samtools view -bh $bam 6:28477797-33448354 | bamtools filter -in stdin -tag HP:2 | samtools bam2fq - | bgzip -c > tmp.HP2.fastq.gz
+
+samtools view -bh $bam 6:28477797-33448354 | bamtools filter -in stdin -script filter_script.json | samtools bam2fq - | bgzip -c > tmp.MHConly.UnPartitioned.fastq.gz
+
+zcat tmp.*.fastq.gz |pigz > sample.MHConly.fastq.gz
+
+bcftools view -g het -v snps  deepvariant/pacbio-15kb-hapsort-wgs.vcf.gz  chr6:28477797-33448354 > sample.mhc.het.vcf
+```
 
 ### Detect HLA LOH in cancer samples
 If the purity of cancer sample and the ploidy of HLA region are known, we can infer HLA LOH event.
