@@ -212,17 +212,16 @@ USAGE: <PATH-TO>/MHC.TGS.mapping.sh -s <sample_id> -f <mhc.read> -v <mhc.vcf> -r
 
 -v     : extracted MHC snv vcf (ex: mhc.deepvariant.vcf) [required]
 
--r     : reference dir (dir/hs37d5.fa) [required]
+-r     : reference (dir/hs37d5.fa) [required]
 
 -t     : sequencer (ex: Pacbio/ONT/10X) [required]
 ```
-To run MHC.TGS.mapping.sh, some dependencies are needed:
+To run MHC.TGS.mapping.sh, some dependencies and preprocessings are needed:
 ```
 mkdir bin
+
 conda install -c bioconda -y minimap2 samtools pbmm2 pbsv pysam whatshap bcftools bamtools
-install Peregrine
 git clone https://github.com/cschin/Peregrine.git
-cd Peregrine
 git clone -b peregrine https://github.com/cschin/pypeFLOW.git
 conda install -c conda-forge -y pypy3.6
 

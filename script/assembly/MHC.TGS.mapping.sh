@@ -1,4 +1,4 @@
-
+## please repace the folder to your own software folder.
 bin=/home/wangmengyao/TheHumanPangenomeMHC/bin
 export PATH=$PATH:/home/wangmengyao/anaconda3/envs/py37/bin/:$bin
 
