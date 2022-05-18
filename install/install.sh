@@ -1,6 +1,7 @@
 
 # create the env with conda
 conda env create -f environment.yml
+conda activate spechla
 
 # index the database
 ../bin/novoindex  -k 14 -s 1 ../db/ref/hla_gen.format.filter.extend.DRB.no26789.ndx \
