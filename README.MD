@@ -12,21 +12,38 @@ Second, please index the database.
 cd SpecHLA/
 sh index.sh
 ```
-Then you can use SpecHLA like
+Then we can perform HLA typing in exons.
 ```
-* Exon Mode
 cd SpecHLA/script/exon/
 sh SpecHLA_exon.sh -h
-
-* Whole Mode
+```
+Perform HLA typing with only paired-end data.
+```
 cd SpecHLA/script/whole/
 sh SpecHLA_whole.sh -h
-
-* Detect LOH events
+```
+Integrate TGS, Hi-C, or 10X data in paired-end data-based typing.
+```
+sh SpecHLA_tgs.sh -h 
+```
+Adpot pedigree information to refine the typing results.
+```
+python3 phase_pedigree.py --trio child:mother:father --workdir output/
+```
+Detect LOH events
+```
 ls output/*/*_freq.txt >freq.list
 perl SpecHLA/script/cal.hla.copy.pl  -purity <Purity> -ploidy <Ploidy> -F freq.list -O <Outdir>
 
 ```
+## Test
+Please go to the example/ folder, and run the test code in exon/ or whole/. 
+```
+sh ./test_exon.sh
+or
+sh ./test_whole.sh
+```
+If you install successfully, you will find results in the example/exon/output/ or example/whole/output/.
 ## Dependencies 
 ### Programming 
 * Python 3.7.0 or above  
@@ -56,14 +73,6 @@ Then you can test SpecHLA in the example/ folder.
 
 Also, you can install them by yourself, and link the binary files to the bin/ folder. 
 
-## Test
-Please go to the example/ folder, and run the test code in exon/ or whole/. 
-```
-sh ./test_exon.sh
-or
-sh ./test_whole.sh
-```
-If you install successfully, you will find results in the example/exon/output/ or example/whole/output/.
 
 ## Basic Usage  
 ### Extract HLA-related reads
