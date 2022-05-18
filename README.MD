@@ -12,6 +12,7 @@ Second, please index the database.
 cd SpecHLA/
 sh index.sh
 ```
+## Run
 Then we can perform HLA typing in exons.
 ```
 cd SpecHLA/script/exon/
@@ -304,57 +305,6 @@ USAGE: <PATH-TO>/simu.hla.sh -n <sample_size> -r <read_length> -1 <depth of hapl
  -2        : depth of haplotype2 [required]
 ```
 
-## An example of tree structure in the bin/ folder
-```
-.
-|-- ExtractHAIRs
-|-- SpecHap
-|-- bam
-|-- bcftools
-|-- bedtools
-|-- blast2sam.pl
-|-- blastn
-|-- blat
-|-- bwa
-|-- dwgsim
-|-- faToTwoBit
-|-- fermikit
-|   |-- Makefile
-|   |-- NEWS.md
-|   |-- README.md
-|   |-- bfc
-|   |-- bwa
-|   |-- fermi.kit
-|   |-- fermi2
-|   |-- hapdip
-|   |-- htsbox
-|   |-- k8-0.2.2.tar.bz2
-|   |-- ropebwt2
-|   |-- run-calling
-|   |-- seqtk
-|   |-- test
-|   |-- tex
-|   `-- trimadap
-|-- freebayes
-|-- gfClient
-|-- gfServer
-|-- inchworm
-|-- install_readme.txt
-|-- longranger -> longranger-2.1.2/longranger
-|-- makeblastdb
-|-- minimap2
-|-- novoalign -> Novoalign/novocraft/novoalign
-|-- novoalign.lic -> Novoalign/novocraft/novoalign.lic
-|-- pbmm2
-|-- pbsv
-|-- picard.jar
-|-- python2 -> /usr/bin/python
-|-- python3 -> Python-3.7.0/bin/python3
-|-- samtools
-|-- tabix
-|-- twoBitToFa
-`-- vcf-combine.py
-```
 
 ## Getting help
 Should you have any queries, please feel free to contact us, we will reply as soon as possible (swang66-c@my.cityu.edu.hk).
