@@ -30,31 +30,12 @@ perl SpecHLA/script/cal.hla.copy.pl  -purity <Purity> -ploidy <Ploidy> -F freq.l
 ## Dependencies 
 ### Programming 
 * Python 3.7.0 or above  
-* Python libraries:  
-    * Numpy  
-    * Pulp
-    * Pysam  
-    * Bio
+* Python libraries: Numpy, Pulp, Pysam, and Bio. 
 * Perl 5 or above
 
-### Reference database
-SpecHLA needs a HLA allele database. Please download db/ folder from https://drive.google.com/drive/folders/1M5GSF-oDTJ-tWgHt30TskOTWZvGBrD0Y?usp=sharing, and put it in the same path with the script/ folder. SpecHLA will use it by default. 
-
 ### Third party packages
-Please download the folder bin/ from https://drive.google.com/drive/folders/1M5GSF-oDTJ-tWgHt30TskOTWZvGBrD0Y?usp=sharing, and put it in the same path with the script/ folder. 
-
-After that, please apply and install Novoalign by yourself. And link novoalign.lic (license file) and the binary files of novoalign, python2, and python3 to the db/ folder. SpecHLA will use them by default.
-
-The folder should be like
-```
-.
-├── README.MD
-├── bin
-├── db
-├── example
-├── script
-└── simulation
-```
+The softwares in the /bin folder can also be installed by yourself, please remind link the excute file to the bin/folder.
+Please apply Novoalign, and link novoalign.lic (license file) and the bin/ folder.
 
 * Third party packages:
     * SamTools-1.3.1
