@@ -9,7 +9,7 @@ conda activate spechla
 ```
 Second, please index the database.
 ```
-cd SpecHLA/db/
+cd SpecHLA/
 sh index.sh
 ```
 Then you can use SpecHLA like
