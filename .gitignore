@@ -6,3 +6,4 @@ example/tenx/output/
 example/nanopore/output/
 example/pacbio/output/
 *ndx
+*config.txt
