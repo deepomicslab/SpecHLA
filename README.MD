@@ -1,6 +1,18 @@
 # SpecHLA: a comprehensive package for HLA haplotyping and LOH inference
 
 ## Install  
+First, please create the env with conda, and activate the env.
+```
+conda env create -f environment.yml
+conda activate spechla
+
+```
+Second, please index the database.
+```
+cd SpecHLA/db/
+sh index.sh
+```
+Then you can use SpecHLA like
 ```
 * Exon Mode
 cd SpecHLA/script/exon/
