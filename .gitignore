@@ -1,4 +1,8 @@
 bin_380/
 example/exon/output/
 example/whole/output/
+example/hic/output/
+example/tenx/output/
+example/nanopore/output/
+example/pacbio/output/
 *ndx

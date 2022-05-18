@@ -5,7 +5,6 @@ First, please create the env with conda, and activate the env.
 ```
 conda env create -f environment.yml
 conda activate spechla
-
 ```
 Second, please index the database.
 ```
@@ -18,7 +17,7 @@ Then we can perform HLA typing in exons.
 cd SpecHLA/script/exon/
 sh SpecHLA_exon.sh -h
 ```
-Perform HLA typing with only paired-end data.
+Perform HLA typing in whole genes with only paired-end data.
 ```
 cd SpecHLA/script/whole/
 sh SpecHLA_whole.sh -h
