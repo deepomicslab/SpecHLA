@@ -1,0 +1,16 @@
+For resequencing:
+
+* 5'-end primer (TruSeq universal adapter):
+  AATGATACGGCGACCACCGAGATCTACACTCTTTCCCTACACGACGCTCTTCCGATCT
+
+* 3'-end primer 1 (first half of TruSeq indexed adapter):
+  AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC
+
+* 3'-end primer 2 (second half of TrueSeq indexed adapter):
+  ATCTCGTATGCCGTCTTCTGCTTG
+
+References:
+
+* http://tucf-genomics.tufts.edu/documents/protocols/TUCF_Understanding_Illumina_TruSeq_Adapters.pdf
+
+* http://www.ark-genomics.org/events-online-training-eu-training-course/adapter-and-quality-trimming-illumina-data

@@ -1,0 +1,3 @@
+bwa=/mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_B/HLA_B.fa
+freebayes=/mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_B/HLA_B.fa
+blat=/mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_B/

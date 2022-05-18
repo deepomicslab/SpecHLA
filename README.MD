@@ -20,10 +20,9 @@ perl SpecHLA/script/cal.hla.copy.pl  -purity <Purity> -ploidy <Ploidy> -F freq.l
 * Python 3.7.0 or above  
 * Python libraries:  
     * Numpy  
-    * Scipy  
-    * Pandas  
     * Pulp
     * Pysam  
+    * Bio
 * Perl 5 or above
 
 ### Reference database

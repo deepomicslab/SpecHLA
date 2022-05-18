@@ -1,5 +1,4 @@
-bin/
 bin_380/
-db/
 example/exon/output/
 example/whole/output/
+*ndx
