@@ -117,7 +117,7 @@ $bin/samtools index $outdir/$sample.merge.bam
 
 #################################### local assembly and realignment #################################
 echo start realignment.
-sh $dir/run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70
+bash $dir/run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70
 ####################################################################################################
 
 bam=$outdir/$sample.realign.sort.bam
@@ -128,7 +128,7 @@ vcf=$outdir/$sample.realign.filter.vcf
 if [ ${long_indel:-False} == True ]
   then
   port=$(date +%N|cut -c5-9)
-  sh $dir/../ScanIndel/run_scanindel_sample.sh $sample $bam $outdir $port
+  bash $dir/../ScanIndel/run_scanindel_sample.sh $sample $bam $outdir $port
   bfile=$outdir/Scanindel/$sample.breakpoint.txt
   else
   bfile=nothing

@@ -9,7 +9,7 @@ conda activate spechla
 Second, please index the database.
 ```
 cd SpecHLA/
-sh index.sh
+bash index.sh
 ```
 ## Run
 Then we can perform HLA typing in exons.

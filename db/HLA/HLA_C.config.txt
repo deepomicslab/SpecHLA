@@ -1,3 +1,6 @@
 bwa=/mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_C/HLA_C.fa
 freebayes=/mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_C/HLA_C.fa
 blat=/mnt/delta_WS_1/wangmengyao/HLAPro/db/HLA/HLA_C/
+bwa=/mnt/d/HLAPro_backup/HLAPro/db/HLA/HLA_C/HLA_C.fa
+freebayes=/mnt/d/HLAPro_backup/HLAPro/db/HLA/HLA_C/HLA_C.fa
+blat=/mnt/d/HLAPro_backup/HLAPro/db/HLA/HLA_C/
