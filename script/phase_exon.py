@@ -6,8 +6,6 @@ from my_imports import *
 import time
 import re
 from itertools import combinations, permutations
-import realign_and_sv_break
-#from algorithm_test import Workflow
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -89,6 +87,9 @@ parser._action_groups.append(optional)
 args = parser.parse_args()
 
 def exon_region():
+    """
+    collect the exon intervals of each gene
+    """
     file = '%s/exon/exon_extent.bed'%(sys.path[0])
     exon_region_list = []
     for line in open(file, 'r'):
@@ -98,6 +99,10 @@ def exon_region():
     return exon_region_list
 
 def if_in_exon(chrom, locus, exon_region_list):
+    """
+    determine if a locus belong to exon 
+    return flag
+    """
     in_flag = False
     for exon in exon_region_list:
         if chrom == exon[0] and locus >= float(exon[1]) and locus <= float(exon[2]):
@@ -105,6 +110,11 @@ def if_in_exon(chrom, locus, exon_region_list):
     return in_flag
 
 def update_locus_for_exon(chrom, locus, exon_region_accumulate_list, ref='', alt_tuple=()):
+    """
+    the position of the snp is according to the gene locus.
+    now we regard all the exons as a whole
+    identify the positions on the exon sequence.
+    """
     # print (chrom, locus, exon_region_accumulate_list)
     new_alt_tuple = alt_tuple
     for exon in exon_region_accumulate_list:
@@ -141,7 +151,10 @@ def update_locus_for_exon(chrom, locus, exon_region_accumulate_list, ref='', alt
         # print (chrom, str(int(locus)))
         return chrom, str(int(locus)), ref, new_alt_tuple
 
-def exon_accumulate_locus(exon_region_list):   
+def exon_accumulate_locus(exon_region_list):  
+    """
+    the total length after adding each exon
+    """ 
     gene = ''
     accumulate_locus = 0
     for exon in exon_region_list:
@@ -154,19 +167,20 @@ def exon_accumulate_locus(exon_region_list):
             exon.append(accumulate_locus)
             accumulate_locus = accumulate_locus + float(exon[2]) - float(exon[1]) + 1
     return exon_region_list
-    # print (exon_region_list)
 
 def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,chrom_name,freq_bias,strainsNum):
+    if not os.path.exists(outdir):
+        os.system('mkdir '+outdir)
+
     exon_region_list = exon_region()
     exon_region_accumulate_list = exon_accumulate_locus(exon_region_list)
     pysam.index(bamfile)
     samfile = pysam.AlignmentFile(bamfile, "rb")
-    if not os.path.exists(outdir):
-        os.system('mkdir '+outdir)
     in_vcf = VariantFile(vcffile)
     md_vcf = VariantFile('%s/middle.vcf.gz'%(outdir),'w',header=in_vcf.header)
     sample = list(in_vcf.header.samples)[0]
     snp_list, beta_set, allele_set = [], [], []
+
     for record in in_vcf.fetch():
         if record.chrom != chrom_name:
             continue
@@ -174,9 +188,8 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,chrom_name,freq_bias,strain
             continue
         geno = record.samples[sample]['GT']    
         depth = record.samples[sample]['AD']
-        # if record.chrom == 'HLA_DRB1' and record.pos > 9000:
-        #     continue
 
+        ## if the locus has three alleles, select top two allele or discard this locus.
         if geno == (1,2,3) or geno == (0, 1, 2):
             norm_depth = np.array(depth)/sum(depth)
             dp_sort=np.argsort(norm_depth)
@@ -187,13 +200,11 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,chrom_name,freq_bias,strain
             ref_flag = False
             for i in range(strainsNum):
                 sum_freq += norm_depth[dp_sort[-(1+i)]]
-                
                 if dp_sort[-(1+i)] == 0:
                     ref_flag = True
                 if dp_sort[-(1+i)] != 0:
                     alt_genos.append(record.alts[dp_sort[-(1+i)] - 1])
                     fresh_depth.append(depth[dp_sort[-(1+i)]])
-            
             if ref_flag == False :
                 star_geno = 1
                 fresh_depth = [depth[0]] + fresh_depth
@@ -203,16 +214,13 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,chrom_name,freq_bias,strain
             new_geno = []
             for i in range(strainsNum):
                 new_geno.append(i + star_geno)
-            #there is a bug for three haps
             new_geno.append(new_geno[-1])
-
             if sum_freq > 0.7:
                 # print ('before', record)
                 record.alts = alt_genos
                 record.samples[sample]['GT'] = new_geno
                 record.samples[sample]['AD'] = fresh_depth
-                geno = tuple(new_geno)
-                
+                geno = tuple(new_geno)  
             else:
                 continue
 
@@ -220,6 +228,8 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,chrom_name,freq_bias,strain
         if record.qual == None:
             print ('WARNING: no vcf quality value.')
 
+
+        ## constrict the length of the allele
         if len(record.ref) > indel_len:
             continue
         if len(record.alts) > 2:
@@ -268,7 +278,7 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,chrom_name,freq_bias,strain
         md_vcf.write(record)
     in_vcf.close()
     md_vcf.close()
-    # os.system('%s/../bin/tabix -f %s/middle.vcf.gz'%(sys.path[0],outdir))
+    os.system('%s/../bin/tabix -f %s/middle.vcf.gz'%(sys.path[0],outdir))
     print ("The number of hete loci is %s."%(len(snp_list)))
     return snp_list, beta_set, allele_set
 
@@ -749,7 +759,8 @@ def generate_break_points(outdir,snp_list,delta_set,strainsNum):
     bp.close()
     return break_points_index
 
-def all_possibilities(break_points_index, strainsNum, snp_list, seq_list, final_alpha, gene, use_pstrain_break_point_flag): #need to update alpha finally
+def all_possibilities(break_points_index, strainsNum, snp_list, seq_list,\
+ final_alpha, gene, use_pstrain_break_point_flag): #need to update alpha finally
     my_table = all_table( len(break_points_index) + 1, 2)
     locus_seq = '' 
     if not use_pstrain_break_point_flag: #use spechap breakpoints
@@ -960,44 +971,36 @@ if __name__ == "__main__":
         for gene in ['HLA_A','HLA_B','HLA_C','HLA_DQB1','HLA_DRB1','HLA_DQA1','HLA_DPA1','HLA_DPB1']:
         # for gene in ['HLA_B']:
 
-            ######PStrain-filter-vcf
+            ###### read and refine the variants in vcf
             snp_list,beta_set,allele_set = read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,\
                 freq_bias,strainsNum)     
             if len(snp_list)==0:
-                #same seq for two haps
                 print ('No hete locus')
                 no_snv_gene_phased(vcffile, outdir, gene, strainsNum)
                 delta_set, seq_list, final_alpha = [], [[],[]], [0.5, 0.5] 
             else:  
                 delta_set=second_beta(bamfile,snp_list)   
-
-                # for i in range(len(snp_list)-1):
-                #     print (snp_list[i], beta_set[i], delta_set[i])
-                fir_beta,sec_beta=rectify(snp_list,beta_set,delta_set,args.lambda1,args.lambda2,\
-                    False)
-                if strainsNum==0:
-                    wo=Workflow(fir_beta,sec_beta,delta_set,args.weight,args.elbow,allele_set)
-                    final_alpha,seq_list,loss=wo.choose_k()
-                    strainsNum = len(final_alpha)
-                else:
-                    wo=Workflow(fir_beta,sec_beta,delta_set,args.weight,args.elbow,allele_set)
-                    final_alpha,seq_list,loss = wo.given_k(strainsNum)  
+                fir_beta,sec_beta=rectify(snp_list,beta_set,delta_set,args.lambda1,args.lambda2,False)
+                wo=Workflow(fir_beta,sec_beta,delta_set,args.weight,args.elbow,allele_set)
+                final_alpha,seq_list,loss = wo.given_k(strainsNum)  
                 output(outdir,final_alpha,seq_list,snp_list,gene)
 
-            #####Phase-with-SpecHap
+            ##### Phase-with-SpecHap
             if args.phase_flag == True:
                 my_new_vcf = '%s/%s.vcf.gz'%(outdir, gene)
                 os.system('gzip -f -d %s'%(my_new_vcf))
                 my_new_vcf = '%s/%s.vcf'%(outdir, gene)
                 hla_ref = '%s/../db/ref/hla.ref.extend.fa'%(sys.path[0])
-                order = '%s/../bin/ExtractHAIRs --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s --out %s/frament.file'%(sys.path[0], hla_ref, bamfile, my_new_vcf, outdir)
+                order = '%s/../bin/ExtractHAIRs --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s \
+                --out %s/frament.file'%(sys.path[0], hla_ref, bamfile, my_new_vcf, outdir)
                 os.system(order)
                 os.system('sort -k3 %s/frament.file >%s/frament.sorted.file'%(outdir, outdir))
                 os.system('bgzip %s'%(my_new_vcf))
                 my_new_vcf = '%s/%s.vcf.gz'%(outdir, gene)
                 os.system('%s/../bin/tabix -f %s'%(sys.path[0],my_new_vcf))
                 os.system('cp %s/%s.vcf.gz %s/%s.vcf.pstain.gz'%(outdir, gene, outdir, gene))
-                order = '%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/frament.sorted.file --out %s/%s.specHap.phased.vcf'%(sys.path[0], my_new_vcf, outdir, outdir,gene)
+                order = '%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/frament.sorted.file \
+                --out %s/%s.specHap.phased.vcf'%(sys.path[0], my_new_vcf, outdir, outdir,gene)
                 os.system(order)
                 break_points_index = convert(outdir, gene, '%s/%s.specHap.phased.vcf'%(outdir,gene))
                 os.system('%s/../bin/tabix -f %s'%(sys.path[0],my_new_vcf))
@@ -1005,30 +1008,12 @@ if __name__ == "__main__":
             else:
                 use_pstrain_break_point_flag = True
 
-            # use_pstrain_break_point_flag = True
             if use_pstrain_break_point_flag:
                 break_points_index = generate_break_points(outdir,snp_list,delta_set,strainsNum)
             print ("The Number of break points is %s."%(len(break_points_index)))
-            if len(break_points_index) > 10:  #max break points number is 10.
+            if len(break_points_index) > 10:  # max break points number is 10.
                 break_points_index = break_points_index[:10]
 
-            all_possibilities(break_points_index, strainsNum, snp_list, seq_list, final_alpha, gene, use_pstrain_break_point_flag)   
+            all_possibilities(break_points_index, strainsNum, snp_list, seq_list,\
+             final_alpha, gene, use_pstrain_break_point_flag)   
             print ('Phasing for %s is Done.'%(gene))
-
-        # if args.anno_flag:
-        #     if args.phase_flag == True:
-        #         anno_parameter = 'spechap'
-        #     else:
-        #         anno_parameter = 'pstrain'
-        # else:
-        #     anno_parameter = 'all'
-        # annotation = 'perl %s/exon/anno_HLA_pop.pl %s %s %s %s '%(sys.path[0], args.prefix, outdir, args.popu, anno_parameter)
-        # os.system(annotation)
-
-        # os.system('cat %s/hla.result.txt'%(outdir))
-        # os.system('rm %s/*.rephase.vcf.gz*'%(outdir))
-        # os.system('rm %s/HLA_*.*.fasta'%(outdir))
-
-
-
-

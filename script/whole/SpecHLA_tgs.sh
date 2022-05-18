@@ -95,8 +95,8 @@ echo Start profiling HLA for $sample.
 mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
 # :<<!
-$bin/python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
-$bin/python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
+python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
+python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
 fq1=$outdir/$sample.uniq.name.R1.gz
 fq2=$outdir/$sample.uniq.name.R2.gz
 
@@ -104,9 +104,9 @@ echo map the reads to database to assign reads to corresponding genes.
 $bin/novoalign -d $db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.ndx -f $fq1 $fq2 -F STDFQ -o SAM -o FullNW -r All 100000 --mCPU 10 -c 10  -g 20 -x 3  | $bin/samtools view -Sb - | $bin/samtools sort -  > $outdir/$sample.novoalign.bam
 
 $bin/samtools index $outdir/$sample.novoalign.bam
-$bin/python3 $dir/../assign_reads_to_genes.py -o $outdir -b ${outdir}/${sample}.novoalign.bam -nm ${nm:-2}
+python3 $dir/../assign_reads_to_genes.py -o $outdir -b ${outdir}/${sample}.novoalign.bam -nm ${nm:-2}
 
-$bin/python3 $dir/../check_assign.py $fq1 $fq2 $outdir
+python3 $dir/../check_assign.py $fq1 $fq2 $outdir
 
 $bin/bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 | $bin/samtools view -H  >$outdir/header.sam
 #hlas=(A B C)
@@ -141,7 +141,7 @@ if [ ${long_indel:-False} == True ]
     $bin/pbmm2 align $hlaref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --preset HIFI --sample $sample --rg '@RG\tID:movie1'
     $bin/pbsv discover $outdir/$sample.movie1.bam $outdir/$sample.svsig.gz
     $bin/pbsv call $hlaref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
-    $bin/python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $outdir/$sample.tgs.breakpoint.txt
+    python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $outdir/$sample.tgs.breakpoint.txt
     cat $outdir/$sample.tgs.breakpoint.txt >>$bfile
   fi
 else
@@ -163,7 +163,7 @@ vcf=$outdir/$sample.realign.filter.vcf
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
-$bin/python3 $dir/../phase_tgs.py \
+python3 $dir/../phase_tgs.py \
 -o $outdir \
 -b $bam \
 -s $bfile \
@@ -182,34 +182,6 @@ $bin/python3 $dir/../phase_tgs.py \
 --tenx ${tenx_data:-NA} \
 --sa $sample
 done
-
-# --fq1 $fq1 \
-# --fq2 $fq2 \
-
-# hlas=(DRB1)
-# for hla in ${hlas[@]}; do
-# bfile=/mnt/disk2_workspace/wangmengyao/NeedleHLA/simu_data/simu_20201116/Scanindel/$sample/$sample.breakpoint.txt
-# #bfile=/mnt/disk2_workspace/wangmengyao/NeedleHLA/select_wgs/Scanindel/breakpoint.txt
-# #bfile=$indir/Scanindel/$sample.breakpoint.txt
-# hla_ref=/home/wangmengyao/scripts/PHLAT/database/ref/extend/HLA_$hla.fa
-# strainsNum=2
-# /home/wangshuai/softwares/Python-3.7.0/bin/python3 /mnt/disk2_workspace/wangshuai/00.strain/08.NeedleHLA/scripts/PHLA_WGS_no_realign_phase_sv8_yonghan3.py  \
-# -k $strainsNum \
-# -o $outdir \
-# -b $bam \
-# -s $bfile \
-# -v $vcf \
-# --fq1 $indir/$hla.R1.fq.gz \
-# --fq2 $indir/$hla.R2.fq.gz \
-# --gene HLA_$hla \
-# -d F \
-# -g T \
-# --freq_bias 0.01 \
-# --rlen 150 \
-# --block_len 200 --points_num 1 --reads_num 2 \
-# --ref $hla_ref \
-# --snp_qual 5
-# done
 
 
 echo start annotation.

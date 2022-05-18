@@ -1614,15 +1614,14 @@ if __name__ == "__main__":
     if len(sys.argv)==1:
         print (Usage%{'prog':sys.argv[0]})
     else:       
-        bamfile,outdir,snp_dp,indel_len,freq_bias=\
-            args.bamfile,args.outdir,args.snp_dp,args.indel_len,args.freq_bias           
+        bamfile,outdir,snp_dp,indel_len,freq_bias=args.bamfile,args.outdir,args.snp_dp,args.indel_len,args.freq_bias           
         snp_qual,gene,fq1,fq2,vcffile = args.snp_qual,args.gene,args.fq1,args.fq2,args.vcf
         strainsNum = 2
         germline_flag = False
         if not os.path.exists(outdir):
             os.system('mkdir '+ outdir) 
 
-
+        # extract the long indel intervals and insertion sequences
         sv_dict = long_InDel_breakpoints(args.sv)
         if gene in sv_dict.keys():
             sv_result = sv_dict[gene]
@@ -1631,7 +1630,7 @@ if __name__ == "__main__":
         deletion_region, ins_seq = find_deletion_region(sv_result)
 
 
-        ######PStrain-filter-SNV
+        ###### read small variants
         snp_list,beta_set,allele_set,snp_index_dict = read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,\
             freq_bias,strainsNum,deletion_region, snp_qual) 
         os.system('%s/../bin/tabix -f %s/middle.vcf.gz'%(sys.path[0], outdir))        

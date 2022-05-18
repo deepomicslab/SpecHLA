@@ -15,4 +15,5 @@ from argparse import ArgumentParser
 
 
 __all__=['np','pysam','VariantFile','ArgumentParser'\
-    ,'LpProblem','LpMinimize','LpVariable','tarfile','re','os','sys','pdist','average','fcluster','Workflow','alpha_step']
+    ,'LpProblem','LpMinimize','LpVariable','tarfile','re','os',\
+    'sys','pdist','average','fcluster','Workflow','alpha_step']
