@@ -99,6 +99,7 @@ Options:
   -n        Sample ID.
   -1        The first fastq file.
   -2        The second fastq file.
+  -o        The output folder to store the typing results.
   -p        The population of the sample: Asian, Black, or Caucasian. Use mean frequency
             if not provided.
   -f        True or False. The annotation database only includes the alleles with population
@@ -122,6 +123,7 @@ Options:
   -n        Sample ID.
   -1        The first fastq file.
   -2        The second fastq file.
+  -o        The output folder to store the typing results.
   -p        The population of the sample: Asian, Black, or Caucasian. Use mean frequency
             if not provided.
   -f        True or False. The annotation database only includes the alleles with population
@@ -149,6 +151,7 @@ Options:
   -n        Sample ID. <required>
   -1        The first fastq file. <required>
   -2        The second fastq file. <required>
+  -o        The output folder to store the typing results.
   -t        Pacbio TGS fastq file.
   -e        Nanopore TGS fastq file.
   -x        Path of folder created by 10x demultiplexing. Prefix of the filenames of FASTQs
