@@ -1898,7 +1898,7 @@ if __name__ == "__main__":
                 else:
                     order = '%s/../bin/ExtractHAIRs --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, my_new_vcf, outdir)
 
-                print (order)
+                # print (order)
                 os.system(order)
 
                 
@@ -2019,7 +2019,7 @@ if __name__ == "__main__":
                     
                     """%(args.tenx, hla_ref, outdir, sys.path[0], gene, sys.path[0], my_new_vcf)
                     print ('extract linkage info from 10 X data.')
-                    print (tgs)
+                    # print (tgs)
                     os.system(tgs)
 
                     os.system('cat %s/fragment.tenx.file > %s/fragment.all.file'%(outdir, outdir))
