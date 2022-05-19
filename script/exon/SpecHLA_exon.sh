@@ -10,6 +10,7 @@
 ###   -n        Sample ID.
 ###   -1        The first fastq file.
 ###   -2        The second fastq file.
+###   -o        The output folder to store the typing results.
 ###   -p        The population of the sample: Asian, Black, or Caucasian. Use mean frequency 
 ###             if not provided.
 ###   -f        True or False. The annotation database only includes the alleles with population 
@@ -32,7 +33,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
     exit 1
 fi
 
-while getopts ":n:1:2:p:s:m:g:f:" opt; do
+while getopts ":n:1:2:p:s:m:g:f:o:" opt; do
   case $opt in
     n) sample="$OPTARG"
     ;;
@@ -50,6 +51,8 @@ while getopts ":n:1:2:p:s:m:g:f:" opt; do
     ;;
     f) annotation="$OPTARG"
     ;;
+    o) given_outdir="$OPTARG"
+    ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
   esac
@@ -58,8 +61,13 @@ dir=$(cd `dirname $0`; pwd)
 bin=$dir/../../bin
 db=$dir/../../db
 hlaref=$db/ref/hla.ref.extend.fa
-outdir=$(pwd)/output/$sample
 
+if [ ${given_outdir:-NA} == NA ]
+  then
+    outdir=$(pwd)/output/$sample
+  else
+    outdir=$given_outdir/$sample   
+fi
 
 mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample

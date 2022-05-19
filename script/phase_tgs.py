@@ -1998,7 +1998,7 @@ if __name__ == "__main__":
                     ref=%s
                     outdir=%s
                     bin=%s/../bin
-                    sample=my
+                    sample=%s
                     gene=%s
                     echo $gene
                     
@@ -2017,7 +2017,7 @@ if __name__ == "__main__":
                     bgzip -f -c $outdir/barcode_spanning.bed > $outdir/barcode_spanning.bed.gz
                     $bin/tabix -f -p bed $outdir/barcode_spanning.bed.gz
                     
-                    """%(args.tenx, hla_ref, outdir, sys.path[0], gene, sys.path[0], my_new_vcf)
+                    """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, sys.path[0], my_new_vcf)
                     print ('extract linkage info from 10 X data.')
                     # print (tgs)
                     os.system(tgs)

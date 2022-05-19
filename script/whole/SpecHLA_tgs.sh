@@ -13,6 +13,7 @@
 ###   -n        Sample ID. <required>
 ###   -1        The first fastq file. <required>
 ###   -2        The second fastq file. <required>
+###   -o        The output folder to store the typing results.
 ###   -t        Pacbio TGS fastq file.
 ###   -e        Nanopore TGS fastq file.
 ###   -x        Path of folder created by 10x demultiplexing. Prefix of the filenames of FASTQs
@@ -45,7 +46,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
     exit 1
 fi
 
-while getopts ":n:1:2:p:f:m:s:v:q:t:a:e:x:c:d:r:y:" opt; do
+while getopts ":n:1:2:p:f:m:s:v:q:t:a:e:x:c:d:r:y:o:" opt; do
   case $opt in
     n) sample="$OPTARG"
     ;;
@@ -79,6 +80,8 @@ while getopts ":n:1:2:p:f:m:s:v:q:t:a:e:x:c:d:r:y:" opt; do
     ;;
     r) maf="$OPTARG"
     ;;
+    o) given_outdir="$OPTARG"
+    ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
   esac
@@ -89,7 +92,13 @@ dir=$(cd `dirname $0`; pwd)
 bin=$dir/../../bin
 db=$dir/../../db
 hlaref=$db/ref/hla.ref.extend.fa
-outdir=$(pwd)/output/$sample
+
+if [ ${given_outdir:-NA} == NA ]
+  then
+    outdir=$(pwd)/output/$sample
+  else
+    outdir=$given_outdir/$sample   
+fi
 
 echo Start profiling HLA for $sample. 
 mkdir -p $outdir
