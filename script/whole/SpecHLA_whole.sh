@@ -79,14 +79,14 @@ group='@RG\tID:'$sample'\tSM:'$sample
 # :<<!
 
 
-################# remove the repeat read name #################
+# ################ remove the repeat read name #################
 python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
 fq1=$outdir/$sample.uniq.name.R1.gz
 fq2=$outdir/$sample.uniq.name.R2.gz
-################################################################
+# ###############################################################
 
-################### map the reads to database to assign reads to corresponding genes.#########
+# ################## map the reads to database to assign reads to corresponding genes.#########
 echo map the reads to database to assign reads to corresponding genes.
 $bin/novoalign -d $db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.ndx -f $fq1 $fq2\
  -F STDFQ -o SAM -o FullNW -r All 100000 --mCPU 10 -c 10  -g 20 -x 3  | $bin/samtools\
@@ -94,11 +94,11 @@ $bin/novoalign -d $db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.ndx -f $fq
 $bin/samtools index $outdir/$sample.novoalign.bam
 python3 $dir/../assign_reads_to_genes.py -o $outdir -b ${outdir}/${sample}.novoalign.bam -nm ${nm:-2}
 python3 $dir/../check_assign.py $fq1 $fq2 $outdir
-#############################################################################################
+# ############################################################################################
 
 
 
-############ align the gene-specific reads to the corresponding gene reference########
+# ########### align the gene-specific reads to the corresponding gene reference########
 $bin/bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 | $bin/samtools view -H  >$outdir/header.sam
 #hlas=(A B C)
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
@@ -111,20 +111,20 @@ done
 #samtools merge -f -h $outdir/header.sam $outdir/$sample.merge.bam $outdir/A.bam $outdir/B.bam $outdir/C.bam 
 $bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.merge.bam $outdir/A.bam $outdir/B.bam $outdir/C.bam $outdir/DPA1.bam $outdir/DPB1.bam $outdir/DQA1.bam $outdir/DQB1.bam $outdir/DRB1.bam
 $bin/samtools index $outdir/$sample.merge.bam
-#############################################################################################
+# ############################################################################################
 
 
 
-#################################### local assembly and realignment #################################
+# ################################### local assembly and realignment #################################
 echo start realignment.
 bash $dir/run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70
-####################################################################################################
+# ###################################################################################################
 
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
 
 
-####################################### call long InDel #########################################
+# ###################################### call long InDel #########################################
 if [ ${long_indel:-False} == True ]
   then
   port=$(date +%N|cut -c5-9)
@@ -133,10 +133,10 @@ if [ ${long_indel:-False} == True ]
   else
   bfile=nothing
 fi
-####################################################################################################
+# ###################################################################################################
 
 
-############################################## haplotyping ########################################
+# ############################################# haplotyping ########################################
 echo start haplotyping.
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
@@ -154,11 +154,11 @@ python3 $dir/../phase_whole.py \
 --block_len 200 --points_num 1 --reads_num 2 --snp_qual ${snp_quality:-0.01} \
 --ref $hla_ref
 done
-####################################################################################################
+# ###################################################################################################
 
 
 
-############################################## annotation ##########################################
+# ############################################# annotation ##########################################
 echo start annotation.
 if [ ${annotation:-True} == True ]
 then
@@ -172,7 +172,7 @@ else
   annotation_parameter=all
 fi
 perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop $annotation_parameter
-####################################################################################################
+# ###################################################################################################
 
 
 # sh $dir/../clear_output.sh $outdir/

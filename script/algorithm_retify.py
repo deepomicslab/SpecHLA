@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from my_imports import *
+import pulp
 
 def table(k,allele_num):
     mytable=[]
@@ -83,7 +84,7 @@ def alpha_step(delta_set,geno_set,k,allele_set,weight,beta_set): #would it be be
             lost+=beta_cost[allele_num*i+j]*weight
 
     prob+=lost,"total lost"
-    prob.solve()
+    prob.solve(pulp.PULP_CBC_CMD(msg=0))
     weights_list,n,loss=[],0,0
     # for i in prob.variables():
     #     if n<k:

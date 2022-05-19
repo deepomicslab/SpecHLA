@@ -65,30 +65,30 @@ mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
 # :<<!
 
-################# remove the repeat read name #################
+# ################ remove the repeat read name #################
 python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
 fq1=$outdir/$sample.uniq.name.R1.gz
 fq2=$outdir/$sample.uniq.name.R2.gz
-################################################################
+# ###############################################################
 
 
 
 
 
-#################### assign the reads to original gene################
+# ################### assign the reads to original gene################
 ## map the HLA reads to the allele database ##
 $bin/novoalign -d $db/ref/hla_gen.format.filter.extend.DRB.no26789.ndx -f $fq1 $fq2  -o SAM -o FullNW -r All 100000 --mCPU 10 -c 10  -g 20 -x 3  | $bin/samtools view -Sb - | $bin/samtools sort -  > $outdir/$sample.novoalign.bam
 $bin/samtools index $outdir/$sample.novoalign.bam
 ## assign the reads to corresponding gene ##
 python3 $dir/../assign_reads_to_genes.py -o $outdir -b ${outdir}/${sample}.novoalign.bam -nm ${nm:-3}
 python3 $dir/../check_assign.py $fq1 $fq2 $outdir
-######################################################################
+# #####################################################################
 
 
 
 
-############ align the gene-specific reads to the corresponding gene reference########
+# ########### align the gene-specific reads to the corresponding gene reference########
 ## align the reads to corresponding gene reference ##
 $bin/bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 | $bin/samtools view -H  >$outdir/header.sam
 #hlas=(A B C)
@@ -101,16 +101,16 @@ done
 #samtools merge -f -h $outdir/header.sam $outdir/$sample.merge.bam $outdir/A.bam $outdir/B.bam $outdir/C.bam 
 $bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.merge.bam $outdir/A.bam $outdir/B.bam $outdir/C.bam $outdir/DPA1.bam $outdir/DPB1.bam $outdir/DQA1.bam $outdir/DQB1.bam $outdir/DRB1.bam
 $bin/samtools index $outdir/$sample.merge.bam
-######################################################################################
+# #####################################################################################
 
 
 
-#################################### local assembly and realignment #################################
+# ################################### local assembly and realignment #################################
 sh $dir/run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70
-######################################################################################################
+# #####################################################################################################
 
 
-####################### phase, link blocks, calculate haplotype ratio, give typing results ##############
+# ###################### phase, link blocks, calculate haplotype ratio, give typing results ##############
 python3 $dir/../phase_exon.py -b $outdir/$sample.realign.sort.bam -v $outdir/$sample.realign.filter.vcf \
 -o $outdir/ -g ${pstrain_bk:-True} --snp_dp 0 --block_len 80 --points_num 1 --freq_bias 0.1 --reads_num 2 -a ${phase:-True} 
 if [ ${annotation:-True} == True ]
@@ -124,12 +124,12 @@ then
 else
   annotation_parameter=all
 fi
-######################################################################################################
+# #####################################################################################################
 
 
-############################# annotation ####################################
+# ############################ annotation ####################################
 perl $dir/anno_HLA_pop.pl $sample $outdir 2 $pop $annotation_parameter
-##############################################################################
+# #############################################################################
 
 
 cat $outdir/hla.result.txt
