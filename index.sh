@@ -11,8 +11,14 @@ for hla in ${HLAs[@]}; do
 done
 
 # index the database
-./bin/novoindex  -k 14 -s 1 ./db/ref/hla_gen.format.filter.extend.DRB.no26789.ndx \
-./db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta
+./bin/bwa index ./db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta
+./bin/bwa index ./db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta
 
-./bin/novoindex  -k 14 -s 1 ./db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.ndx \
-./db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta
+license=./bin/novoalign.lic
+if [ -f "$license" ];then
+    ./bin/novoindex  -k 14 -s 1 ./db/ref/hla_gen.format.filter.extend.DRB.no26789.ndx \
+    ./db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta
+
+    ./bin/novoindex  -k 14 -s 1 ./db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.ndx \
+    ./db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta
+fi
