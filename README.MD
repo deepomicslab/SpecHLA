@@ -46,13 +46,13 @@ sh ./test_whole.sh
 If you install successfully, you will find results in the example/exon/output/ or example/whole/output/.
 ## Dependencies 
 ### Programming 
-* Python 3.7.0 or above  
-* Python libraries: Numpy, Pulp, Pysam, and Bio. 
+* python=3.8.12 or above  
+* Python libraries: numpy=1.22.3, pysam=0.9.1, pysam=0.19.0, and Bio. 
 * Perl 5 or above
 
 ### Third party packages
 The softwares in the /bin folder can also be installed by yourself, please remind link the excute file to the bin/folder.
-Please apply Novoalign, and link novoalign.lic (license file) and the bin/ folder.
+Please apply Novoalign, and put the novoalign.lic (license file) in the bin/ folder.
 
 * Third party packages:
     * SamTools-1.3.1
@@ -69,23 +69,19 @@ Please apply Novoalign, and link novoalign.lic (license file) and the bin/ folde
     * Fermikit-0.13
     * SpecHap v1.0.1 and ExtractHAIRs
 
-Then you can test SpecHLA in the example/ folder. 
-
-Also, you can install them by yourself, and link the binary files to the bin/ folder. 
-
 
 ## Basic Usage  
 ### Extract HLA-related reads
-Before profiling the HLA, we should first extract HLA reads if provided enrichment-free data. Then we use the extracted HLA reads to do the following steps. Please first map the fastq reads to hg19 or hg38, then use the ExtractHLAread.sh in script/ folder to extract HLA-related reads. We use the script of Kourami with minor revision for this step. 
+We should first extract HLA reads with enrichment-free data before profiling the HLA. Please first map the fastq reads to hg19 or hg38, then use the ExtractHLAread.sh in script/ folder to extract HLA-related reads. We use the script of Kourami with minor revision for this step. 
 ```
-USAGE: 
-    sh ExtractHLAread.sh <sample_id> <bamfile> <refGenome>
+HLA-related reads extractor for HLA Typing
+USAGE: <PATH-TO>/ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome>
 
-    sample_id        : desired sample name (ex: NA12878) [required]
+ -s          : desired sample name (ex: NA12878) [required]
 
-    bamfile          : sorted and indexed bam (ex: NA12878.bam) [required]
+ -b          : sorted and indexed bam (ex: NA12878.bam) [required]
 
-    ref              : hg38 or hg19
+ -r          : hg38 or hg19
 
 ```
 ### Exon Mode (profile HLA in exons)
