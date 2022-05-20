@@ -8,7 +8,7 @@ conda activate spechla
 ```
 Second, make the softwares in `bin/` executable.
 ```
-chmod +x bin/*
+chmod +x -R bin/*
 ```
 Third, please index the database.
 ```
