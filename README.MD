@@ -43,7 +43,7 @@ If you install successfully, you will find results in the example/exon/output/ o
 ## Dependencies 
 ### Programming 
 * python=3.8.12 or above  
-* Python libraries: numpy=1.22.3, pysam=0.9.1, pysam=0.19.0, and Bio. 
+* Python libraries: numpy=1.22.3, pysam=0.9.1, pysam=0.19.0, and biopython=1.79. 
 * Perl 5 or above
 
 ### Third party packages
@@ -118,7 +118,7 @@ This script can use PacBio, Nanopore, Hi-C, and 10X sequencing data to improve t
 
 
 Usage:
-  sh SpecHLA_tgs.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
+  sh SpecHLA_whole.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
 
 Options:
   -n        Sample ID. <required>
