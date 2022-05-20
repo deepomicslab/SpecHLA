@@ -31,16 +31,12 @@ Detect LOH events
 ```
 ls output/*/*_freq.txt >freq.list
 perl SpecHLA/script/cal.hla.copy.pl  -purity <Purity> -ploidy <Ploidy> -F freq.list -O <Outdir>
-
 ```
 ## Test
-Please go to the `example/` folder, and run the test code in `exon/` or `whole/`. 
-```
-sh ./test_exon.sh
-or
-sh ./test_whole.sh
-```
+Please go to the `example/` folder, and run `sh ./test_exon.sh` in `exon/` or `sh ./test_whole.sh` in `whole/`. 
 If you install successfully, you will find results in the `output/`.
+
+
 ## Dependencies 
 ### Programming 
 * python=3.8.12 or above  
@@ -83,7 +79,6 @@ USAGE: <PATH-TO>/ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome>
  -b          : sorted and indexed bam (ex: NA12878.bam) [required]
 
  -r          : hg38 or hg19
-
 ```
 ### Exon Mode (profile HLA in exons)
 ```
@@ -245,7 +240,6 @@ In the directory of one specific sample, you will find the below files:
 "hla.allele.*.HLA_*.fasta" contains the Haplotyping sequence results of each allele.
 "HLA_*_freq.txt" contains the Haplotype Ratios in each gene.
 "HLA_*.rephase.vcf.gz" contains the phasing result of small variants.
-
 ```
 If you performed pedigree phasing, you will find below files in the output/ folder.
 ```
