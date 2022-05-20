@@ -1,7 +1,7 @@
 # SpecHLA: a comprehensive package for HLA haplotyping and LOH inference
 
 ## Install  
-First, please create the env with conda, and activate the env.
+First, create the env with conda, and activate the env.
 ```
 conda env create -f environment.yml
 conda activate spechla
@@ -10,7 +10,7 @@ Second, make the softwares in `bin/` executable.
 ```
 chmod +x -R bin/*
 ```
-Third, please index the database.
+Third, index the database.
 ```
 cd SpecHLA/
 bash index.sh
