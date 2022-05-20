@@ -2,9 +2,9 @@
 
 
 ###
-### The extended version of SpecHLA, performs HLA assembly and HLA Typing with full-length basd on NGS and TGS data.
-### This script can use PacBio, Nanopore, Hi-C, and 10X sequencing data to improve the phasing performance if provided.
-###
+### Full-length HLA typing with paired-end reads. This script can use PacBio, Nanopore,
+### Hi-C, and 10X sequencing data to improve the phasing performance if provided.
+### 
 ###
 ### Usage:
 ###   sh SpecHLA_tgs.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
@@ -116,7 +116,7 @@ fq2=$outdir/$sample.uniq.name.R2.gz
 
 
 
-# ################### assign the reads to original gene################
+# ################### assign the reads to original gene######################################################
 echo map the reads to database to assign reads to corresponding genes.
 license=../../bin/novoalign.lic
 if [ -f "$license" ];then
@@ -130,12 +130,11 @@ fi
 $bin/samtools index $outdir/$sample.map_database.bam
 python3 $dir/../assign_reads_to_genes.py -o $outdir -b ${outdir}/${sample}.map_database.bam -nm ${nm:-2}
 python3 $dir/../check_assign.py $fq1 $fq2 $outdir
-# ###############################################################
+# #############################################################################################################
 
 
 
-
-# ########### align the gene-specific reads to the corresponding gene reference########
+# ########### align the gene-specific reads to the corresponding gene reference################################
 $bin/bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 | $bin/samtools view -H  >$outdir/header.sam
 #hlas=(A B C)
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
@@ -148,7 +147,8 @@ done
 $bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.merge.bam $outdir/A.bam $outdir/B.bam $outdir/C.bam\
  $outdir/DPA1.bam $outdir/DPB1.bam $outdir/DQA1.bam $outdir/DQB1.bam $outdir/DRB1.bam
 $bin/samtools index $outdir/$sample.merge.bam
-# #######################################################################################
+# ###############################################################################################################
+
 
 
 # ################################### local assembly and realignment #################################
@@ -184,7 +184,6 @@ if [ ${sv:-NA} != NA ]
   bfile=$sv
 fi
 # #############################################################################################
-
 
 
 

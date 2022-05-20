@@ -6,7 +6,11 @@ First, please create the env with conda, and activate the env.
 conda env create -f environment.yml
 conda activate spechla
 ```
-Second, please index the database.
+Second, make the softwares in `bin/` executable.
+```
+chmod +x bin/*
+```
+Third, please index the database.
 ```
 cd SpecHLA/
 bash index.sh
@@ -107,15 +111,13 @@ Options:
 ```
 
 ### Whole Mode (PE reads, also integrating TGS, 10X, Hi-C reads)
-Users can integrate the PacBio, Nanopore, 10X linked-reads, Hi-C data to improve performance in this mode.
+Users can integrate the PacBio, Nanopore, 10X linked-reads, Hi-C data to improve the performance.
 ```
-
-The extended version of SpecHLA, performs HLA assembly and HLA Typing with full-length basd on NGS and TGS data.
-This script can use PacBio, Nanopore, Hi-C, and 10X sequencing data to improve the phasing performance if provided.
-
+Full-length HLA typing with paired-end reads. This script can use PacBio, Nanopore,
+Hi-C, and 10X sequencing data to improve the phasing performance if provided.
 
 Usage:
-  sh SpecHLA_whole.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
+  sh SpecHLA_tgs.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
 
 Options:
   -n        Sample ID. <required>
@@ -138,7 +140,7 @@ Options:
             is 2. It should be set larger to infer novel alleles.
   -v        True or False. Consider long InDels if True, else only consider short variants.
             Default is False.
-  -q        Minimum variant quality. Default is 0.01. Set larger in high quality samples.
+  -q        Minimum variant quality. Default is 0.01. Set it larger in high quality samples.
   -s        True or False. Use SpecHap to phase if True, else use PStrain. Default is True.
             We recommend use SpecHap.
   -a        Use this long InDel file if provided.
