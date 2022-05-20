@@ -17,14 +17,10 @@ Then we can perform HLA typing in exons.
 cd SpecHLA/script/exon/
 sh SpecHLA_exon.sh -h
 ```
-Perform HLA typing in whole genes with only paired-end data.
+Perform HLA typing in whole genes with paired-end data. Also, PacBio, Nanopore, Hi-C, or 10X could be integrated.
 ```
 cd SpecHLA/script/whole/
 sh SpecHLA_whole.sh -h
-```
-Integrate TGS, Hi-C, or 10X data in paired-end data-based typing.
-```
-sh SpecHLA_tgs.sh -h 
 ```
 Adpot pedigree information to refine the typing results.
 ```
@@ -68,6 +64,9 @@ Please apply Novoalign, and put the novoalign.lic (license file) in the bin/ fol
     * ScanIndel v1.3
     * Fermikit-0.13
     * SpecHap v1.0.1 and ExtractHAIRs
+    * Minimap 2.17-r941
+    * pbmm2-1.4.0
+    * pbsv Version 2.6.2
 
 
 ## Basic Usage  
@@ -109,30 +108,8 @@ Options:
             We recommend SpecHap.
   -h        Show this message.
 ```
-### Whole Mode (profile HLA with full length)
-The Whole version of SpecHLA, performs HLA assembly and HLA Typing with full-length.
-```
-Usage:
-  sh SpecHLA_whole.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
 
-Options:
-  -n        Sample ID.
-  -1        The first fastq file.
-  -2        The second fastq file.
-  -o        The output folder to store the typing results.
-  -p        The population of the sample: Asian, Black, or Caucasian. Use mean frequency
-            if not provided.
-  -f        True or False. The annotation database only includes the alleles with population
-            frequency higher than zero if set True. Otherwise, it includes all alleles. Default
-            is True.
-  -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
-            is 2. It should be set larger to infer novel alleles.
-  -s        True or False. Use SpecHap to phase if True, else use PStrain. Default is True.
-            We recommend use SpecHap.
-  -h        Show this message.
-```
-
-### Integrating Mode (integrating TGS, 10X, Hi-C reads)
+### Whole Mode (PE reads, also integrating TGS, 10X, Hi-C reads)
 Users can integrate the PacBio, Nanopore, 10X linked-reads, Hi-C data to improve performance in this mode.
 ```
 
@@ -171,22 +148,6 @@ Options:
   -r        The minimum Minor Allele Frequency (MAF), default is 0.05.
   -h        Show this message.
 ```
-To use PacBio reads, you should install Minimap 2.17-r941, pbmm2-1.4.0, and pbsv Version 2.6.2 in the bin/ folder.
-To use Nanopore ONT reads, you need to install Minimap 2.17-r941.
-You need LongRanger2.1.2 as well as BarcodeExtract of SpecHap to adopt 10X reads.
-
-Please note that it is necessary to provide NGS sequencing reads, due to SpecHLA uses NGS data to detect variants.
-If you do not have simple NGS reads, you only have 10X reads. You can convert a copy of 10X reads to normal NGS reads, then you can run SpecHLA using paired-end reads and barcode linking information by
-```
-sh SpecHLA_tgs.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -x <10X reads folder>.
-```
-
-### TGS Mode 
-If you only have PacBio or Nanopore reads, you can perform haplotyping with
-```
-sh SpecHLA_single.sh -n <sample> -t <sample.pacbio.fq.gz> -p <Asian>
-```
-Please install Longshot 0.4.1 and add it to the system path to call small variants with TGS data. Please use "sh SpecHLA_single.sh -h" to see detailed usage information.
 
 ### Pedigree phasing
 After performing haplotyping, User can afford pedigree information to update the results.
@@ -201,7 +162,29 @@ required arguments:
 ```
 The fresh reconstructed sequences can be found in the trio/ folder at each original sample's output folder.
 
-### Assembly-based Typing (for TGS data)
+### Detect HLA LOH in cancer samples
+If the purity of cancer sample and the ploidy of HLA region are known, we can infer HLA LOH event.
+```
+Usage:
+       perl cal.hla.copy.pl [Options] -purity <Purity> -ploidy <Ploidy> -F <filelist> -O <outdir>
+
+OPTIONS:
+        -purity  [f]  the purity of tumor sample. <required>
+        -ploidy  [f]  the ploidy of tumor sample in HLA gene region. <required>
+        -F       [s]  the filelist. <required>
+                     Format, separated by table:  Sample/HLA_A_freq.txt
+        -O       [s]  the output dir. <required>
+```
+
+
+### TGS only Mode (Testing)
+If you only have PacBio or Nanopore reads, you can perform haplotyping with
+```
+sh SpecHLA_single.sh -n <sample> -t <sample.pacbio.fq.gz> -p <Asian>
+```
+Please install Longshot 0.4.1 and add it to the system path to call small variants with TGS data. Please use "sh SpecHLA_single.sh -h" to see detailed usage information.
+
+### TGS only Assembly-based Typing (Testing)
 To assemble the TGS reads, and perform HLA typing based on the contigs, please use /script/assembly/MHC.TGS.mapping.sh. 
 ```
 USAGE: <PATH-TO>/MHC.TGS.mapping.sh -s <sample_id> -f <mhc.read> -v <mhc.vcf> -r <refGenomedir> -t <Sequencer>
@@ -249,19 +232,7 @@ zcat tmp.*.fastq.gz |pigz > sample.MHConly.fastq.gz
 bcftools view -g het -v snps  deepvariant/pacbio-15kb-hapsort-wgs.vcf.gz  chr6:28477797-33448354 > sample.mhc.het.vcf
 ```
 
-### Detect HLA LOH in cancer samples
-If the purity of cancer sample and the ploidy of HLA region are known, we can infer HLA LOH event.
-```
-Usage:
-       perl cal.hla.copy.pl [Options] -purity <Purity> -ploidy <Ploidy> -F <filelist> -O <outdir>
 
-OPTIONS:
-        -purity  [f]  the purity of tumor sample. <required>
-        -ploidy  [f]  the ploidy of tumor sample in HLA gene region. <required>
-        -F       [s]  the filelist. <required>
-                     Format, separated by table:  Sample/HLA_A_freq.txt
-        -O       [s]  the output dir. <required>
-```
 
 ## Interpret output
 SpecHLA will automaticly build a folder named output/ in the current path. In the output/ folder, the results of each sample are saved in a folder named as the sample ID.  
