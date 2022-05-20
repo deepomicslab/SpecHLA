@@ -97,7 +97,7 @@ else
 fi
 $bin/samtools index $outdir/$sample.map_database.bam
 ## assign the reads to corresponding gene ##
-python3 $dir/../assign_reads_to_genes.py -o $outdir -b ${outdir}/${sample}.map_database.bam -nm ${nm:-3}
+python3 $dir/../assign_reads_to_genes.py -n $bin -o $outdir -b ${outdir}/${sample}.map_database.bam -nm ${nm:-3}
 python3 $dir/../check_assign.py $fq1 $fq2 $outdir
 # #####################################################################
 
@@ -122,7 +122,16 @@ $bin/samtools index $outdir/$sample.merge.bam
 
 
 # ################################### local assembly and realignment #################################
-sh $dir/run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70
+sh $dir/../run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70 $dir/select.region.exon.txt 4
+echo realignment is done.
+# !
+echo "$bin/freebayes -a -f $hlaref -p 3 $outdir/$sample.realign.sort.fixmate.bam > $outdir/$sample.realign.vcf && rm -rf $outdir/$sample.realign.vcf.gz "
+$bin/freebayes -a -f $hlaref -p 3 $outdir/$sample.realign.sort.fixmate.bam > $outdir/$sample.realign.vcf && rm -rf $outdir/$sample.realign.vcf.gz 
+$bin/bgzip -f $outdir/$sample.realign.vcf
+$bin/tabix -f $outdir/$sample.realign.vcf.gz
+#cp $outdir/$sample.realign.vcf $outdir/$sample.realign.filter.vcf
+less $outdir/$sample.realign.vcf.gz |grep "#" > $outdir/$sample.realign.filter.vcf
+$bin/bcftools filter -R $dir/exon_extent.bed $outdir/$sample.realign.vcf.gz |grep -v "#"  >> $outdir/$sample.realign.filter.vcf  
 # #####################################################################################################
 
 

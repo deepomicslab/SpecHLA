@@ -10,11 +10,8 @@ BN = ['A', 'C', 'G', 'T', 'N']
 
 def extract_reads_name(options):
     reads_file = '%s/read_names.txt'%(options.outdir)
-    order = 'samtools view %s | cut -f1 | sort | uniq > %s'%(options.bam, reads_file)
+    order = '%s/samtools view %s | cut -f1 | sort | uniq > %s'%(options.bin_dir, options.bam, reads_file)
     os.system(order)
-
-# def extract_reads_bam(read, bamfile, outdir):
-#     order = 'samtools view %s | grep -f %s > %s/read.mapped.info.txt'%(bamfile, read, outdir)
 
 # def iterate_reads(bamfile, outdir):
 #     reads_file = '%s/read_names.txt'%(outdir)
@@ -239,21 +236,13 @@ def calculate_beta(read_allele, options):
     else:
         return 0
 
-def read_gene():
-    file = '/mnt/disk2_workspace/wangshuai/00.strain/08.NeedleHLA/alphlard/ref/genes.txt'
-    gene_set = []
-    for line in open(file, 'r'):
-        gene = line[1:].strip()
-        gene_set.append(gene)
-    return gene_set
-
-
 if __name__ == "__main__":
     from argparse import ArgumentParser
 
     parser = ArgumentParser(description='Extract reads by read name from bam file')
     parser.add_argument('-b', '--bam', help='bam file', required=True)
     parser.add_argument('-o', '--outdir', help='outdir', required=True)   
+    parser.add_argument('-n', '--bin_dir', help='bin dir', required=True)  
     #parameters
     parser.add_argument('-do', '--alpha_do', help='alpha_do', required=False, default = 0, type=float)   #-1
     parser.add_argument('-de', '--alpha_de', help='alpha_de', required=False, default = 0, type=float)
@@ -267,6 +256,5 @@ if __name__ == "__main__":
     parser.add_argument('-nm', '--max_nm', help='MAX NM', required=False, default = 2, type=int)
     options = parser.parse_args()
     extract_reads_name(options)
-    # gene_set = read_gene()
     # for gene in ['C', 'H']:
     extract_reads(options)

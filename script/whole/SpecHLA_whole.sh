@@ -128,7 +128,7 @@ else
     $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
 fi
 $bin/samtools index $outdir/$sample.map_database.bam
-python3 $dir/../assign_reads_to_genes.py -o $outdir -b ${outdir}/${sample}.map_database.bam -nm ${nm:-2}
+python3 $dir/../assign_reads_to_genes.py -n $bin -o $outdir -b ${outdir}/${sample}.map_database.bam -nm ${nm:-2}
 python3 $dir/../check_assign.py $fq1 $fq2 $outdir
 # #############################################################################################################
 
@@ -153,7 +153,16 @@ $bin/samtools index $outdir/$sample.merge.bam
 
 # ################################### local assembly and realignment #################################
 echo start realignment.
-sh $dir/run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70
+sh $dir/../run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70 $dir/select.region.txt 4
+$bin/freebayes -a -f $hlaref -p 3 $outdir/$sample.realign.sort.bam > $outdir/$sample.realign.vcf && \
+rm -rf $outdir/$sample.realign.vcf.gz 
+bgzip -f $outdir/$sample.realign.vcf
+$bin/tabix -f $outdir/$sample.realign.vcf.gz
+less $outdir/$sample.realign.vcf.gz |grep "#" > $outdir/$sample.realign.filter.vcf
+$bin/bcftools filter -t HLA_A:1000-4503,HLA_B:1000-5081,HLA_C:1000-5304,HLA_DPA1:1000-10775,HLA_DPB1:1000-12468,\
+HLA_DQA1:1000-7492,HLA_DQB1:1000-8480,HLA_DRB1:1000-12229 $outdir/$sample.realign.vcf.gz |grep -v "#" \
+ >> $outdir/$sample.realign.filter.vcf  
+
 # #####################################################################################################
 # !
 
@@ -233,6 +242,6 @@ perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop $annotation_parameter
 
 
 
-# sh $dir/../clear_output.sh $outdir/
+sh $dir/../clear_output.sh $outdir/
 cat $outdir/hla.result.txt
 echo $sample is done.
