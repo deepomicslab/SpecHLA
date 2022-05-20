@@ -11,8 +11,8 @@ for hla in ${HLAs[@]}; do
 done
 
 # index the database
-./bin/bwa index ./db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta
-./bin/bwa index ./db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta
+./bin/bowtie2/bowtie2-build ./db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta ./db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta
+./bin/bowtie2/bowtie2-build ./db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta ./db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta
 
 license=./bin/novoalign.lic
 if [ -f "$license" ];then

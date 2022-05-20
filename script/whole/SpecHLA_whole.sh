@@ -103,28 +103,39 @@ fi
 echo Start profiling HLA for $sample. 
 mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
-# :<<!
+
+
+
+# ################ remove the repeat read name #################
 python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
 fq1=$outdir/$sample.uniq.name.R1.gz
 fq2=$outdir/$sample.uniq.name.R2.gz
+# ###############################################################
 
+
+
+
+# ################### assign the reads to original gene################
 echo map the reads to database to assign reads to corresponding genes.
-
 license=../../bin/novoalign.lic
 if [ -f "$license" ];then
     $bin/novoalign -d $db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.ndx -f $fq1 $fq2 -F STDFQ -o SAM \
     -o FullNW -r All 100000 --mCPU 10 -c 10  -g 20 -x 3  | $bin/samtools view \
     -Sb - | $bin/samtools sort -  > $outdir/$sample.map_database.bam
 else
-    $bin/bwa mem -a -R $group $db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta\
-    $fq1 $fq2| $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
+    $bin/bowtie2/bowtie2 -p 5 -k 10 -x $db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta -1 $fq1 -2 $fq2|\
+    $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
 fi
-
 $bin/samtools index $outdir/$sample.map_database.bam
 python3 $dir/../assign_reads_to_genes.py -o $outdir -b ${outdir}/${sample}.map_database.bam -nm ${nm:-2}
 python3 $dir/../check_assign.py $fq1 $fq2 $outdir
+# ###############################################################
 
+
+
+
+# ########### align the gene-specific reads to the corresponding gene reference########
 $bin/bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 | $bin/samtools view -H  >$outdir/header.sam
 #hlas=(A B C)
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
@@ -137,21 +148,26 @@ done
 $bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.merge.bam $outdir/A.bam $outdir/B.bam $outdir/C.bam\
  $outdir/DPA1.bam $outdir/DPB1.bam $outdir/DQA1.bam $outdir/DQB1.bam $outdir/DRB1.bam
 $bin/samtools index $outdir/$sample.merge.bam
+# #######################################################################################
 
+
+# ################################### local assembly and realignment #################################
 echo start realignment.
 sh $dir/run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70
-
+# #####################################################################################################
 # !
+
+
+
+# ###################### call long indel #############################################
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
-
 
 if [ ${long_indel:-False} == True ]
   then
   port=$(date +%N|cut -c5-9)
   sh $dir/../ScanIndel/run_scanindel_sample.sh $sample $bam $outdir $port
   bfile=$outdir/Scanindel/$sample.breakpoint.txt
-
   if [ ${tgs:-NA} != NA ]
     then
     $bin/pbmm2 align $hlaref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --preset HIFI --sample $sample --rg '@RG\tID:movie1'
@@ -163,19 +179,16 @@ if [ ${long_indel:-False} == True ]
 else
   bfile=nothing
 fi
-
 if [ ${sv:-NA} != NA ]
   then
   bfile=$sv
 fi
-echo $bfile
+# #############################################################################################
 
-echo start haplotyping.
 
-bam=$outdir/$sample.realign.sort.bam
-vcf=$outdir/$sample.realign.filter.vcf
 
-# hlas=(A)
+
+# ###################### phase, link blocks, calculate haplotype ratio, give typing results ##############
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
@@ -198,8 +211,11 @@ python3 $dir/../phase_tgs.py \
 --tenx ${tenx_data:-NA} \
 --sa $sample
 done
+# ###############################################################################################################
 
 
+
+# ############################ annotation ####################################
 echo start annotation.
 if [ ${annotation:-True} == True ]
 then
@@ -214,6 +230,9 @@ else
 fi
 
 perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop $annotation_parameter
+# #############################################################################
+
+
 
 # sh $dir/../clear_output.sh $outdir/
 cat $outdir/hla.result.txt

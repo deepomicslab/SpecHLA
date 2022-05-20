@@ -86,10 +86,18 @@ fq2=$outdir/$sample.uniq.name.R2.gz
 
 # ################### assign the reads to original gene################
 ## map the HLA reads to the allele database ##
-$bin/novoalign -d $db/ref/hla_gen.format.filter.extend.DRB.no26789.ndx -f $fq1 $fq2  -o SAM -o FullNW -r All 100000 --mCPU 10 -c 10  -g 20 -x 3  | $bin/samtools view -Sb - | $bin/samtools sort -  > $outdir/$sample.novoalign.bam
-$bin/samtools index $outdir/$sample.novoalign.bam
+license=../../bin/novoalign.lic
+if [ -f "$license" ];then
+    $bin/novoalign -d $db/ref/hla_gen.format.filter.extend.DRB.no26789.ndx -f $fq1 $fq2 -F STDFQ -o SAM \
+    -o FullNW -r All 100000 --mCPU 10 -c 10  -g 20 -x 3  | $bin/samtools view \
+    -Sb - | $bin/samtools sort -  > $outdir/$sample.map_database.bam
+else
+    $bin/bowtie2/bowtie2 -p 5 -k 10 -x $db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta -1 $fq1 -2 $fq2|\
+    $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
+fi
+$bin/samtools index $outdir/$sample.map_database.bam
 ## assign the reads to corresponding gene ##
-python3 $dir/../assign_reads_to_genes.py -o $outdir -b ${outdir}/${sample}.novoalign.bam -nm ${nm:-3}
+python3 $dir/../assign_reads_to_genes.py -o $outdir -b ${outdir}/${sample}.map_database.bam -nm ${nm:-3}
 python3 $dir/../check_assign.py $fq1 $fq2 $outdir
 # #####################################################################
 

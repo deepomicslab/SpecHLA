@@ -11,6 +11,7 @@ Second, please index the database.
 cd SpecHLA/
 bash index.sh
 ```
+Note: `Novoalign` requires a license in `bin/`, if it is not detected, SpecHLA will use `bowtie2`. 
 ## Run
 Then we can perform HLA typing in exons.
 ```
@@ -33,13 +34,13 @@ perl SpecHLA/script/cal.hla.copy.pl  -purity <Purity> -ploidy <Ploidy> -F freq.l
 
 ```
 ## Test
-Please go to the example/ folder, and run the test code in exon/ or whole/. 
+Please go to the `example/` folder, and run the test code in `exon/` or `whole/`. 
 ```
 sh ./test_exon.sh
 or
 sh ./test_whole.sh
 ```
-If you install successfully, you will find results in the example/exon/output/ or example/whole/output/.
+If you install successfully, you will find results in the `output/`.
 ## Dependencies 
 ### Programming 
 * python=3.8.12 or above  
@@ -47,8 +48,8 @@ If you install successfully, you will find results in the example/exon/output/ o
 * Perl 5 or above
 
 ### Third party packages
-The softwares in the /bin folder can also be installed by yourself, please remind link the excute file to the bin/folder.
-Please apply Novoalign, and put the novoalign.lic (license file) in the bin/ folder.
+The softwares in the `/bin` folder can also be installed by yourself, please remind link the executable file to the `bin/` folder.
+Please apply Novoalign, and put the novoalign.lic (license file) in the `bin/` folder.
 
 * Third party packages:
     * SamTools-1.3.1
@@ -67,11 +68,12 @@ Please apply Novoalign, and put the novoalign.lic (license file) in the bin/ fol
     * Minimap 2.17-r941
     * pbmm2-1.4.0
     * pbsv Version 2.6.2
+    * Bowtie 2 version 2.3.4.1
 
 
 ## Basic Usage  
 ### Extract HLA-related reads
-We should first extract HLA reads with enrichment-free data before profiling the HLA. Please first map the fastq reads to hg19 or hg38, then use the ExtractHLAread.sh in script/ folder to extract HLA-related reads. We use the script of Kourami with minor revision for this step. 
+We should first extract HLA reads with enrichment-free data before profiling the HLA. Please first map the fastq reads to `hg19` or `hg38`, then use the `ExtractHLAread.sh` in `script/` folder to extract HLA-related reads. We use the script of Kourami with minor revision for this step. 
 ```
 HLA-related reads extractor for HLA Typing
 USAGE: <PATH-TO>/ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome>
@@ -185,7 +187,7 @@ sh SpecHLA_single.sh -n <sample> -t <sample.pacbio.fq.gz> -p <Asian>
 Please install Longshot 0.4.1 and add it to the system path to call small variants with TGS data. Please use "sh SpecHLA_single.sh -h" to see detailed usage information.
 
 ### TGS only Assembly-based Typing (Testing)
-To assemble the TGS reads, and perform HLA typing based on the contigs, please use /script/assembly/MHC.TGS.mapping.sh. 
+To assemble the TGS reads, and perform HLA typing based on the contigs, please use `/assembly/MHC.TGS.mapping.sh`. 
 ```
 USAGE: <PATH-TO>/MHC.TGS.mapping.sh -s <sample_id> -f <mhc.read> -v <mhc.vcf> -r <refGenomedir> -t <Sequencer>
 
@@ -235,7 +237,7 @@ bcftools view -g het -v snps  deepvariant/pacbio-15kb-hapsort-wgs.vcf.gz  chr6:2
 
 
 ## Interpret output
-SpecHLA will automaticly build a folder named output/ in the current path. In the output/ folder, the results of each sample are saved in a folder named as the sample ID.  
+SpecHLA will automaticly build a folder named `output/` in the current path. In the `output/` folder, the results of each sample are saved in a folder named as the sample ID.  
 
 In the directory of one specific sample, you will find the below files:
 ```
@@ -260,7 +262,7 @@ Score   100     100     100             100     100     100     100     100     
 This means the typing result of each gene's haplotype. The third line indicates the match score between the assembly sequence and the typing allele in the database.   
 
 ## Simulation
-Please go to the simulation/ folder, and run simu.hla.sh like:
+Please go to the `simulation/` folder, and run `simu.hla.sh` like:
 ```
 Simulation HLA capture reads for HLA Typing
 USAGE: <PATH-TO>/simu.hla.sh -n <sample_size> -r <read_length> -1 <depth of haplotype1> -2 <depth of haplotype2>
