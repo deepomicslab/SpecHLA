@@ -44,7 +44,7 @@ If you install successfully, you will find results in the `output/`.
 ## Dependencies 
 ### Programming 
 * python=3.8.12 or above  
-* Python libraries: numpy=1.22.3, pysam=0.9.1, pysam=0.19.0, and biopython=1.79. 
+* Python libraries: numpy=1.22.3, pulp=2.6.0, pysam=0.19.0, and biopython=1.79. 
 * Perl 5 or above
 
 ### Third party packages
