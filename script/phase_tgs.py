@@ -720,11 +720,8 @@ def newphase(outdir,final_alpha,seq_list,snp_list,vcffile,gene):
 
     m.close()
     out.close()
-    os.system('%s/../bin/tabix -f %s/%s.rephase.vcf.gz'%(sys.path[0],outdir,gene))
+    os.system('tabix -f %s/%s.rephase.vcf.gz'%(outdir,gene))
     return update_seqlist
-
-def newalpha(update_seqlist, sec_beta, strainsNum, allele_set, weight, fir_beta):
-    return alpha_step(sec_beta, update_seqlist, strainsNum, allele_set, weight, fir_beta)
 
 def gene_phased(update_seqlist,snp_list, gene):
     gene_profile={}
@@ -754,7 +751,7 @@ def no_snv_gene_phased(vcffile, outdir, gene, strainsNum):
             out_vcf.write(record)
     in_vcf.close()
     out_vcf.close()
-    os.system('%s/../bin/tabix -f %s/%s.rephase.vcf.gz'%(sys.path[0],outdir,gene))
+    os.system('tabix -f %s/%s.rephase.vcf.gz'%(outdir,gene))
     ra_file=open(outdir+'/%s_freq.txt'%(gene),'w')    
     print ('# HLA\tFrequency',file=ra_file)
     print ('str-'+str(1), 1, file=ra_file)
@@ -1678,7 +1675,7 @@ def find_deletion_region(sv_list):
 
 def split_vcf(gene, outdir, deletion_region):
     vcf = '%s/%s.vcf.gz'%(outdir,gene)
-    os.system('%s/../bin/tabix -f %s'%(sys.path[0], vcf))
+    os.system('tabix -f %s'%(vcf))
     # if len(deletion_region) == 0:
     #     print ('no sv!')
     #     return 0
@@ -1858,7 +1855,7 @@ if __name__ == "__main__":
         ######PStrain-filter-SNV
         snp_list,beta_set,allele_set,snp_index_dict = read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,\
             freq_bias,strainsNum,deletion_region, snp_qual)   
-        os.system('%s/../bin/tabix -f %s/middle.vcf.gz'%(sys.path[0], outdir))   
+        os.system('tabix -f %s/middle.vcf.gz'%(sys.path[0], outdir))   
         if germline_flag == True: 
             args.weight = 0.0
         if len(snp_list)==0:
@@ -1871,13 +1868,8 @@ if __name__ == "__main__":
             #     print (snp_list[i], delta_set[i])
             fir_beta,sec_beta=rectify(snp_list,beta_set,delta_set,args.lambda1,args.lambda2,\
                 germline_flag)
-            if strainsNum==0:
-                wo=Workflow(fir_beta,sec_beta,delta_set,args.weight,args.elbow,allele_set)
-                final_alpha,seq_list,loss=wo.choose_k()
-                strainsNum = len(final_alpha)
-            else:
-                wo=Workflow(fir_beta,sec_beta,delta_set,args.weight,args.elbow,allele_set)
-                final_alpha,seq_list,loss=wo.given_k(strainsNum)  
+            wo=Workflow(fir_beta,sec_beta,delta_set,args.weight,args.elbow,allele_set)
+            final_alpha,seq_list,loss=wo.given_k()  
             generate_break_points(outdir,snp_list,delta_set,strainsNum)
             output(outdir,final_alpha,seq_list,snp_list,gene,freq_bias)
             use_pstrain_bp = True
@@ -1888,7 +1880,7 @@ if __name__ == "__main__":
 
             if args.phase_flag == True:
                 my_new_vcf = '%s/%s.vcf.gz'%(outdir, gene)
-                os.system('%s/../bin/tabix -f %s'%(sys.path[0], my_new_vcf))
+                os.system('tabix -f %s'%(my_new_vcf))
                 # os.system('gzip -f -d %s'%(my_new_vcf))
                 # my_new_vcf = '%s/%s.vcf'%(outdir, gene)
                 
@@ -2015,7 +2007,7 @@ if __name__ == "__main__":
                     $bin/extractHAIRS  --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam --VCF %s --out $outdir/fragment.tenx.file
                     $bin/BarcodeExtract $bam $outdir/barcode_spanning.bed
                     bgzip -f -c $outdir/barcode_spanning.bed > $outdir/barcode_spanning.bed.gz
-                    $bin/tabix -f -p bed $outdir/barcode_spanning.bed.gz
+                    tabix -f -p bed $outdir/barcode_spanning.bed.gz
                     
                     """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, sys.path[0], my_new_vcf)
                     print ('extract linkage info from 10 X data.')
@@ -2037,11 +2029,11 @@ if __name__ == "__main__":
 
             
 
-                os.system('%s/../bin/tabix -f %s'%(sys.path[0], my_new_vcf))
+                os.system('tabix -f %s'%(my_new_vcf))
                 os.system(order)
 
                 convert(outdir, gene, '%s/%s.specHap.phased.vcf'%(outdir,gene), seq_list, snp_list)
-                os.system('%s/../bin/tabix -f %s'%(sys.path[0], my_new_vcf))
+                os.system('tabix -f %s'%( my_new_vcf))
 
                 os.system('cat %s/%s_break_points_spechap.txt'%(outdir, gene))
 
@@ -2074,7 +2066,7 @@ if __name__ == "__main__":
                 seq_list = read_spechap_seq('%s/%s.vcf.gz'%(outdir, gene), snp_list)
 
             update_seqlist=newphase(outdir,final_alpha,seq_list,snp_list,vcffile,gene)   #need to refresh alpha with new result.
-            fresh_alpha = newalpha(update_seqlist, sec_beta, strainsNum, allele_set, args.weight, fir_beta)
+            fresh_alpha = alpha_step(update_seqlist, fir_beta)
             freq_output(outdir, gene, fresh_alpha, germline_flag)
             gene_profile=gene_phased(update_seqlist,snp_list,gene)
             print ('Phasing of %s is done! Haplotype ratio is %s:%s'%(gene, fresh_alpha[0], fresh_alpha[1]))

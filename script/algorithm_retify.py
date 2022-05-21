@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from my_imports import *
-import pulp
 
 def table(k,allele_num):
     mytable=[]
@@ -47,59 +46,24 @@ def fixed(k):
         fixed_alpha.append(num/list_sum)
     return fixed_alpha
 
-def alpha_step(delta_set,geno_set,k,allele_set,weight,beta_set): #would it be better using delta_set   
-    allele_num=max(allele_set)
-    table_set=table_allele(k,allele_num)
-    seqLen=allele_num**2
-    prob = LpProblem('myPro', LpMinimize)
-    alpha=LpVariable.dicts("alpha",range(k),lowBound = 0,upBound = 1)
-    cost=LpVariable.dicts("cost",range(len(geno_set)*(allele_num**2)),lowBound = 0)
-    beta_cost=LpVariable.dicts("beta_cost",range(len(geno_set)*allele_num),lowBound = 0)
-    alpha_sum=0
-    for i in range(k):
-        alpha_sum+=alpha[i]
-    prob+=alpha_sum==1
-    lost=0
-    for i in range(len(delta_set)):
-        supposed_delta=[0]*(allele_num**2)#(allele_set[loucs]*allele_set[loucs+1])
-        # seqLen=len(supposed_delta)
-        for l in range(k):
-            # index=geno_set[i][l]+geno_set[i+1][l]*allele_num
-            index=geno_set[i][l]*allele_set[i+1]+geno_set[i+1][l]
-            # index=table_set[allele_set[i]-2][i][l]*allele_set[i+1]+table_set[allele_set[i+1]-2][j][l]
-            supposed_delta[index] += alpha[l]
-        for j in range(len(delta_set[i])):
-            prob += delta_set[i][j] - supposed_delta[j] <= cost[seqLen*i+j]
-            prob += delta_set[i][j] - supposed_delta[j] >=-cost[seqLen*i+j]
-            lost+=cost[seqLen*i+j]*(1-weight)
-    #loss for beta
+def alpha_step(geno_set,beta_set):
+    # compute allele frequency with least square
+    locus_num = 0
+    alpha = np.array([0.0, 0.0])
     for i in range(len(beta_set)):
-        supposed_beta=[0]*(allele_num)
-        for l in range(k):
-            index=geno_set[i][l]
-            supposed_beta[index] += alpha[l]
-        for j in range(len(beta_set[i])):
-            prob += beta_set[i][j] - supposed_beta[j] <= beta_cost[allele_num*i+j]
-            prob += beta_set[i][j] - supposed_beta[j] >=-beta_cost[allele_num*i+j]
-            lost+=beta_cost[allele_num*i+j]*weight
-
-    prob+=lost,"total lost"
-    prob.solve(pulp.PULP_CBC_CMD(msg=0))
-    weights_list,n,loss=[],0,0
-    # for i in prob.variables():
-    #     if n<k:
-    #         weights_list.append(i.varValue)
-    #     else:
-    #         loss+=i.varValue
-    #     n+=1
-    # print ('alpha', weights_list)
-    # return weights_list
-    alpha = []
-    for i in prob.variables():
-        if 'alpha' in i.name:
-             alpha.append(i.varValue)
-    # print ('alpha', alpha)
-    return alpha
+        beta = beta_set[i][1]
+        if geno_set[i][0] == 0:
+            alpha[0] += (1-beta)
+            alpha[1] += beta
+            locus_num += 1
+        elif geno_set[i][0] == 1:
+            alpha[0] += beta
+            alpha[1] += (1-beta)
+            locus_num += 1
+    if locus_num > 0:
+        return alpha/locus_num
+    else:
+        return [1, 0]
 
 def index2seq(strain_number,locus_index,allele_set):
     geno_set=[]
@@ -255,39 +219,27 @@ class Workflow():
         self.share_set=share_set
         self.w=weight
         self.elbow=elbow
-
-    def choose_k(self):
-        previous_loss=float('inf')
-        T=1
-        while True:
-            geno_index,corr_loss,final_alpha=self.multi_init(T)
-            if corr_loss==0 or float(previous_loss-corr_loss)/previous_loss < self.elbow:
-                seq_list=index2seq(len(previous_alpha),previous_index,self.allele_set)
-                return previous_alpha,seq_list,corr_loss
-            previous_loss=corr_loss
-            previous_alpha,previous_index=final_alpha,geno_index
-            T+=1
-    def given_k(self,T):
-        geno_index,corr_loss,final_alpha=self.multi_init(T)
+    def given_k(self):
+        geno_index,corr_loss,final_alpha=self.multi_init()
         seq_list=index2seq(len(final_alpha),geno_index,self.allele_set)
         return final_alpha,seq_list,corr_loss
-    def multi_init(self,T):
+    def multi_init(self):
         mini_set=['',float('inf'),'']
         for i in range(10):
-            geno_index,corr_loss,final_alpha=self.iteration(T)
+            geno_index,corr_loss,final_alpha=self.iteration()
             if corr_loss < mini_set[1]:
                 mini_set=[geno_index,corr_loss,final_alpha]
         # print (mini_set[0],mini_set[2])
         # print (table_allele(3,2))
         return mini_set[0],mini_set[1],mini_set[2]
-    def iteration(self,T):
+    def iteration(self):
         #T is supposed strain number
         times=0
         past_loss=float('inf')
         save_list=[]
         loss_list=[]
         # current_alpha=fixed(T)
-        current_alpha=random_alpha(T)
+        current_alpha=[0.5, 0.5]
         while True:
             ph=Phase_step(current_alpha,self.delta_set,self.beta_set,self.share_set,self.w,self.allele_set)
             answer_index,geno_set,phase_loss=ph.breaks_phase()
@@ -295,12 +247,12 @@ class Workflow():
             # print (phase_loss,current_alpha)
             save_list.append([answer_index,geno_set,phase_loss,current_alpha])
             loss_list.append(phase_loss)
-            if abs(past_loss-phase_loss) < 0.000001 or times > 15:
+            if abs(past_loss-phase_loss) < 0.000001 or times > 1:
                 final_index,final_loss,final_alpha = answer_index,phase_loss,current_alpha
                 break
             past_loss=phase_loss
             times+=1
-            current_alpha=alpha_step(self.delta_set,geno_set,T,self.allele_set,self.w,self.beta_set)
+            current_alpha=alpha_step(geno_set,self.beta_set)
             # print ('alpha step done')
             current_alpha=sorted(current_alpha)
         return final_index,final_loss,final_alpha
@@ -313,7 +265,6 @@ if __name__ == "__main__":
     delta_set=[[0.5,0.2,0.3,0],[0.3,0.5,0,0.2],[0,0,0.3,0.5,0.2,0],[0,0.5,0.2,0,0.3,0],[0.2,0.3,0,0,0,0.5],[0,0.2,0,0.3,0.5,0],[0,0.5,0.3,0.2]]
     geno_set=[[0,1,0],[1,0,0],[1,0,1],[1,2,0],[0,0,1],[0,1,2],[1,1,0],[1,0,1]]
     allele_set=[2,2,2,3,2,3,2,2]
-    # print (alpha_step(delta_set,geno_set,3,3))
     wo=Workflow(beta_set,delta_set,allele_set)
     # wo.choose_k()
     final_alpha,seq_list=wo.given_k(3)

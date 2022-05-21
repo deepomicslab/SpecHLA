@@ -124,17 +124,16 @@ $bin/samtools index $outdir/$sample.merge.bam
 # ################################### local assembly and realignment #################################
 sh $dir/../run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70 $dir/select.region.exon.txt 4
 echo realignment is done.
-# !
 echo "$bin/freebayes -a -f $hlaref -p 3 $outdir/$sample.realign.sort.fixmate.bam > $outdir/$sample.realign.vcf && rm -rf $outdir/$sample.realign.vcf.gz "
 $bin/freebayes -a -f $hlaref -p 3 $outdir/$sample.realign.sort.fixmate.bam > $outdir/$sample.realign.vcf && rm -rf $outdir/$sample.realign.vcf.gz 
-$bin/bgzip -f $outdir/$sample.realign.vcf
-$bin/tabix -f $outdir/$sample.realign.vcf.gz
+bgzip -f $outdir/$sample.realign.vcf
+tabix -f $outdir/$sample.realign.vcf.gz
 #cp $outdir/$sample.realign.vcf $outdir/$sample.realign.filter.vcf
 less $outdir/$sample.realign.vcf.gz |grep "#" > $outdir/$sample.realign.filter.vcf
 $bin/bcftools filter -R $dir/exon_extent.bed $outdir/$sample.realign.vcf.gz |grep -v "#"  >> $outdir/$sample.realign.filter.vcf  
 # #####################################################################################################
 
-
+# !
 # ###################### phase, link blocks, calculate haplotype ratio, give typing results ##############
 python3 $dir/../phase_exon.py -b $outdir/$sample.realign.sort.bam -v $outdir/$sample.realign.filter.vcf \
 -o $outdir/ -g ${pstrain_bk:-True} --snp_dp 0 --block_len 80 --points_num 1 --freq_bias 0.1 --reads_num 2 -a ${phase:-True} 
@@ -158,5 +157,5 @@ perl $dir/anno_HLA_pop.pl $sample $outdir 2 $pop $annotation_parameter
 
 
 cat $outdir/hla.result.txt
-sh $dir/../clear_output.sh $outdir/
+# sh $dir/../clear_output.sh $outdir/
 echo $sample is done.

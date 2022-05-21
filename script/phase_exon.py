@@ -278,7 +278,7 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,chrom_name,freq_bias,strain
         md_vcf.write(record)
     in_vcf.close()
     md_vcf.close()
-    os.system('%s/../bin/tabix -f %s/middle.vcf.gz'%(sys.path[0],outdir))
+    os.system('tabix -f %s/middle.vcf.gz'%(outdir))
     print ("The number of hete loci is %s."%(len(snp_list)))
     return snp_list, beta_set, allele_set
 
@@ -664,7 +664,7 @@ def newphase(outdir,final_alpha,seq_list,snp_list,vcffile,gene):
 
     m.close()
     out.close()
-    os.system('%s/../bin/tabix %s/%s.rephase.vcf.gz'%(sys.path[0],outdir,gene))
+    os.system('tabix %s/%s.rephase.vcf.gz'%(outdir,gene))
     return update_seqlist
 
 def gene_phased(update_seqlist,snp_list):
@@ -700,7 +700,7 @@ def no_snv_gene_phased(vcffile, outdir, gene, strainsNum):
     in_vcf.close()
     out_vcf.close()
     for_spec_vcf.close()
-    os.system('%s/../bin/tabix %s/%s.rephase.vcf.gz'%(sys.path[0],outdir,gene))
+    os.system('tabix %s/%s.rephase.vcf.gz'%(outdir,gene))
     ra_file=open(outdir+'/%s_freq.txt'%(gene),'w')    
     print ('# HLA\tFrequency',file=ra_file)
     print ('str-'+str(1), 1, file=ra_file)
@@ -851,7 +851,7 @@ def rephase_output(outdir,final_alpha,seq_list,snp_list,vcffile,gene, index):
 
     m.close()
     out.close()
-    os.system('%s/../bin/tabix %s/%s.%s.rephase.vcf.gz'%(sys.path[0], outdir, gene, index))
+    os.system('tabix %s/%s.%s.rephase.vcf.gz'%(outdir, gene, index))
     exon_ref = '%s/../db/ref/hla_exon_ref.fasta'%(sys.path[0])
     for i in range(1, k+1):
         fastq2 = '%s/../bin/samtools faidx %s %s | \
@@ -982,7 +982,7 @@ if __name__ == "__main__":
                 delta_set=second_beta(bamfile,snp_list)   
                 fir_beta,sec_beta=rectify(snp_list,beta_set,delta_set,args.lambda1,args.lambda2,False)
                 wo=Workflow(fir_beta,sec_beta,delta_set,args.weight,args.elbow,allele_set)
-                final_alpha,seq_list,loss = wo.given_k(strainsNum)  
+                final_alpha,seq_list,loss = wo.given_k()  
                 output(outdir,final_alpha,seq_list,snp_list,gene)
 
             ##### Phase-with-SpecHap
@@ -997,13 +997,13 @@ if __name__ == "__main__":
                 os.system('sort -k3 %s/frament.file >%s/frament.sorted.file'%(outdir, outdir))
                 os.system('bgzip %s'%(my_new_vcf))
                 my_new_vcf = '%s/%s.vcf.gz'%(outdir, gene)
-                os.system('%s/../bin/tabix -f %s'%(sys.path[0],my_new_vcf))
+                os.system('tabix -f %s'%(my_new_vcf))
                 os.system('cp %s/%s.vcf.gz %s/%s.vcf.pstain.gz'%(outdir, gene, outdir, gene))
                 order = '%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/frament.sorted.file \
                 --out %s/%s.specHap.phased.vcf'%(sys.path[0], my_new_vcf, outdir, outdir,gene)
                 os.system(order)
                 break_points_index = convert(outdir, gene, '%s/%s.specHap.phased.vcf'%(outdir,gene))
-                os.system('%s/../bin/tabix -f %s'%(sys.path[0],my_new_vcf))
+                os.system('tabix -f %s'%(my_new_vcf))
                 seq_list = read_spechap_seq('%s/%s.vcf.gz'%(outdir, gene), snp_list)
             else:
                 use_pstrain_break_point_flag = True
