@@ -7,6 +7,7 @@ dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_gnu
   - amply=0.1.5=pyhd8ed1ab_0
+  - arpack=3.7.0=hdefa2d7_2
   - biopython=1.79=py38h497a2fe_1
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.18.1=h7f98852_0
