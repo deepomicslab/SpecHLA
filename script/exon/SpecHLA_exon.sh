@@ -73,11 +73,11 @@ if [ ${given_outdir:-NA} == NA ]
     outdir=$given_outdir/$sample   
 fi
 
-
+echo Start profiling HLA for $sample.
 mkdir -p $outdir
 exec >$outdir/$sample.log 2>&1
 group='@RG\tID:'$sample'\tSM:'$sample
-echo Start profiling HLA for $sample.
+
 # :<<!
 
 # ################ remove the repeat read name #################

@@ -17,8 +17,9 @@ dependencies:
   - coin-or-osi=0.108.7=h3b589db_0
   - coin-or-utils=2.11.6=h573740c_0
   - coincbc=2.10.8=0_metapackage
+  - curl=7.83.1=h7bff187_0
   - docutils=0.18.1=py38h578d9bd_1
-  - htslib=1.15.1=h9753748_0
+  - htslib=1.9=h4da6232_3
   - keyutils=1.6.1=h166bdaf_0
   - krb5=1.19.3=h3790be6_0
   - ld_impl_linux-64=2.36.1=hea4e1c9_2
