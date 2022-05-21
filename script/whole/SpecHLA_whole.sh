@@ -107,8 +107,8 @@ echo Start profiling HLA for $sample.
 mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
 
-
-
+echo use ${num_threads:-5} threads.
+# :<<!
 # ################ remove the repeat read name #################
 python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
@@ -124,10 +124,10 @@ echo map the reads to database to assign reads to corresponding genes.
 license=../../bin/novoalign.lic
 if [ -f "$license" ];then
     $bin/novoalign -d $db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.ndx -f $fq1 $fq2 -F STDFQ -o SAM \
-    -o FullNW -r All 100000 --mCPU ${num_threads:5} -c 10  -g 20 -x 3  | $bin/samtools view \
+    -o FullNW -r All 100000 --mCPU ${num_threads:-5} -c 10  -g 20 -x 3  | $bin/samtools view \
     -Sb - | $bin/samtools sort -  > $outdir/$sample.map_database.bam
 else
-    $bin/bowtie2/bowtie2 -p ${num_threads:5} -k 10 -x $db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta -1 $fq1 -2 $fq2|\
+    $bin/bowtie2/bowtie2 -p ${num_threads:-5} -k 10 -x $db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta -1 $fq1 -2 $fq2|\
     $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
 fi
 $bin/samtools index $outdir/$sample.map_database.bam
@@ -143,7 +143,7 @@ $bin/bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 | $bin/samtools
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
         hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-        $bin/bwa mem -t ${num_threads:5} -U 10000 -L 10000,10000 -R $group $hla_ref $outdir/$hla.R1.fq.gz $outdir/$hla.R2.fq.gz\
+        $bin/bwa mem -t ${num_threads:-5} -U 10000 -L 10000,10000 -R $group $hla_ref $outdir/$hla.R1.fq.gz $outdir/$hla.R2.fq.gz\
          | $bin/samtools view -bS -F 0x800 -| $bin/samtools sort - >$outdir/$hla.bam
         $bin/samtools index $outdir/$hla.bam
 done
@@ -153,10 +153,10 @@ $bin/samtools index $outdir/$sample.merge.bam
 # ###############################################################################################################
 
 
-
+!
 # ################################### local assembly and realignment #################################
 echo start realignment.
-sh $dir/../run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70 $dir/select.region.txt ${num_threads:5}
+sh $dir/../run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70 $dir/select.region.txt ${num_threads:-5}
 $bin/freebayes -a -f $hlaref -p 3 $outdir/$sample.realign.sort.bam > $outdir/$sample.realign.vcf && \
 rm -rf $outdir/$sample.realign.vcf.gz 
 bgzip -f $outdir/$sample.realign.vcf

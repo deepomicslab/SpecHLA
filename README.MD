@@ -52,6 +52,7 @@ The softwares in the `/bin` folder can also be installed by yourself, please rem
 Please apply Novoalign, and put the novoalign.lic (license file) in the `bin/` folder.
 
 * Third party packages:
+    * conda 4.12.0 
     * SamTools-1.3.1
     * picard-tools-2.1.0
     * BWA-0.7.17-r1188

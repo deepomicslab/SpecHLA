@@ -1855,7 +1855,7 @@ if __name__ == "__main__":
         ######PStrain-filter-SNV
         snp_list,beta_set,allele_set,snp_index_dict = read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,\
             freq_bias,strainsNum,deletion_region, snp_qual)   
-        os.system('tabix -f %s/middle.vcf.gz'%(sys.path[0], outdir))   
+        os.system('tabix -f %s/middle.vcf.gz'%(outdir))   
         if germline_flag == True: 
             args.weight = 0.0
         if len(snp_list)==0:
