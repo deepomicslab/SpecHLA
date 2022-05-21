@@ -1,5 +1,5 @@
 #!/bin/bash
-
+export LD_LIBRARY_PATH=../spechla_env/lib
 
 ###
 ### Full-length HLA typing with paired-end reads. This script can use PacBio, Nanopore,
@@ -23,6 +23,7 @@
 ###   -d        rev hi-c fastq file.
 ###   -p        The population of the sample: Asian, Black, or Caucasian. Use mean frequency
 ###             if not provided.
+###   -j        Number of threads [5]
 ###   -f        True or False. The annotation database only includes the alleles with population 
 ###             frequency higher than zero if set True. Otherwise, it includes all alleles. Default 
 ###             is True.
@@ -46,7 +47,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
     exit 1
 fi
 
-while getopts ":n:1:2:p:f:m:s:v:q:t:a:e:x:c:d:r:y:o:" opt; do
+while getopts ":n:1:2:p:f:m:s:v:q:t:a:e:x:c:d:r:y:o:j:" opt; do
   case $opt in
     n) sample="$OPTARG"
     ;;
@@ -81,6 +82,8 @@ while getopts ":n:1:2:p:f:m:s:v:q:t:a:e:x:c:d:r:y:o:" opt; do
     r) maf="$OPTARG"
     ;;
     o) given_outdir="$OPTARG"
+    ;;
+    j) num_threads="$OPTARG"
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
@@ -121,10 +124,10 @@ echo map the reads to database to assign reads to corresponding genes.
 license=../../bin/novoalign.lic
 if [ -f "$license" ];then
     $bin/novoalign -d $db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.ndx -f $fq1 $fq2 -F STDFQ -o SAM \
-    -o FullNW -r All 100000 --mCPU 10 -c 10  -g 20 -x 3  | $bin/samtools view \
+    -o FullNW -r All 100000 --mCPU ${num_threads:5} -c 10  -g 20 -x 3  | $bin/samtools view \
     -Sb - | $bin/samtools sort -  > $outdir/$sample.map_database.bam
 else
-    $bin/bowtie2/bowtie2 -p 5 -k 10 -x $db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta -1 $fq1 -2 $fq2|\
+    $bin/bowtie2/bowtie2 -p ${num_threads:5} -k 10 -x $db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta -1 $fq1 -2 $fq2|\
     $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
 fi
 $bin/samtools index $outdir/$sample.map_database.bam
@@ -140,7 +143,7 @@ $bin/bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 | $bin/samtools
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
         hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-        $bin/bwa mem -U 10000 -L 10000,10000 -R $group $hla_ref $outdir/$hla.R1.fq.gz $outdir/$hla.R2.fq.gz\
+        $bin/bwa mem -t ${num_threads:5} -U 10000 -L 10000,10000 -R $group $hla_ref $outdir/$hla.R1.fq.gz $outdir/$hla.R2.fq.gz\
          | $bin/samtools view -bS -F 0x800 -| $bin/samtools sort - >$outdir/$hla.bam
         $bin/samtools index $outdir/$hla.bam
 done
@@ -153,7 +156,7 @@ $bin/samtools index $outdir/$sample.merge.bam
 
 # ################################### local assembly and realignment #################################
 echo start realignment.
-sh $dir/../run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70 $dir/select.region.txt 4
+sh $dir/../run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70 $dir/select.region.txt ${num_threads:5}
 $bin/freebayes -a -f $hlaref -p 3 $outdir/$sample.realign.sort.bam > $outdir/$sample.realign.vcf && \
 rm -rf $outdir/$sample.realign.vcf.gz 
 bgzip -f $outdir/$sample.realign.vcf
@@ -162,7 +165,6 @@ less $outdir/$sample.realign.vcf.gz |grep "#" > $outdir/$sample.realign.filter.v
 $bin/bcftools filter -t HLA_A:1000-4503,HLA_B:1000-5081,HLA_C:1000-5304,HLA_DPA1:1000-10775,HLA_DPB1:1000-12468,\
 HLA_DQA1:1000-7492,HLA_DQB1:1000-8480,HLA_DRB1:1000-12229 $outdir/$sample.realign.vcf.gz |grep -v "#" \
  >> $outdir/$sample.realign.filter.vcf  
-
 # #####################################################################################################
 # !
 

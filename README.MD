@@ -3,8 +3,9 @@
 ## Install  
 First, create the env with conda, and activate the env.
 ```
-conda env create -f environment.yml
-conda activate spechla
+cd SpecHLA/
+conda env create --prefix=./spechla_env -f environment.yml
+conda activate ./spechla_env
 ```
 Second, make the softwares in `bin/` executable.
 ```
@@ -12,7 +13,6 @@ chmod +x -R bin/*
 ```
 Third, index the database.
 ```
-cd SpecHLA/
 bash index.sh
 ```
 Note: `Novoalign` requires a license in `bin/`, if it is not detected, SpecHLA will use `bowtie2`. 
