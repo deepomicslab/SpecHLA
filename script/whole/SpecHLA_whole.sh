@@ -153,7 +153,6 @@ $bin/samtools index $outdir/$sample.merge.bam
 # ###############################################################################################################
 
 
-!
 # ################################### local assembly and realignment #################################
 echo start realignment.
 sh $dir/../run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70 $dir/select.region.txt ${num_threads:-5}
@@ -244,6 +243,6 @@ perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop $annotation_parameter
 
 
 
-sh $dir/../clear_output.sh $outdir/
+# sh $dir/../clear_output.sh $outdir/
 cat $outdir/hla.result.txt
 echo $sample is done.
