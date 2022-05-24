@@ -1,5 +1,5 @@
 #!/bin/bash
-export LD_LIBRARY_PATH=../spechla_env/lib
+
 
 ###
 ### The Exon version of SpecHLA, performs HLA assembly and HLA Typing. 
@@ -62,6 +62,7 @@ while getopts ":n:1:2:p:s:m:g:f:o:j:" opt; do
   esac
 done
 dir=$(cd `dirname $0`; pwd)
+export LD_LIBRARY_PATH=$dir/../spechla_env/lib
 bin=$dir/../../bin
 db=$dir/../../db
 hlaref=$db/ref/hla.ref.extend.fa
@@ -93,7 +94,7 @@ fq2=$outdir/$sample.uniq.name.R2.gz
 
 # ################### assign the reads to original gene################
 ## map the HLA reads to the allele database ##
-license=../../bin/novoalign.lic
+license=$dir/../../bin/novoalign.lic
 if [ -f "$license" ];then
     $bin/novoalign -d $db/ref/hla_gen.format.filter.extend.DRB.no26789.ndx -f $fq1 $fq2 -F STDFQ -o SAM \
     -o FullNW -r All 100000 --mCPU ${num_threads:-5} -c 10  -g 20 -x 3  | $bin/samtools view \
