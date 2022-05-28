@@ -271,9 +271,7 @@ def delta(outdir,extractHAIRS,bamfile,beta_set,reffile):
         delta_set[i]=delta
     return delta_set 
 
-def freq_output(outdir, gene, final_alpha, germline_flag):
-    # if germline_flag:
-    #     final_alpha = [0.5, 0.5]
+def freq_output(outdir, gene, final_alpha):
     ra_file=open(outdir+'/%s_freq.txt'%(gene),'w')    
     print ('# HLA\tFrequency',file=ra_file)
     for j in range(len(final_alpha)):
@@ -315,7 +313,7 @@ def output(outdir,final_alpha,seq_list,snp_list,gene,freq_bias):
     m.close()
     out.close()
 
-def rectify(snp_list,beta_set,delta_set,lambda1,lambda2,germline_flag):
+def rectify(snp_list,beta_set,delta_set,lambda1,lambda2):
     nucleotide={'A':0,'T':1,'C':2,'G':3}
     # rectify beta
     first_beta=[]
@@ -354,12 +352,6 @@ def rectify(snp_list,beta_set,delta_set,lambda1,lambda2,germline_flag):
         
         #turn the two biggest values to 0.5/0.5, used to handle normal samples
         index_sort=np.argsort(delta)
-        if germline_flag :
-            index_sort=np.argsort(delta)
-            delta[index_sort[0]],delta[index_sort[1]]=0,0
-            delta[index_sort[2]],delta[index_sort[3]]=0.5,0.5
-
-
         sec_beta.append(delta.tolist())
     return first_beta,sec_beta
 
@@ -1831,11 +1823,9 @@ if __name__ == "__main__":
     if len(sys.argv)==1:
         print (Usage%{'prog':sys.argv[0]})
     else:       
-        bamfile,outdir,snp_dp,indel_len,freq_bias=\
-            args.bamfile,args.outdir,args.snp_dp,args.indel_len,args.freq_bias           
+        bamfile,outdir,snp_dp,indel_len,freq_bias=args.bamfile,args.outdir,args.snp_dp,args.indel_len,args.freq_bias           
         snp_qual,gene,fq1,fq2,vcffile = args.snp_qual,args.gene,args.fq1,args.fq2,args.vcf
         strainsNum = 2
-        germline_flag = False
         if not os.path.exists(outdir):
             os.system('mkdir '+ outdir) 
         new_formate = False
@@ -1856,8 +1846,6 @@ if __name__ == "__main__":
         snp_list,beta_set,allele_set,snp_index_dict = read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,\
             freq_bias,strainsNum,deletion_region, snp_qual)   
         os.system('tabix -f %s/middle.vcf.gz'%(outdir))   
-        if germline_flag == True: 
-            args.weight = 0.0
         if len(snp_list)==0:
             print ('No heterozygous locus, no need to phase.')
             gene_profile = no_snv_gene_phased(vcffile, outdir, gene, strainsNum)
@@ -1866,9 +1854,8 @@ if __name__ == "__main__":
             delta_set=second_beta(bamfile,snp_list,snp_index_dict,outdir)   
             # for i in range(len(delta_set)):
             #     print (snp_list[i], delta_set[i])
-            fir_beta,sec_beta=rectify(snp_list,beta_set,delta_set,args.lambda1,args.lambda2,\
-                germline_flag)
-            wo=Workflow(fir_beta,sec_beta,delta_set,args.weight,args.elbow,allele_set)
+            fir_beta,sec_beta=rectify(snp_list,beta_set,delta_set,args.lambda1,args.lambda2)
+            wo=Workflow(fir_beta,sec_beta,delta_set,0,args.elbow,allele_set)
             final_alpha,seq_list,loss=wo.given_k()  
             generate_break_points(outdir,snp_list,delta_set,strainsNum)
             output(outdir,final_alpha,seq_list,snp_list,gene,freq_bias)
@@ -2067,7 +2054,7 @@ if __name__ == "__main__":
 
             update_seqlist=newphase(outdir,final_alpha,seq_list,snp_list,vcffile,gene)   #need to refresh alpha with new result.
             fresh_alpha = alpha_step(update_seqlist, fir_beta)
-            freq_output(outdir, gene, fresh_alpha, germline_flag)
+            freq_output(outdir, gene, fresh_alpha)
             gene_profile=gene_phased(update_seqlist,snp_list,gene)
             print ('Phasing of %s is done! Haplotype ratio is %s:%s'%(gene, fresh_alpha[0], fresh_alpha[1]))
 

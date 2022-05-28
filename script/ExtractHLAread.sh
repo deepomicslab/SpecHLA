@@ -60,7 +60,7 @@ fi
 #$samtools_bin index $bam_path
 if [ $ref == "hg38" ]; then
   
-	echo ">>>>>>>>>>>>>>>> extracting reads mapping to HLA loci and ALT contigs (hg19)"
+	echo ">>>>>>>>>>>>>>>> extracting reads mapping to HLA loci and ALT contigs (hg38)"
 
   $samtools_bin view -b $bam_path chr6:29723340-29727296 chr6:29726601-29749049 chr6:29826979-29831122 \
   chr6:29887760-29891080 chr6:29942470-29945884 chr6:30005971-30009956 chr6:30259562-30266951 \

@@ -54,6 +54,7 @@ Please apply Novoalign, and put the novoalign.lic (license file) in the `bin/` f
 * Third party packages:
     * conda 4.12.0 
     * SamTools-1.3.1
+    * bamutil Version: 1.0.14
     * picard-tools-2.1.0
     * BWA-0.7.17-r1188
     * blast 2.3.0
