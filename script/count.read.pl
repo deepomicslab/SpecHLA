@@ -14,7 +14,7 @@ while(<LI>){
 close LI;
 my %hash1;
 my %hashfa;
-open CI, "$db/DRB1_dup_extract.fasta" or die "$!\tfile2\n";
+open CI, "$db/DRB1_dup_extract_ref.fasta" or die "$!\tfile2\n";
 #open CI, "/mnt/disk2_workspace/wangmengyao/NeedleHLA/GA_rich/DRB1/DRB1_dup_extract.fasta" or die "$!\n";
 while(<CI>){
 	chomp;

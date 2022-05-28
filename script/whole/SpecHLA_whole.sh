@@ -31,8 +31,6 @@
 ###   -v        True or False. Consider long InDels if True, else only consider short variants. 
 ###             Default is False.
 ###   -q        Minimum variant quality. Default is 0.01. Set it larger in high quality samples.
-###   -s        True or False. Use SpecHap to phase if True, else use PStrain. Default is True.
-###             We recommend use SpecHap.
 ###   -a        Use this long InDel file if provided.
 ###   -r        The minimum Minor Allele Frequency (MAF), default is 0.05.
 ###   -h        Show this message.
@@ -46,7 +44,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
     exit 1
 fi
 
-while getopts ":n:1:2:p:f:m:s:v:q:t:a:e:x:c:d:r:y:o:j:" opt; do
+while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:" opt; do
   case $opt in
     n) sample="$OPTARG"
     ;;
@@ -55,8 +53,6 @@ while getopts ":n:1:2:p:f:m:s:v:q:t:a:e:x:c:d:r:y:o:j:" opt; do
     2) fq2="$OPTARG"
     ;;
     p) pop="$OPTARG"
-    ;;
-    s) phase="$OPTARG"
     ;;
     m) nm="$OPTARG"
     ;;
@@ -106,7 +102,7 @@ fi
 
 echo Start profiling HLA for $sample. 
 mkdir -p $outdir
-exec >$outdir/$sample.log 2>&1
+# exec >$outdir/$sample.log 2>&1 #redirect log info to the outdir
 group='@RG\tID:'$sample'\tSM:'$sample
 echo use ${num_threads:-5} threads.
 
@@ -171,7 +167,7 @@ HLA_DQA1:1000-7492,HLA_DQB1:1000-8480,HLA_DRB1:1000-12229 $outdir/$sample.realig
 # !
 
 
-
+!
 # ###################### call long indel #############################################
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
@@ -199,7 +195,6 @@ fi
 # #############################################################################################
 
 
-
 # ###################### phase, link blocks, calculate haplotype ratio, give typing results ##############
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
@@ -212,7 +207,6 @@ python3 $dir/../phase_tgs.py \
 --fq1 $outdir/$hla.R1.fq.gz \
 --fq2 $outdir/$hla.R2.fq.gz \
 --gene HLA_$hla \
--a ${phase:-True} \
 --freq_bias ${maf:-0.05} \
 --block_len 200 --points_num 1 --reads_num 2 --snp_qual ${snp_quality:-0.01} \
 --ref $hla_ref \

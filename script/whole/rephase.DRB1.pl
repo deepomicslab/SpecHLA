@@ -77,7 +77,7 @@ foreach my $contig(sort keys %hashf){
 	$ref = "$db/whole/HLA_DRB1";
         $start1 = $s;
 	`$bin/bcftools sort $vcf -O z -o $vcf.gz`;
-	`$bin/tabix $vcf.gz`;
+	`tabix $vcf.gz`;
 	$n=0;
 	while($n<=$#lines){
 	        ($break1,$num1) = (split /\s/, $lines[$n])[1,6];
@@ -137,7 +137,7 @@ while(<CIN>){
     my $gene = shift @arrs;
     my $vcf = (split /\t/,$hashf{$contig})[2];
     `$bin/bcftools sort $vcf -O z -o $vcf.gz`;
-    `$bin/tabix -f $vcf.gz`;
+    `tabix -f $vcf.gz`;
     $hashtt{$contig} += 1;
     my ($start1,$end1,$start2,$end2,$p1,$p2) = @arrs[0,1,2,3,4,5];
     my $name1 = "$gene"."-"."$contig"."-"."1";
