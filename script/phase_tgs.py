@@ -561,7 +561,7 @@ def relate_order_other(file, snp_list):
     # print (block_dict)
     return block_dict
 
-def newphase(outdir,seq_list,snp_list,vcffile,gene):
+def block_phase(outdir,seq_list,snp_list,vcffile,gene):
     file=outdir+'/%s_break_points_phased.txt'%(gene)
     if os.path.isfile(file):
         block_dict=relate_order_other(file, snp_list)
@@ -1878,8 +1878,8 @@ if __name__ == "__main__":
             os.system(str(reph))
 
 
-            seq_list = read_spechap_seq('%s/%s.vcf.gz'%(outdir, gene), snp_list)
-            update_seqlist = newphase(outdir,seq_list,snp_list,vcffile,gene)   #need to refresh alpha with new result.
+            seq_list = read_spechap_seq('%s/%s.vcf.gz'%(outdir, gene), snp_list) # get the haplotypes
+            update_seqlist = block_phase(outdir,seq_list,snp_list,vcffile,gene)   # phase the unlinked blocks
             fresh_alpha = compute_allele_frequency(update_seqlist, beta_set) # compute haplotype frequency with least-square
             freq_output(outdir, gene, fresh_alpha)
             gene_profile = gene_phased(update_seqlist,snp_list,gene)
