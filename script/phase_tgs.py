@@ -57,6 +57,8 @@ optional.add_argument("--block_len",help="The minimum length for block to be con
      result (default is 300).",dest='block_len',metavar='',default=300, type=int)
 optional.add_argument("--points_num",help="The minimum hete loci number for block to be considered\
      in final result (default is 2).",dest='points_num',metavar='',default=2, type=int)
+optional.add_argument("--weight_imb",help="The weight of using phase information of allele imbalance\
+ [0-1], default is 0. (default is 0)",dest='weight_imb',metavar='',default=0, type=float)
 #break points
 optional.add_argument("--reads_num",help="The number of supporting reads between two adjcent loci\
      lower than this value will be regard as break points.(default is 10)",dest='reads_num',\
@@ -65,18 +67,7 @@ optional.add_argument("--noise_num",help="If the haplotype number is 2, there wi
     types of linked reads. If the third type of reads number is over this value, then these two \
     loci will be regarded as break points.(default is 5)",dest='noise_num',metavar='',default=5, \
     type=int)
-optional.add_argument( "--lambda1",help="The weight of prior knowledge while rectifying genotype\
- frequencies. The value is between 0~1. (default is 0.0)",dest='lambda1',metavar='',default=0,\
-  type=float)
-optional.add_argument( "--lambda2",help="The weight of prior estimation while rectifying second\
- order genotype frequencies. The value is between 0~1. (default is 0.0)",dest='lambda2',\
- metavar='',default=0, type=float)
-optional.add_argument("--elbow",help="The cutoff of elbow method while identifying HLAs number. \
-If the loss reduction ratio is less than the cutoff, then the HLAs number is determined.",\
-    dest='elbow',metavar='',default=0.24, type=float)
-optional.add_argument("-w", "--weight",help="The weight of genotype frequencies while computing\
-     loss, then the weight of linked read type frequencies is 1-w. The value is between 0~1.\
-      (default is 1)",dest='weight',metavar='',default=1, type=float)
+
 parser._action_groups.append(optional)
 args = parser.parse_args()
 
@@ -418,14 +409,11 @@ def reads_support(samfile,first):
     return reads_list
 
 def link_reads(samfile,left,right,new_left,snp_index_dict,f):
-    left_num=2#len(left[3])+1
-    right_num=2#len(right[3])+1
-    # left_reads=reads_support(samfile,left)
     left_reads=new_left
     right_reads=reads_support(samfile,right)
     delta_count=[]
-    for i in range(left_num):
-        for j in range(right_num):
+    for i in range(2):
+        for j in range(2):
             left_set=left_reads[i]
             right_set=right_reads[j]
             reads_name = set(left_set).intersection(set(right_set))
@@ -457,7 +445,6 @@ def extract_linkage_for_indel(bamfile,snp_list,snp_index_dict,outdir):
         delta_count,right_reads=link_reads(samfile,left,right,new_left,snp_index_dict, f)
         new_left=right_reads
     f.close()
-
 
 def isin(x,seq):
     try:
@@ -1680,6 +1667,25 @@ def compute_allele_frequency(geno_set,beta_set):
     else:
         return [1, 0]
 
+def allele_imba(freqs):
+    # get the linkage info from allele frequencies at each variant locus
+    f = open(outdir + '/fragment.imbalance.file', 'w')
+    base_q = 60 * args.weight_imb
+    if base_q >= 1:
+        locus_num = len(freqs)
+        mat = np.zeros((2*locus_num, 2*locus_num))
+        for i in range(locus_num):
+            z = 0
+            for j in range(i+1, locus_num):
+                if z == 1:
+                    break
+                same = max([ freqs[i][0] *  freqs[j][0], freqs[i][1] *  freqs[j][1] ])
+                reverse = max([ freqs[i][0] *  freqs[j][1], freqs[i][1] *  freqs[j][0] ])
+                linkage_name = "linkage:%s:%s"%(i, j)
+                print('2 %s:1 %s %s %s %s ?? %s'%(linkage_name, i+1, 0, j+1, 0, int(base_q*same)), file=f)
+                print('2 %s:2 %s %s %s %s ?? %s'%(linkage_name, i+1, 0, j+1, 1, int(base_q*reverse)), file=f)
+                z += 1
+    f.close()
 
 if __name__ == "__main__":   
     if len(sys.argv)==1:
@@ -1729,7 +1735,8 @@ if __name__ == "__main__":
                 --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, my_new_vcf, outdir)
             os.system(order)
             extract_linkage_for_indel(bamfile,snp_list,snp_index_dict,outdir) # linkage for indel
-            os.system('cat %s/fragment.file %s/fragment.add.file>%s/fragment.all.file'%(outdir, outdir, outdir))
+            allele_imba(beta_set) # linkage from allele imbalance
+            os.system('cat %s/fragment.file %s/fragment.add.file %s/fragment.imbalance.file>%s/fragment.all.file'%(outdir, outdir, outdir, outdir))
             
             # the order to phase with only ngs data.
             order='%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/fragment.sorted.file --out \
@@ -1872,10 +1879,10 @@ if __name__ == "__main__":
 
 
             seq_list = read_spechap_seq('%s/%s.vcf.gz'%(outdir, gene), snp_list)
-            update_seqlist=newphase(outdir,seq_list,snp_list,vcffile,gene)   #need to refresh alpha with new result.
+            update_seqlist = newphase(outdir,seq_list,snp_list,vcffile,gene)   #need to refresh alpha with new result.
             fresh_alpha = compute_allele_frequency(update_seqlist, beta_set) # compute haplotype frequency with least-square
             freq_output(outdir, gene, fresh_alpha)
-            gene_profile=gene_phased(update_seqlist,snp_list,gene)
+            gene_profile = gene_phased(update_seqlist,snp_list,gene)
             print ('Phasing of %s is done! Haplotype ratio is %s:%s'%(gene, fresh_alpha[0], fresh_alpha[1]))
 
         # link long indels

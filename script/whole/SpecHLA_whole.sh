@@ -20,6 +20,7 @@
 ###             this parameter to adopt barcode information to improve phasing.
 ###   -c        fwd hi-c fastq file.
 ###   -d        rev hi-c fastq file.
+###   -w        The weight of using phase information of allele imbalance [0-1], default is 0.
 ###   -p        The population of the sample: Asian, Black, or Caucasian. Use mean frequency
 ###             if not provided.
 ###   -j        Number of threads [5]
@@ -44,7 +45,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
     exit 1
 fi
 
-while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:" opt; do
+while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:" opt; do
   case $opt in
     n) sample="$OPTARG"
     ;;
@@ -79,6 +80,8 @@ while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:" opt; do
     o) given_outdir="$OPTARG"
     ;;
     j) num_threads="$OPTARG"
+    ;;
+    w) weight_imb="$OPTARG"
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
@@ -215,7 +218,8 @@ python3 $dir/../phase_tgs.py \
 --hic_fwd ${hic_data_fwd:-NA} \
 --hic_rev ${hic_data_rev:-NA} \
 --tenx ${tenx_data:-NA} \
---sa $sample
+--sa $sample \
+--weight_imb ${weight_imb:-0}
 done
 # ###############################################################################################################
 
