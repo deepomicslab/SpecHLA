@@ -20,7 +20,7 @@ Usage = \
 python3 phase_tgs.py [options] 
 
 Help information can be found by python3 phase_tgs.py -h/--help, additional information can be found in \
-README.MD or https://github.com/deepomicslab/HLAPro.
+README.MD or https://github.com/deepomicslab/SpecHLA.
 """
 scripts_dir=sys.path[0]+'/'
 parser = ArgumentParser(description="SpecHLA.",prog='python3 phase_tgs.py',usage=Usage)
@@ -44,7 +44,6 @@ required.add_argument("--hic_fwd",help="fwd_hic.fastq",dest='hic_fwd',metavar=''
 required.add_argument("--hic_rev",help="rev_hic.fastq",dest='hic_rev',metavar='', type=str)
 required.add_argument("--tenx",help="10X data",dest='tenx',metavar='', type=str)
 required.add_argument("-o", "--outdir",help="The output directory.",dest='outdir',metavar='')
-#alternative parameter
 optional.add_argument("--freq_bias",help="freq_bias (default is 0.05)",dest='freq_bias',\
     metavar='',default=0.05, type=float)
 optional.add_argument("--snp_dp",help="The minimum depth of SNPs to be considered in HLAtyping\
@@ -59,7 +58,6 @@ optional.add_argument("--points_num",help="The minimum hete loci number for bloc
      in final result (default is 2).",dest='points_num',metavar='',default=2, type=int)
 optional.add_argument("--weight_imb",help="The weight of using phase information of allele imbalance\
  [0-1], default is 0. (default is 0)",dest='weight_imb',metavar='',default=0, type=float)
-#break points
 optional.add_argument("--reads_num",help="The number of supporting reads between two adjcent loci\
      lower than this value will be regard as break points.(default is 10)",dest='reads_num',\
      metavar='',default=10, type=int)
@@ -232,44 +230,6 @@ def freq_output(outdir, gene, fresh_alpha):
     for j in range(len(fresh_alpha)):
         print ('str-'+str(j+1),fresh_alpha[j],file=ra_file)
     ra_file.close()
-
-def extract(first,second,file): #the index of first and second should be 0-index
-    allele_index={'A':0,'T':1,'C':2,'G':3}
-    dict={}
-    i=0
-    hla_name=[]
-    for line in open(file,'r'):
-        i+=1
-        line=line.strip()
-        array=line.split()
-        if i==1 or array[1] in hla_name:
-            continue
-        hla_name.append(array[1])        
-        freq=0
-        for j in range(2,len(array)):
-            if array[j] != '-' and isfloat(array[j]) :
-                freq+=float(array[j])
-        if i == 2:
-            ref_seq=array[22]
-            ref_index=[]
-            for z in range(len(ref_seq)):
-                if ref_seq[z] != '.' and ref_seq[z] != '|':
-                    ref_index.append(z)
-        new_first=ref_index[first]
-        new_second=ref_index[second]
-        seq=array[22]
-        first_allele=seq[new_first]
-        second_allele=seq[new_second]
-        if first_allele == '-':
-            first_allele=ref_seq[new_first]
-        if second_allele == '-':
-            second_allele=ref_seq[new_second]
-        key=first_allele+second_allele
-        if key in dict.keys():
-            dict[key]+=freq
-        else:
-            dict[key]=freq
-    return dict
         
 def isfloat(x):
     try:
