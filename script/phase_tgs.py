@@ -103,7 +103,7 @@ def read_spechap_seq(vcf, snp_list):
 
     return seq_list 
 
-def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,strainsNum,deletion_region,snp_qual):
+def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,strainsNum,deletion_region,snp_qual,gene_vcf):
     snp_index = 1
     snp_index_dict = {}
     pysam.index(bamfile)
@@ -111,7 +111,7 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,strainsNum,d
     if not os.path.exists(outdir):
         os.system('mkdir '+outdir)
     in_vcf = VariantFile(vcffile) # convert vcf to double-allele vcf
-    md_vcf = VariantFile('%s/%s.vcf.gz'%(outdir,gene),'w',header=in_vcf.header)
+    md_vcf = VariantFile(gene_vcf,'w',header=in_vcf.header)
     sample = list(in_vcf.header.samples)[0]
     snp_list, beta_set, allele_set = [], [], []
     for record in in_vcf.fetch():
@@ -222,6 +222,7 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,strainsNum,d
         md_vcf.write(record)
     in_vcf.close()
     md_vcf.close()
+    os.system('tabix -f %s'%(gene_vcf))
     print ("The number of short hete loci is %s."%(len(snp_list)))
     return snp_list, beta_set, snp_index_dict
 
@@ -921,7 +922,7 @@ def segment_mapping(fq1, fq2, ins_seq, outdir, gene, gene_ref):
         """%(sys.path[0], outdir, newref, newref, newref, fq1, fq2, newref)
     os.system(map_call)
 
-def sv_copy_number_old(outdir, deletion_region, gene, ins_seq):
+def get_copy_number(outdir, deletion_region, gene, ins_seq):
     os.system('%s/../bin/samtools depth -a %s/newref_insertion.bam >%s/newref_insertion.depth'%(sys.path[0],outdir, outdir))
     normal_depth = []
     deletions_depth_list = []
@@ -1071,7 +1072,12 @@ def long_InDel_breakpoints(bfile):
             sv_dict[array[0]].append(sv)
     return sv_dict
 
-def find_deletion_region_BK(sv_list):
+def get_deletion_region(long_indel_file, gene):
+    sv_dict = long_InDel_breakpoints(long_indel_file) # record the long indel
+    if gene in sv_dict.keys():
+        sv_list = sv_dict[gene]
+    else:
+        sv_list = []
     # print (sv_list)
     deletion_region = []
     ins_seq = {}
@@ -1085,11 +1091,6 @@ def find_deletion_region_BK(sv_list):
             deletion_region.append([int(float(sv[0])), int(float(sv[1]))])
             # deletion_region.append([int(float(sv[0])), int(float(sv[1])), int(sv[3])])
         else:
-
-            # new_deletion_region.append([int(float(sv[0])), int(float(sv[1])), int(sv[3])])
-            # seg = float(sv[0])
-            # ins_seq[seg] = sv[2]
-
             #remove redundant insertions
             uniq_ins = True
             for region in new_deletion_region:
@@ -1103,7 +1104,6 @@ def find_deletion_region_BK(sv_list):
                 seg = float(sv[0])
                 ins_seq[seg] = sv[2]                
 
-
     start = 1
     split_segs = []
     for p in sorted(points):
@@ -1111,10 +1111,7 @@ def find_deletion_region_BK(sv_list):
             continue
         split_segs.append([start, p])
         start = p
-    # print (split_segs)
-    # print (new_deletion_region)
-    
-    
+  
     for segs in split_segs:
         delete_flag = False
         for re in deletion_region:
@@ -1262,7 +1259,12 @@ def compute_allele_frequency(geno_set,beta_set):
         return [1, 0]
 
 def allele_imba(freqs):
-    # get the linkage info from allele frequencies at each variant locus
+    """
+    Utilizing allelic imbalance information to phase
+    get the linkage info from allele frequencies at each variant locus
+    return the linkage info with a SpecHap acceptable format
+    """
+    
     f = open(outdir + '/fragment.imbalance.file', 'w')
     base_q = 60 * args.weight_imb
     if base_q >= 1:
@@ -1281,231 +1283,253 @@ def allele_imba(freqs):
                 z += 1
     f.close()
 
+def run_SpecHap():
+         
+    # get linkage info from NGS data
+    if new_formate:
+        order = '%s/../bin/ExtractHAIRs --new_format 1 --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s\
+            --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, gene_vcf, outdir)
+    else:
+        order = '%s/../bin/ExtractHAIRs --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s \
+        --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, gene_vcf, outdir)
+    os.system(order)
+    extract_linkage_for_indel(bamfile,snp_list,snp_index_dict,outdir) # linkage for indel
+    allele_imba(beta_set) # linkage from allele imbalance
+    os.system('cat %s/fragment.file %s/fragment.add.file %s/fragment.imbalance.file>%s/fragment.all.file'%(outdir,\
+        outdir, outdir, outdir))
+    
+    # the order to phase with only ngs data.
+    order='%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/fragment.sorted.file --out \
+    %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
+
+
+    # integrate phase info from pacbio data if provided.
+    if args.tgs != 'NA':
+        tgs = """
+        fq=%s
+        ref=%s
+        outdir=%s
+        bin=%s/../bin
+        sample=my
+        $bin/minimap2 -a $ref $fq > $outdir/$sample.tgs.sam
+        $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
+        $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
+        $bin/ExtractHAIRs --triallelic 1 --pacbio 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.tgs.file
+        """%(args.tgs, hla_ref, outdir, sys.path[0], gene_vcf)
+        print ('extract linkage info from pacbio TGS data.')
+        os.system(tgs)
+        os.system('cat %s/fragment.tgs.file >> %s/fragment.all.file'%(outdir, outdir))
+        order = '%s/../bin/SpecHap -P --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
+        --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
+        # print (order)
+
+    # nanopore
+    if args.nanopore != 'NA':
+        tgs = """
+        fq=%s
+        ref=%s
+        outdir=%s
+        bin=%s/../bin
+        sample=my
+        $bin/minimap2 -a $ref $fq > $outdir/$sample.tgs.sam
+        $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
+        $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
+        $bin/ExtractHAIRs --triallelic 1 --ONT 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.nanopore.file
+        # python %s/whole/edit_linkage_value.py $outdir/fragment.raw.nanopore.file 0 $outdir/fragment.nanopore.file
+        # rm $outdir/fragment.nanopore.file
+        # touch $outdir/fragment.nanopore.file
+
+        """%(args.nanopore, hla_ref, outdir, sys.path[0], gene_vcf, sys.path[0])
+        print ('extract linkage info from nanopore TGS data.')
+        os.system(tgs)
+        os.system('cat %s/fragment.nanopore.file >> %s/fragment.all.file'%(outdir, outdir))
+        order = '%s/../bin/SpecHap -N --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
+        --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
+
+    # hic 
+    if args.hic_fwd != 'NA' and args.hic_rev != 'NA':
+        tgs = """
+        fwd_hic=%s
+        rev_hic=%s
+        ref=%s
+        outdir=%s
+        bin=%s/../bin
+        sample=my
+        group='@RG\tID:'$sample'\tSM:'$sample
+        $bin/bwa mem -5SP -Y -U 10000 -L 10000,10000 -O 7,7 -E 2,2 $ref $fwd_hic $rev_hic >$outdir/$sample.tgs.raw.sam
+        cat $outdir/$sample.tgs.raw.sam|grep -v 'XA:'|grep -v 'SA:'>$outdir/$sample.tgs.sam
+        $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
+        $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
+        $bin/ExtractHAIRs --new_format 1 --triallelic 1 --hic 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.hic.file
+        # python %s/whole/edit_linkage_value.py $outdir/fragment.raw.hic.file 10 $outdir/fragment.hic.file
+        # rm $outdir/fragment.hic.file
+        # touch $outdir/fragment.hic.file
+        """%(args.hic_fwd, args.hic_rev, hla_ref, outdir, sys.path[0], gene_vcf, sys.path[0])
+        print ('extract linkage info from HiC data.')
+        os.system(tgs)
+        os.system('cat %s/fragment.hic.file >> %s/fragment.all.file'%(outdir, outdir))
+        # gene_vcf = '%s/%s.new.vcf.gz'%(outdir, gene)
+        order = '%s/../bin/SpecHap -H --new_format --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
+        --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
+        print (order)
+
+    # 10x genomics
+    if args.tenx != 'NA':
+        tgs = """
+            fq=%s
+            ref=%s
+            outdir=%s
+            bin=%s/../bin
+            sample=%s
+            gene=%s
+            echo $gene
+            
+            if [ $gene == "HLA_A" ];
+                then
+                    $bin/longranger wgs --id=1 --fastqs=$fq --reference=%s/../db/ref/refdata-hla.ref.extend --sample=$sample --sex m --localcores=8 --localmem=32 --jobmode=local --vconly
+            fi
+            if [ $gene == "HLA_DRB1" ];
+            then
+            rm -r ./1
+            fi
+            bam=./1/outs/phased_possorted_bam.bam
+
+            $bin/extractHAIRS  --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam --VCF %s --out $outdir/fragment.tenx.file
+            $bin/BarcodeExtract $bam $outdir/barcode_spanning.bed
+            bgzip -f -c $outdir/barcode_spanning.bed > $outdir/barcode_spanning.bed.gz
+            tabix -f -p bed $outdir/barcode_spanning.bed.gz
+        
+        """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, sys.path[0], gene_vcf)
+        print ('extract linkage info from 10 X data.')
+        # print (tgs)
+        os.system(tgs)
+
+        os.system('cat %s/fragment.tenx.file > %s/fragment.all.file'%(outdir, outdir))
+        order = '%s/../bin/SpecHap -T --frag_stat %s/barcode_spanning.bed.gz --new_format --window_size 15000 \
+        --vcf %s --frag %s/fragment.sorted.file\
+        --out %s/%s.specHap.phased.vcf'%(sys.path[0],outdir,gene_vcf, outdir, outdir,gene)
+        # print (order)
+    
+    if new_formate:
+        os.system('sort -n -k6 %s/fragment.all.file >%s/fragment.sorted.file'%(outdir, outdir))
+    else:
+        os.system('sort -n -k3 %s/fragment.all.file >%s/fragment.sorted.file'%(outdir, outdir))
+
+
+    # phase small variants with spechap and find the unphased points
+    # os.system('tabix -f %s'%(gene_vcf))
+    os.system(order)
+    get_unphased_loci(outdir, gene, raw_spec_vcf, snp_list, spec_vcf)
+    os.system('tabix -f %s'%(spec_vcf))
+
+def link_blocks():
+    """
+    Phasing unlinked blocks guided by HLA database
+    """
+    # link phase blocks with database
+    # if gene == 'HLA_DRB1':
+    #     split_vcf(gene, outdir, deletion_region)  
+    print ('Start link blocks with database...')
+    # if gene == 'HLA_DRB1':
+    #     reph='perl %s/whole/rephase.DRB1.pl %s/%s_break_points_spechap.txt\
+    #         %s %s %s/%s_break_points_phased.txt %s %s'%(sys.path[0], outdir,gene,outdir,strainsNum,outdir,\
+    #         gene,args.block_len,args.points_num)
+    # else:
+    #     reph='perl %s/whole/rephaseV1.pl %s/%s_break_points_spechap.txt\
+    #         %s %s %s/%s_break_points_phased.txt %s %s'%(sys.path[0],outdir,gene,outdir,strainsNum,outdir,\
+    #         gene,args.block_len,args.points_num)
+    # map the haps in each block to thee database
+    reph='perl %s/whole/read_unphased_block.pl %s/%s_break_points_spechap.txt\
+        %s 2 %s/%s_break_points_score.txt'%(sys.path[0],outdir,gene,outdir,outdir,gene)
+    os.system(str(reph))
+    # phase block with spectral graph theory
+    spec_block = "python3 %s/phase_unlinked_block.py %s/%s_break_points_score.txt %s/%s_break_points_phased.txt"\
+        %(sys.path[0],outdir,gene,outdir,gene)
+    os.system(str(spec_block))
+
+    seq_list = read_spechap_seq(spec_vcf, snp_list) # the haplotype obtained from SpecHap  
+    update_seqlist = block_phase(outdir,seq_list,snp_list,gene,gene_vcf,rephase_vcf)  # refine the haplotype
+    return update_seqlist
+
+def get_insertion_linkage(ins_seq):
+    """
+    To get the linkage information for long insertions
+    The long insertion sequence and the reference are combined to generate a modified reference
+    Map the reads to the modified reference
+    """
+    if len(ins_seq) > 0:
+        ins_seq = segment_mapping_pre(fq1, fq2, ins_seq, outdir, gene, hla_ref)
+        segment_mapping(fq1, fq2, ins_seq, outdir, gene, hla_ref)
+    else:
+        os.system('cp %s/%s.bam %s/newref_insertion.bam'%(outdir, gene.split('_')[-1], outdir))
+        os.system('%s/../bin/samtools index %s/newref_insertion.bam'%(sys.path[0], outdir))
+        os.system('zcat %s > %s/newref_insertion.freebayes.vcf'%(gene_vcf, outdir))
+    return ins_seq
+
+
 if __name__ == "__main__":   
     if len(sys.argv)==1:
         print (Usage%{'prog':sys.argv[0]})
     else:     
         bamfile,outdir,snp_dp,indel_len,freq_bias=args.bamfile,args.outdir,args.snp_dp,args.indel_len,args.freq_bias           
-        snp_qual,gene,fq1,fq2,vcffile = args.snp_qual,args.gene,args.fq1,args.fq2,args.vcf
+        snp_qual,gene,fq1,fq2,vcffile,long_indel_file = args.snp_qual,args.gene,args.fq1,args.fq2,args.vcf,args.sv
         strainsNum = 2 # two hap for each sample
-
+        hla_ref = '%s/../db/ref/hla.ref.extend.fa'%(sys.path[0])
+        gene_vcf = "%s/%s.vcf.gz"%(outdir, gene) # gene-specific variants 
+        raw_spec_vcf = '%s/%s.specHap.phased.vcf'%(outdir,gene)
+        spec_vcf = outdir + '/%s.spechap.vcf.gz'%(gene)
+        rephase_vcf = '%s/%s.rephase.vcf.gz'%(outdir,gene)
         if not os.path.exists(outdir):
             os.system('mkdir '+ outdir) 
-
         new_formate = False  # different para for ExtractHAIRs
+        # if we have 10x or hic data, use new formate for linkage info
+        # required by SpecHap
         if args.hic_fwd != 'NA' or args.tenx != 'NA':
-            new_formate = True
+            new_formate = True    
 
-
-        sv_dict = long_InDel_breakpoints(args.sv) # record the long indel
-        if gene in sv_dict.keys():
-            sv_result = sv_dict[gene]
-        else:
-            sv_result = []
-        deletion_region, ins_seq = find_deletion_region_BK(sv_result)
-
-        
+        # read long Indels
+        deletion_region, ins_seq = get_deletion_region(long_indel_file, gene)       
         # read small variants
         snp_list,beta_set,snp_index_dict = read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,\
-            freq_bias,strainsNum,deletion_region, snp_qual)   
-        gene_vcf = "%s/%s.vcf.gz"%(outdir, gene) # extract the gene-specific variants 
-        os.system('tabix -f %s'%(gene_vcf))
-
+            freq_bias,strainsNum,deletion_region,snp_qual,gene_vcf)   
+        
         if len(snp_list)==0:
             print ('No heterozygous locus, no need to phase.')
             gene_profile = no_snv_gene_phased(gene_vcf, outdir, gene, strainsNum)
         else:  
-            # phase small variants
-            hla_ref = '%s/../db/ref/hla.ref.extend.fa'%(sys.path[0])
-            
-            
-            # get phase info from NGS data
-            if new_formate:
-                order = '%s/../bin/ExtractHAIRs --new_format 1 --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s\
-                 --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, gene_vcf, outdir)
-            else:
-                order = '%s/../bin/ExtractHAIRs --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s \
-                --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, gene_vcf, outdir)
-            os.system(order)
-            extract_linkage_for_indel(bamfile,snp_list,snp_index_dict,outdir) # linkage for indel
-            allele_imba(beta_set) # linkage from allele imbalance
-            os.system('cat %s/fragment.file %s/fragment.add.file %s/fragment.imbalance.file>%s/fragment.all.file'%(outdir,\
-             outdir, outdir, outdir))
-            
-            # the order to phase with only ngs data.
-            order='%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/fragment.sorted.file --out \
-            %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
-
-
-            # integrate phase info from pacbio data if provided.
-            if args.tgs != 'NA':
-                tgs = """
-                fq=%s
-                ref=%s
-                outdir=%s
-                bin=%s/../bin
-                sample=my
-                $bin/minimap2 -a $ref $fq > $outdir/$sample.tgs.sam
-                $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
-                $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
-                $bin/ExtractHAIRs --triallelic 1 --pacbio 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.tgs.file
-                """%(args.tgs, hla_ref, outdir, sys.path[0], gene_vcf)
-                print ('extract linkage info from pacbio TGS data.')
-                os.system(tgs)
-                os.system('cat %s/fragment.tgs.file >> %s/fragment.all.file'%(outdir, outdir))
-                order = '%s/../bin/SpecHap -P --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
-                --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
-                # print (order)
-
-            # nanopore
-            if args.nanopore != 'NA':
-                tgs = """
-                fq=%s
-                ref=%s
-                outdir=%s
-                bin=%s/../bin
-                sample=my
-                $bin/minimap2 -a $ref $fq > $outdir/$sample.tgs.sam
-                $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
-                $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
-                $bin/ExtractHAIRs --triallelic 1 --ONT 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.nanopore.file
-                # python %s/whole/edit_linkage_value.py $outdir/fragment.raw.nanopore.file 0 $outdir/fragment.nanopore.file
-                # rm $outdir/fragment.nanopore.file
-                # touch $outdir/fragment.nanopore.file
-
-                """%(args.nanopore, hla_ref, outdir, sys.path[0], gene_vcf, sys.path[0])
-                print ('extract linkage info from nanopore TGS data.')
-                os.system(tgs)
-                os.system('cat %s/fragment.nanopore.file >> %s/fragment.all.file'%(outdir, outdir))
-                order = '%s/../bin/SpecHap -N --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
-                --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
-
-            # hic 
-            if args.hic_fwd != 'NA' and args.hic_rev != 'NA':
-                tgs = """
-                fwd_hic=%s
-                rev_hic=%s
-                ref=%s
-                outdir=%s
-                bin=%s/../bin
-                sample=my
-                group='@RG\tID:'$sample'\tSM:'$sample
-                $bin/bwa mem -5SP -Y -U 10000 -L 10000,10000 -O 7,7 -E 2,2 $ref $fwd_hic $rev_hic >$outdir/$sample.tgs.raw.sam
-                cat $outdir/$sample.tgs.raw.sam|grep -v 'XA:'|grep -v 'SA:'>$outdir/$sample.tgs.sam
-                $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
-                $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
-                $bin/ExtractHAIRs --new_format 1 --triallelic 1 --hic 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.hic.file
-                # python %s/whole/edit_linkage_value.py $outdir/fragment.raw.hic.file 10 $outdir/fragment.hic.file
-                # rm $outdir/fragment.hic.file
-                # touch $outdir/fragment.hic.file
-                """%(args.hic_fwd, args.hic_rev, hla_ref, outdir, sys.path[0], gene_vcf, sys.path[0])
-                print ('extract linkage info from HiC data.')
-                os.system(tgs)
-                os.system('cat %s/fragment.hic.file >> %s/fragment.all.file'%(outdir, outdir))
-                # gene_vcf = '%s/%s.new.vcf.gz'%(outdir, gene)
-                order = '%s/../bin/SpecHap -H --new_format --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
-                --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
-                print (order)
-
-            # 10x genomics
-            if args.tenx != 'NA':
-                tgs = """
-                    fq=%s
-                    ref=%s
-                    outdir=%s
-                    bin=%s/../bin
-                    sample=%s
-                    gene=%s
-                    echo $gene
-                    
-                    if [ $gene == "HLA_A" ];
-                        then
-                            $bin/longranger wgs --id=1 --fastqs=$fq --reference=%s/../db/ref/refdata-hla.ref.extend --sample=$sample --sex m --localcores=8 --localmem=32 --jobmode=local --vconly
-                    fi
-                    if [ $gene == "HLA_DRB1" ];
-                    then
-                    rm -r ./1
-                    fi
-                    bam=./1/outs/phased_possorted_bam.bam
-
-                    $bin/extractHAIRS  --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam --VCF %s --out $outdir/fragment.tenx.file
-                    $bin/BarcodeExtract $bam $outdir/barcode_spanning.bed
-                    bgzip -f -c $outdir/barcode_spanning.bed > $outdir/barcode_spanning.bed.gz
-                    tabix -f -p bed $outdir/barcode_spanning.bed.gz
-                
-                """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, sys.path[0], gene_vcf)
-                print ('extract linkage info from 10 X data.')
-                # print (tgs)
-                os.system(tgs)
-
-                os.system('cat %s/fragment.tenx.file > %s/fragment.all.file'%(outdir, outdir))
-                order = '%s/../bin/SpecHap -T --frag_stat %s/barcode_spanning.bed.gz --new_format --window_size 15000 \
-                --vcf %s --frag %s/fragment.sorted.file\
-                --out %s/%s.specHap.phased.vcf'%(sys.path[0],outdir,gene_vcf, outdir, outdir,gene)
-                # print (order)
-            
-            if new_formate:
-                os.system('sort -n -k6 %s/fragment.all.file >%s/fragment.sorted.file'%(outdir, outdir))
-            else:
-                os.system('sort -n -k3 %s/fragment.all.file >%s/fragment.sorted.file'%(outdir, outdir))
-
-        
-            # phase small variants with spechap and find the unphased points
-            # os.system('tabix -f %s'%(gene_vcf))
-            os.system(order)
-            raw_spec_vcf = '%s/%s.specHap.phased.vcf'%(outdir,gene)
-            spec_vcf = outdir + '/%s.spechap.vcf.gz'%(gene)
-            get_unphased_loci(outdir, gene, raw_spec_vcf, snp_list, spec_vcf)
-            os.system('tabix -f %s'%(spec_vcf))
-
-           
-            # link phase blocks with database
-            # if gene == 'HLA_DRB1':
-            #     split_vcf(gene, outdir, deletion_region)  
-            print ('Start link blocks with database...')
-            # if gene == 'HLA_DRB1':
-            #     reph='perl %s/whole/rephase.DRB1.pl %s/%s_break_points_spechap.txt\
-            #         %s %s %s/%s_break_points_phased.txt %s %s'%(sys.path[0], outdir,gene,outdir,strainsNum,outdir,\
-            #         gene,args.block_len,args.points_num)
-            # else:
-            #     reph='perl %s/whole/rephaseV1.pl %s/%s_break_points_spechap.txt\
-            #         %s %s %s/%s_break_points_phased.txt %s %s'%(sys.path[0],outdir,gene,outdir,strainsNum,outdir,\
-            #         gene,args.block_len,args.points_num)
-            # map the haps in each block to thee database
-            reph='perl %s/whole/read_unphased_block.pl %s/%s_break_points_spechap.txt\
-                %s 2 %s/%s_break_points_score.txt'%(sys.path[0],outdir,gene,outdir,outdir,gene)
-            os.system(str(reph))
-            # phase block with spectral graph theory
-            spec_block = "python3 %s/phase_unlinked_block.py %s/%s_break_points_score.txt %s/%s_break_points_phased.txt"\
-                %(sys.path[0],outdir,gene,outdir,gene)
-            os.system(str(spec_block))
-
-            seq_list = read_spechap_seq(spec_vcf, snp_list) # get the haplotypes
-            rephase_vcf = '%s/%s.rephase.vcf.gz'%(outdir,gene)
-            update_seqlist = block_phase(outdir,seq_list,snp_list,gene,gene_vcf,rephase_vcf)   # phase the unlinked blocks
-            fresh_alpha = compute_allele_frequency(update_seqlist, beta_set) # compute haplotype frequency with least-square
+            # phase small variants          
+            run_SpecHap()
+            # phase unlinked blocks
+            update_seqlist = link_blocks()          
+            # compute haplotype frequency with least-square
+            fresh_alpha = compute_allele_frequency(update_seqlist, beta_set) 
+            # output haplotype frequencies
             freq_output(outdir, gene, fresh_alpha)
+            # get the phase info to phase long Indel later
             gene_profile = gene_phased(update_seqlist,snp_list,gene)
-            print ('Phasing of %s is done! Haplotype ratio is %s:%s'%(gene, fresh_alpha[0], fresh_alpha[1]))
+            print ('Samll variant-phasing of %s is done! Haplotype ratio is %s:%s'%(gene, fresh_alpha[0], fresh_alpha[1]))
 
-        # link long indels
-        if len(ins_seq) > 0:
-            ins_seq = segment_mapping_pre(fq1, fq2, ins_seq, outdir, gene, hla_ref)
-            segment_mapping(fq1, fq2, ins_seq, outdir, gene, hla_ref)
-        else:
-            os.system('cp %s/%s.bam %s/newref_insertion.bam'%(outdir, gene.split('_')[-1], outdir))
-            os.system('%s/../bin/samtools index %s/newref_insertion.bam'%(sys.path[0], outdir))
-            os.system('zcat %s > %s/newref_insertion.freebayes.vcf'%(gene_vcf, outdir))
-        deletion_region = sv_copy_number_old(outdir, deletion_region, gene, ins_seq) # get copy number of long Indels
+        # realign reads to the modified reference generated by combining long 
+        # insertion sequence and the original reference
+        ins_seq = get_insertion_linkage(ins_seq)
+        # get copy number of long Indels
+        deletion_region = get_copy_number(outdir, deletion_region, gene, ins_seq) 
 
         if gene == 'HLA_DRB1':
+            # DRB1 contains long duplicates in the region 3900-4400 bp
+            # Infer the sequence in this region
             dup_region_type(outdir, strainsNum, bamfile)
             dup_file = outdir +'/select.DRB1.seq.txt'
+
         if len(ins_seq) > 0:
+            # after map reads to the long insertion sequence
+            # there can be hete variants
+            # get consensus sequence if copy number is 1 
+            # phase the variants to get two haps if copy number is 2
             phase_insertion(gene, outdir, args.ref, sys.path[0])
 
+        # phase long indels
         sh = Share_reads(deletion_region, outdir, strainsNum, gene, gene_profile, ins_seq)
-        # print (deletion_region)
         sh.split_seg()
 
 
