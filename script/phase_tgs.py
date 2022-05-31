@@ -148,9 +148,8 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,strainsNum,d
         snp_index_dict[record.pos] = snp_index
         snp_index += 1
 
-        # if the variant is in deletion region, get consensus hap
+        # if the variant is in deletion region, get consensus haplotype
         if if_in_deletion(record.pos, deletion_region) and geno != (1,1,1):
-            #print ('SNV in deletion region, need edit', record)
             if geno == (1,1,2) or geno == (1,2,2):                
                 snp = [record.chrom,record.pos,record.alts[0],record.alts[1],record.ref]
             else:
@@ -166,20 +165,23 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,strainsNum,d
 
             if beta <= 1-beta:
                 if geno == (1,1,2) or geno == (1,2,2):
-                    record.samples[sample]['GT']= generate_geno(strainsNum, 1)
+                    record.samples[sample]['GT']= tuple([1,1])
                 else:
-                    record.samples[sample]['GT']= generate_geno(strainsNum, 0)
+                    record.samples[sample]['GT']= tuple([0,0])
                 record.samples[sample].phased=True
             elif beta >= 1 - beta:
                 if geno == (1,1,2) or geno == (1,2,2):
-                    record.samples[sample]['GT']= generate_geno(strainsNum, 2)
+                    record.samples[sample]['GT']= tuple([2,2]) 
                 else:
-                    record.samples[sample]['GT']= generate_geno(strainsNum, 1)
+                    record.samples[sample]['GT']= tuple([1,1])
                 record.samples[sample].phased=True
             md_vcf.write(record)
             continue
 
-        if geno != (1,1,1):
+        if geno == (1,1,1):
+            record.samples[sample]['GT']= tuple([1,1])
+            record.samples[sample].phased=True
+        else:
             if geno == (1,1,2) or geno == (1,2,2):                
                 snp = [record.chrom,record.pos,record.alts[0],record.alts[1],record.ref]
             else:
@@ -187,25 +189,24 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,strainsNum,d
 
             reads_list = reads_support(samfile, snp)
             allele_dp = [len(reads_list[0]), len(reads_list[1])]
-            new_dp=sum(allele_dp)
+            new_dp = sum(allele_dp)
             # print (record, allele_dp)
             if new_dp == 0:
                 print ('WARNING: the depth of the locus obtained by pysam is zero!',snp)
                 continue
-            beta=float(allele_dp[1])/new_dp
+            beta = float(allele_dp[1])/new_dp # the frequency of alt
 
             if beta <= freq_bias:
                 if geno == (1,1,2) or geno == (1,2,2):
-                    record.samples[sample]['GT']= generate_geno(strainsNum, 1)
+                    record.samples[sample]['GT']= tuple([1,1])
                 else:
-                    record.samples[sample]['GT']= generate_geno(strainsNum, 0)
+                    record.samples[sample]['GT']= tuple([0,0])
                 record.samples[sample].phased=True
             elif beta >= 1 - freq_bias:
                 if geno == (1,1,2) or geno == (1,2,2):
-                    record.samples[sample]['GT']= generate_geno(strainsNum, 2)
+                    record.samples[sample]['GT']= tuple([2,2]) 
                 else:
-                    record.samples[sample]['GT']= generate_geno(strainsNum, 1)
-                # record.samples[sample]['GT']= generate_geno(strainsNum, 1)
+                    record.samples[sample]['GT']= tuple([1,1])
                 record.samples[sample].phased=True
             else:
                 # each locus has 3 alleles, because freebayes -p 3
@@ -217,53 +218,12 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,strainsNum,d
                 snp_list.append(snp)
                 allele_dp = np.array(allele_dp)
                 beta_set.append(allele_dp/new_dp)
-        else:
-            record.samples[sample]['GT']= generate_geno(strainsNum, 1)
-            record.samples[sample].phased=True
+        # print ("new", record.samples[sample]['GT'])
         md_vcf.write(record)
     in_vcf.close()
     md_vcf.close()
     print ("The number of short hete loci is %s."%(len(snp_list)))
     return snp_list, beta_set, snp_index_dict
-
-def generate_geno(strainsNum, geno):
-    genotype = []
-    for i in range(strainsNum):
-        genotype.append(geno)
-    return tuple(genotype)
-
-def delta(outdir,extractHAIRS,bamfile,beta_set,reffile):
-    hapcut_order='%s --bam %s --VCF %s/filter.vcf --indels 1 --ref %s --out %s/vcf.conn'%(extractHAIRS,bamfile,outdir,reffile,outdir)
-    os.system(hapcut_order)
-    snp_num=len(beta_set)
-    delta_set=[]
-    for i in range(snp_num-1):
-        delta_set.append([0]*(len(beta_set[i])*len(beta_set[i+1])))
-    for line in open('%s/vcf.conn'%(outdir)):
-        line=line.strip()
-        array=line.split()
-        if array[0] == '1': 
-            delta_index=int(array[2])-1
-            geno_type=array[3]
-            for i in range(len(geno_type)-1):
-                fol_allele=len(beta_set[delta_index+i+1])
-                array_index=int(geno_type[i])*fol_allele+int(geno_type[i+1])
-                delta_set[delta_index+i][array_index]+=1
-                # delta_set[delta_index+i][int(geno_type[i])][int(geno_type[i+1])]+=1
-    for i in range(len(delta_set)):
-        delta=delta_set[i]
-    # for delta in delta_set:
-        delta=np.array(delta)
-        sum_dp=sum(delta)
-        if sum_dp>4:
-            delta=delta/sum_dp
-            delta=np.round(delta,6).tolist()
-            # delta_set[i]=delta
-            # print (delta)
-        else:
-            delta=[0]*len(delta)
-        delta_set[i]=delta
-    return delta_set 
 
 def freq_output(outdir, gene, fresh_alpha):
     ra_file=open(outdir+'/%s_freq.txt'%(gene),'w')    
@@ -271,48 +231,6 @@ def freq_output(outdir, gene, fresh_alpha):
     for j in range(len(fresh_alpha)):
         print ('str-'+str(j+1),fresh_alpha[j],file=ra_file)
     ra_file.close()
-
-def rectify(snp_list,beta_set,delta_set,lambda1,lambda2):
-    nucleotide={'A':0,'T':1,'C':2,'G':3}
-    # rectify beta
-    first_beta=[]
-    for i in range(len(beta_set)):
-        #prior freq
-        snp=snp_list[i]
-        pos=int(snp[1])
-        ref=snp[2]
-        alt=snp[3][0]
-        # print (snp_list[i])
-
-        prior_f=np.array([1.0/len(beta_set[i])]*len(beta_set[i]))
-
-        dp=sum(beta_set[i])
-        hat_beta=np.array(beta_set[i])/dp
-        beta=hat_beta*(1-lambda1/(1+dp))+prior_f*(lambda1/(1+dp))
-        beta=beta/sum(beta)
-        beta=np.round(beta,6)
-        first_beta.append(beta.tolist())
-
-    # rectify beta^2
-    sec_beta=[]
-    for i in range(len(delta_set)):
-        c=sum(delta_set[i])
-        if c==0:
-            hat_delta=np.array(delta_set[i])
-        else:
-            hat_delta=np.array(delta_set[i])/sum(delta_set[i])
-        inde_delta=[]
-        for m in range(len(first_beta[i])):
-            for n in range(len(first_beta[i+1])):
-                inde_delta.append(first_beta[i][m]*first_beta[i+1][n])
-        inde_delta=np.array(inde_delta)
-        delta=inde_delta*(lambda2/(1+c)) + hat_delta*(1-lambda2/(1+c))  #retify
-        delta=np.round(delta,6)
-        
-        #turn the two biggest values to 0.5/0.5, used to handle normal samples
-        index_sort=np.argsort(delta)
-        sec_beta.append(delta.tolist())
-    return first_beta,sec_beta
 
 def extract(first,second,file): #the index of first and second should be 0-index
     allele_index={'A':0,'T':1,'C':2,'G':3}
@@ -453,18 +371,7 @@ def isin(x,seq):
     except :
         return False
 
-def first_snp_in_the_region(gap, snp_list):
-    for snp in snp_list:
-        snp[1] = int(snp[1])
-        if gap[1] == 'end':
-            if snp[1] >= gap[0]:
-                return snp[1]
-        else:
-            if snp[1] >= gap[0] and snp[1] < gap[1]:
-                return snp[1]
-    return gap[0]
-
-def block_phase(outdir,seq_list,snp_list,vcffile,gene):
+def block_phase(outdir,seq_list,snp_list,gene,gene_vcf,rephase_vcf):
     file=outdir+'/%s_break_points_phased.txt'%(gene)
     record_block_haps = []
     if os.path.isfile(file) and os.path.getsize(file):
@@ -487,18 +394,17 @@ def block_phase(outdir,seq_list,snp_list,vcffile,gene):
     update_seqlist=[]
 
     he=0
-    m = VariantFile('%s/%s.vcf.gz'%(outdir,gene))
-    #m = VariantFile('%s/%s.vcf.gz'%(outdir, gene))
-    rephase_file = '%s/%s.rephase.vcf.gz'%(outdir,gene)
-    if os.path.isfile(rephase_file):
-        os.system('rm %s'%(rephase_file))
-    out = VariantFile(rephase_file,'w',header=m.header)
+    m = VariantFile(gene_vcf)
+    
+    if os.path.isfile(rephase_vcf):
+        os.system('rm %s'%(rephase_vcf))
+    out = VariantFile(rephase_vcf,'w',header=m.header)
     sample = list(m.header.samples)[0]
     for record in m.fetch():
         geno = record.samples[sample]['GT']    
         depth = record.samples[sample]['AD']
         if geno != (0,0) and geno != (1,1) and geno != (2,2):
-            if geno == (1,2):
+            if geno == (1,2) or geno == (2,1):
                 phased_locus = seq[he]
                 for i in range(len(phased_locus)):
                     phased_locus[i] += 1
@@ -512,7 +418,6 @@ def block_phase(outdir,seq_list,snp_list,vcffile,gene):
                     if block[2] == 1:
                         ref_order = [1, 0]
                     break
-            record.pos
             update_phased_locus=[]
             for pp in range(2):
                 update_phased_locus.append(phased_locus[int(ref_order[pp])])
@@ -527,12 +432,9 @@ def block_phase(outdir,seq_list,snp_list,vcffile,gene):
             update_seqlist.append(phased_locus)
             he+=1
         out.write(record)
-        # if str(record.pos) in gene_dict.keys():  #rephase new order
-        #     ref_order=gene_dict[str(record.pos)]
-
     m.close()
     out.close()
-    os.system('tabix -f %s/%s.rephase.vcf.gz'%(outdir,gene))
+    os.system('tabix -f %s'%(rephase_vcf))
     return update_seqlist
 
 def gene_phased(update_seqlist,snp_list, gene):
@@ -550,8 +452,8 @@ def gene_phased(update_seqlist,snp_list, gene):
     gene_profile[gene] = [gene_snp,gene_seq]
     return gene_profile
 
-def no_snv_gene_phased(vcffile, outdir, gene, strainsNum):
-    in_vcf = VariantFile(vcffile)
+def no_snv_gene_phased(gene_vcf, outdir, gene, strainsNum):
+    in_vcf = VariantFile(gene_vcf)
     out_vcf = VariantFile('%s/%s.rephase.vcf.gz'%(outdir, gene),'w',header=in_vcf.header)
     sample = list(in_vcf.header.samples)[0]
     for record in in_vcf.fetch():
@@ -619,51 +521,6 @@ def exists_index(seg_set):
                             for w in range(len(exists_dict[seg_set[i][j+1]])):
                                 exists_dict[seg_set[i][j+1]][w] = exists_dict[seg_set[i][j+1]][w] + 1
     return exists_dict
-
-def back_up_sort_segs(seg_set):
-    exists_dict = exists_index(seg_set)
-    segs_list = list(exists_dict.keys())
-    flag = True
-    while flag:
-        flag = False
-        for i in range(len(segs_list)-1):
-            front_seg = segs_list[i]
-            after_seg = segs_list[i + 1]
-            if min(exists_dict[after_seg]) <= min(exists_dict[front_seg]) and \
-                max(exists_dict[after_seg]) <= max(exists_dict[front_seg]):
-                segs_list[i] = after_seg
-                segs_list[i + 1] = front_seg
-                flag = True
-    return segs_list
-
-def sort_segs(seg_set):
-    exists_dict = exists_index(seg_set)
-    segs_list = list(exists_dict.keys())
-    new_segs_list = []
-    for seg in segs_list:
-        new_segs_list.append(int(float(seg[:-1])))
-    segs_list = []
-    for seg in sorted(new_segs_list):
-        segs_list.append(str(seg) + '+')
-
-    return segs_list
-
-def alignments_seg(seg_set):
-    strainNum = len(seg_set)
-    segs_list = sort_segs(seg_set)
-    new_seg_set = []
-    for i in range(strainNum):
-        new_seg_set.append([])
-    for j in range(len(segs_list)):
-        for i in range(strainNum):
-            if segs_list[j] in seg_set[i]:
-                new_seg_set[i].append(segs_list[j])
-            else:
-                new_seg_set[i].append('*')
-
-    # print (segs_list, new_seg_set)
-    return new_seg_set
-########align the segs from SV haps result
 
 def focus_region():
     return {'HLA_A':[1000,4503],'HLA_B':[1000,5081],'HLA_C':[1000,5304],'HLA_DPA1':[1000,10775],\
@@ -959,23 +816,6 @@ class Share_reads():
         cons_seq = read_fasta('%s/seq'%(self.outdir))
         return cons_seq
 
-def correlation(consensus_order):
-    strainNum = len(consensus_order)
-    raw_order = []
-    for i in range(strainNum):
-        raw_order.append(i)
-    possible_cases = list(permutations(raw_order, strainNum))
-    max_share = 0
-    max_case = ''
-    for case in possible_cases:
-        total_share = 0
-        for i in range(strainNum):
-            total_share += consensus_order[raw_order[i]][case[i]]
-        if total_share >= max_share:
-            max_case=case
-            max_share = total_share
-    return max_case
-
 def chrom_seq(file):
     f = open(file, 'r')
     seg_sequence = {}
@@ -1193,37 +1033,6 @@ def sv2fasta(ref, seg_order, index_locus, ins_seq, outdir):
         print (hap_seq, file = out)
         out.close()
 
-def generate_break_points(outdir,snp_list,delta_set,strainsNum):    
-    dup_dict=read_dup() #for dup region 
-    #break points
-    bp=open(outdir+'/%s_break_points_pstrain.txt'%(gene),'w')
-    print ('#gene\tlocus\t00\t01\t10\t11\tpoints_num\tnext_locus',file=bp) 
-    points_number=0
-    for i in range(len(snp_list)-1):
-        dqa1_break=False
-
-        points_number += 1
-        sort_index=np.argsort(np.array(delta_set[i]))
-        max_index=sort_index[-1]
-        sec_index=sort_index[-2]
-        # if delta_set[i][sort_index[-3]] > 5 or abs(max_index - sec_index) == 2:
-        #     print (snp_list[i],delta_set[i])
-        # if points_number < args.points_num:
-        #     continue
-        if snp_list[i][0] in dup_dict.keys():
-            for du in range(len(dup_dict[snp_list[i][0]])):
-                dp_locus=int(dup_dict[snp_list[i][0]][du])
-                if dp_locus != 0 and int(snp_list[i][1]) > dp_locus - 30 and int(snp_list[i][1]) < dp_locus + 30:
-                    dqa1_break=True
-                    dup_dict[snp_list[i][0]][du]=0
-        # if sum(delta_set[i]) <args.reads_num or (strainsNum == 2 and abs(max_index - sec_index) == 2) or (strainsNum == 2 and delta_set[i][sort_index[-3]] > args.noise_num) or dqa1_break == True:
-        if sum(delta_set[i]) <args.reads_num or (strainsNum == 2 and max_index + sec_index != 3) or (strainsNum == 2 and delta_set[i][sort_index[-3]] > args.noise_num) or dqa1_break == True:
-            print (snp_list[i][0],snp_list[i][1], delta_set[i][0], delta_set[i][1],delta_set[i][2],delta_set[i][3],points_number,snp_list[i+1][1],file=bp)
-            # print ('############break points:', snp_list[i][0],snp_list[i][1], delta_set[i][0], delta_set[i][1],delta_set[i][2],delta_set[i][3],points_number,snp_list[i+1][1], dqa1_break, max_index + sec_index, delta_set[i][sort_index[-3]])
-            points_number=0
-            # print (snp_list[i],delta_set[i], dqa1_break)
-    bp.close()
-
 def dup_region_type(outdir, strainsNum, bamfile):
     order = r"""
         bam=%s
@@ -1372,12 +1181,16 @@ def split_vcf(gene, outdir, deletion_region):
     print (vcf_gap)
     return break_points_list
 
-def convert(outdir, gene, invcf, snp_list):
-    formate_vcf = outdir + '/%s.vcf.gz'%(gene)
+def get_unphased_loci(outdir, gene, invcf, snp_list, spec_vcf):
+    """
+    Input: the phased vcf of SpecHap
+    Return: the unphased loci, and refined vcf file
+    """
+    
     bp = open(outdir + '/%s_break_points_spechap.txt'%(gene), 'w')
     print ('#gene   locus   00      01      10      11      points_num      next_locus', file = bp)
     m = VariantFile(invcf)
-    out = VariantFile(formate_vcf,'w',header=m.header)
+    out = VariantFile(spec_vcf,'w',header=m.header)
     sample = list(m.header.samples)[0]
     add_block = 1
     i = 0
@@ -1427,25 +1240,6 @@ def phase_insertion(gene, outdir, hla_ref, shdir):
     """%(gene, outdir, hla_ref, sys.path[0], shdir)
     os.system(order)
     print ('insertion phasing done.')
-
-def clean(outdir, gene):
-
-
-    formate_vcf = outdir + '/%s.vcf.gz'%(gene)
-    new_vcf = outdir + '/%s.new.vcf.gz'%(gene)
-    m = VariantFile(formate_vcf)
-    out = VariantFile(new_vcf,'w',header=m.header)
-    sample = list(m.header.samples)[0]
-
-    for record in m.fetch():
-        # if record.qual < 1
-        if record.chrom != gene:
-            continue
-        record.samples[sample].phased = False
-        out.write(record)
-    m.close()
-    out.close()
-    return new_vcf
 
 def compute_allele_frequency(geno_set,beta_set):
     # compute allele frequency with least square
@@ -1514,24 +1308,24 @@ if __name__ == "__main__":
         # read small variants
         snp_list,beta_set,snp_index_dict = read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,\
             freq_bias,strainsNum,deletion_region, snp_qual)   
-
+        gene_vcf = "%s/%s.vcf.gz"%(outdir, gene) # extract the gene-specific variants 
+        os.system('tabix -f %s'%(gene_vcf))
 
         if len(snp_list)==0:
             print ('No heterozygous locus, no need to phase.')
-            gene_profile = no_snv_gene_phased(vcffile, outdir, gene, strainsNum)
+            gene_profile = no_snv_gene_phased(gene_vcf, outdir, gene, strainsNum)
         else:  
             # phase small variants
             hla_ref = '%s/../db/ref/hla.ref.extend.fa'%(sys.path[0])
-            my_new_vcf = '%s/%s.vcf.gz'%(outdir, gene)
-            os.system('tabix -f %s'%(my_new_vcf))
+            
             
             # get phase info from NGS data
             if new_formate:
                 order = '%s/../bin/ExtractHAIRs --new_format 1 --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s\
-                 --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, my_new_vcf, outdir)
+                 --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, gene_vcf, outdir)
             else:
                 order = '%s/../bin/ExtractHAIRs --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s \
-                --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, my_new_vcf, outdir)
+                --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, gene_vcf, outdir)
             os.system(order)
             extract_linkage_for_indel(bamfile,snp_list,snp_index_dict,outdir) # linkage for indel
             allele_imba(beta_set) # linkage from allele imbalance
@@ -1540,7 +1334,7 @@ if __name__ == "__main__":
             
             # the order to phase with only ngs data.
             order='%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/fragment.sorted.file --out \
-            %s/%s.specHap.phased.vcf'%(sys.path[0],my_new_vcf, outdir, outdir,gene)
+            %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
 
 
             # integrate phase info from pacbio data if provided.
@@ -1555,11 +1349,12 @@ if __name__ == "__main__":
                 $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
                 $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
                 $bin/ExtractHAIRs --triallelic 1 --pacbio 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.tgs.file
-                """%(args.tgs, hla_ref, outdir, sys.path[0], my_new_vcf)
+                """%(args.tgs, hla_ref, outdir, sys.path[0], gene_vcf)
                 print ('extract linkage info from pacbio TGS data.')
                 os.system(tgs)
                 os.system('cat %s/fragment.tgs.file >> %s/fragment.all.file'%(outdir, outdir))
-                order = '%s/../bin/SpecHap -P --window_size 15000 --vcf %s --frag %s/fragment.sorted.file --out %s/%s.specHap.phased.vcf'%(sys.path[0],my_new_vcf, outdir, outdir,gene)
+                order = '%s/../bin/SpecHap -P --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
+                --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
                 # print (order)
 
             # nanopore
@@ -1578,11 +1373,12 @@ if __name__ == "__main__":
                 # rm $outdir/fragment.nanopore.file
                 # touch $outdir/fragment.nanopore.file
 
-                """%(args.nanopore, hla_ref, outdir, sys.path[0], my_new_vcf, sys.path[0])
+                """%(args.nanopore, hla_ref, outdir, sys.path[0], gene_vcf, sys.path[0])
                 print ('extract linkage info from nanopore TGS data.')
                 os.system(tgs)
                 os.system('cat %s/fragment.nanopore.file >> %s/fragment.all.file'%(outdir, outdir))
-                order = '%s/../bin/SpecHap -N --window_size 15000 --vcf %s --frag %s/fragment.sorted.file --out %s/%s.specHap.phased.vcf'%(sys.path[0],my_new_vcf, outdir, outdir,gene)
+                order = '%s/../bin/SpecHap -N --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
+                --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
 
             # hic 
             if args.hic_fwd != 'NA' and args.hic_rev != 'NA':
@@ -1602,12 +1398,13 @@ if __name__ == "__main__":
                 # python %s/whole/edit_linkage_value.py $outdir/fragment.raw.hic.file 10 $outdir/fragment.hic.file
                 # rm $outdir/fragment.hic.file
                 # touch $outdir/fragment.hic.file
-                """%(args.hic_fwd, args.hic_rev, hla_ref, outdir, sys.path[0], my_new_vcf, sys.path[0])
+                """%(args.hic_fwd, args.hic_rev, hla_ref, outdir, sys.path[0], gene_vcf, sys.path[0])
                 print ('extract linkage info from HiC data.')
                 os.system(tgs)
                 os.system('cat %s/fragment.hic.file >> %s/fragment.all.file'%(outdir, outdir))
-                # my_new_vcf = '%s/%s.new.vcf.gz'%(outdir, gene)
-                order = '%s/../bin/SpecHap -H --new_format --window_size 15000 --vcf %s --frag %s/fragment.sorted.file --out %s/%s.specHap.phased.vcf'%(sys.path[0],my_new_vcf, outdir, outdir,gene)
+                # gene_vcf = '%s/%s.new.vcf.gz'%(outdir, gene)
+                order = '%s/../bin/SpecHap -H --new_format --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
+                --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
                 print (order)
 
             # 10x genomics
@@ -1636,19 +1433,16 @@ if __name__ == "__main__":
                     bgzip -f -c $outdir/barcode_spanning.bed > $outdir/barcode_spanning.bed.gz
                     tabix -f -p bed $outdir/barcode_spanning.bed.gz
                 
-                """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, sys.path[0], my_new_vcf)
+                """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, sys.path[0], gene_vcf)
                 print ('extract linkage info from 10 X data.')
                 # print (tgs)
                 os.system(tgs)
 
                 os.system('cat %s/fragment.tenx.file > %s/fragment.all.file'%(outdir, outdir))
-                order = '%s/../bin/SpecHap -T --frag_stat %s/barcode_spanning.bed.gz --new_format --window_size 15000 --vcf %s --frag %s/fragment.sorted.file\
-                    --out %s/%s.specHap.phased.vcf'%(sys.path[0],outdir,my_new_vcf, outdir, outdir,gene)
-
-                # os.system('cat %s/fragment.tenx.file.hapcut.3 >> %s/fragment.all.file'%(outdir, outdir))
-                # order = '%s/../bin/SpecHap -H --window_size 15000 --vcf %s --frag %s/fragment.sorted.file --out %s/%s.specHap.phased.vcf'%(sys.path[0],my_new_vcf, outdir, outdir,gene)
-
-                print (order)
+                order = '%s/../bin/SpecHap -T --frag_stat %s/barcode_spanning.bed.gz --new_format --window_size 15000 \
+                --vcf %s --frag %s/fragment.sorted.file\
+                --out %s/%s.specHap.phased.vcf'%(sys.path[0],outdir,gene_vcf, outdir, outdir,gene)
+                # print (order)
             
             if new_formate:
                 os.system('sort -n -k6 %s/fragment.all.file >%s/fragment.sorted.file'%(outdir, outdir))
@@ -1657,15 +1451,17 @@ if __name__ == "__main__":
 
         
             # phase small variants with spechap and find the unphased points
-            os.system('tabix -f %s'%(my_new_vcf))
+            # os.system('tabix -f %s'%(gene_vcf))
             os.system(order)
-            convert(outdir, gene, '%s/%s.specHap.phased.vcf'%(outdir,gene), snp_list)
-            os.system('tabix -f %s'%( my_new_vcf))
+            raw_spec_vcf = '%s/%s.specHap.phased.vcf'%(outdir,gene)
+            spec_vcf = outdir + '/%s.spechap.vcf.gz'%(gene)
+            get_unphased_loci(outdir, gene, raw_spec_vcf, snp_list, spec_vcf)
+            os.system('tabix -f %s'%(spec_vcf))
 
            
             # link phase blocks with database
-            if gene == 'HLA_DRB1':
-                split_vcf(gene, outdir, deletion_region)  
+            # if gene == 'HLA_DRB1':
+            #     split_vcf(gene, outdir, deletion_region)  
             print ('Start link blocks with database...')
             # if gene == 'HLA_DRB1':
             #     reph='perl %s/whole/rephase.DRB1.pl %s/%s_break_points_spechap.txt\
@@ -1684,8 +1480,9 @@ if __name__ == "__main__":
                 %(sys.path[0],outdir,gene,outdir,gene)
             os.system(str(spec_block))
 
-            seq_list = read_spechap_seq('%s/%s.vcf.gz'%(outdir, gene), snp_list) # get the haplotypes
-            update_seqlist = block_phase(outdir,seq_list,snp_list,vcffile,gene)   # phase the unlinked blocks
+            seq_list = read_spechap_seq(spec_vcf, snp_list) # get the haplotypes
+            rephase_vcf = '%s/%s.rephase.vcf.gz'%(outdir,gene)
+            update_seqlist = block_phase(outdir,seq_list,snp_list,gene,gene_vcf,rephase_vcf)   # phase the unlinked blocks
             fresh_alpha = compute_allele_frequency(update_seqlist, beta_set) # compute haplotype frequency with least-square
             freq_output(outdir, gene, fresh_alpha)
             gene_profile = gene_phased(update_seqlist,snp_list,gene)
@@ -1698,7 +1495,7 @@ if __name__ == "__main__":
         else:
             os.system('cp %s/%s.bam %s/newref_insertion.bam'%(outdir, gene.split('_')[-1], outdir))
             os.system('%s/../bin/samtools index %s/newref_insertion.bam'%(sys.path[0], outdir))
-            os.system('cp %s %s/newref_insertion.freebayes.vcf'%(vcffile, outdir))
+            os.system('zcat %s > %s/newref_insertion.freebayes.vcf'%(gene_vcf, outdir))
         deletion_region = sv_copy_number_old(outdir, deletion_region, gene, ins_seq) # get copy number of long Indels
 
         if gene == 'HLA_DRB1':

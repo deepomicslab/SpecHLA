@@ -34,9 +34,9 @@ def get_hap(fiedler_vec):
     hap = []
     for i in range(0, len(fiedler_vec), 2):
         if fiedler_vec[i] > fiedler_vec[i+1]:
-            hap.append(0)
-        else:
             hap.append(1)
+        else:
+            hap.append(0)
     return hap
 
 def constr_graph(score_file, block_phase_file):
@@ -62,7 +62,7 @@ def constr_graph(score_file, block_phase_file):
     f.close()
     locus_num = len(frag_index)
     if locus_num == 0:
-        os.system("touch %s"%(block_phase_file))
+        os.system(":> %s"%(block_phase_file))
         return 0
     mat = np.zeros((2*locus_num, 2*locus_num))
 
