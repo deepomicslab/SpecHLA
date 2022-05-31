@@ -54,6 +54,7 @@ dependencies:
   - python=3.8.12=ha38a3c6_3_cpython
   - python_abi=3.8=2_cp38
   - readline=8.1=h46c0cb4_0
+  - scipy=1.8.0=py38h56a6a73_1
   - setuptools=62.3.2=py38h578d9bd_0
   - sqlite=3.38.5=h4ff8645_0
   - tk=8.6.12=h27826a3_0

@@ -453,70 +453,6 @@ def isin(x,seq):
     except :
         return False
 
-def relate_order(file, snp_list):
-    sv_locus = []
-    locus_list = []
-    n = 0
-    block_dict={}
-    dict={}
-    previous_gene=''
-    
-    for line in open(file,'r'):
-        line=line.strip()
-        array=line.split()
-        if array[0] == 'gene':
-            past_order = []
-            for j in range(len(array[6:])):
-                past_order.append(j)
-            continue
-        old_array = array[:]
-        gene_name=array[0]
-        locus=array[1]
-        array=array[6:]
-
-        hla_num=len(array)
-        previous_gene=gene_name            
-        ref_order=[]
-        for j in range(hla_num):
-            ref_order.append(j)
-        if len(array)<len(ref_order):
-            continue
-
-        if old_array[2] == '+':
-            sv_locus.append(n)
-        # print (locus)
-        locus_list.append(int(locus))
-        new_order=[]
-        # print (hla_num,ref_order,array)
-        ##################
-        # for e in range(hla_num):
-        #     new_order.append(array[int(past_order[e])])        
-        # ref_order=new_order[:]
-        ref_order = array
-        ##################
-        past_order = ref_order
-        dict[locus]=ref_order
-        n += 1
-    #update the locus
-    replace_dict = {}
-    for sv in sv_locus:
-        if sv + 1 < len(locus_list):
-            gap = [locus_list[sv], locus_list[sv+1]]
-        else:
-            gap = [locus_list[sv], 'end']
-        replace_dict[str(locus_list[sv])] = str(first_snp_in_the_region(gap, snp_list))
-    # print (dict)
-    # print ('replace_dict', replace_dict)
-    for key in replace_dict.keys():
-        if key in dict.keys():
-            #change name when the break point locus is not same as snp locus.
-            if replace_dict[key] != key: 
-                dict[replace_dict[key]] = dict[key]
-                del dict[key]
-
-    block_dict[previous_gene] = dict
-    return block_dict
-
 def first_snp_in_the_region(gap, snp_list):
     for snp in snp_list:
         snp[1] = int(snp[1])
@@ -528,57 +464,28 @@ def first_snp_in_the_region(gap, snp_list):
                 return snp[1]
     return gap[0]
 
-def relate_order_other(file, snp_list):
-    block_dict={}
-    dict={}
-    previous_gene=''
-    for line in open(file,'r'):
-        if line[0] == '#':
-            continue
-        line=line.strip()
-        array=line.split()
-        gene_name=array[0]
-        locus=array[1]
-        array=array[6:]
-        hla_num=len(array)
-        if gene_name != previous_gene:
-            block_dict[previous_gene] = dict
-            dict={}
-            previous_gene=gene_name            
-            ref_order=[]
-            for j in range(hla_num):
-                ref_order.append(j)
-        if len(array)<len(ref_order):
-            continue
-        new_order=[]
-        # print (hla_num,ref_order,array)
-        for e in range(hla_num):
-            new_order.append(array[int(ref_order[e])])
-        ref_order=new_order[:]
-        dict[locus]=ref_order
-        # print (gene_name,ref_order)
-    block_dict[previous_gene] = dict
-    # print (block_dict)
-    return block_dict
-
 def block_phase(outdir,seq_list,snp_list,vcffile,gene):
     file=outdir+'/%s_break_points_phased.txt'%(gene)
-    if os.path.isfile(file):
-        block_dict=relate_order_other(file, snp_list)
-    else:
-        block_dict={gene:{}}
+    record_block_haps = []
+    if os.path.isfile(file) and os.path.getsize(file):
+        for line in open(file,'r'):
+            if line[0] == '#':
+                continue
+            line=line.strip()
+            array=line.split()
+            gene_name=array[0]
+            if gene_name != gene:
+                print ("wrong gene!", gene_name, gene)
+            start = int(array[1])
+            end = int(array[2])
+            genotype = int(array[3])
+            record_block_haps.append([start, end, genotype])
+
     seq=np.array(seq_list)
     seq=np.transpose(seq)
     snp=snp_list  
     update_seqlist=[]
 
-    if gene in block_dict.keys():
-        gene_dict=block_dict[gene]
-    else:
-        gene_dict={}
-    ref_order=[]
-    for orde in range(2):
-        ref_order.append(orde)
     he=0
     m = VariantFile('%s/%s.vcf.gz'%(outdir,gene))
     #m = VariantFile('%s/%s.vcf.gz'%(outdir, gene))
@@ -591,15 +498,21 @@ def block_phase(outdir,seq_list,snp_list,vcffile,gene):
         geno = record.samples[sample]['GT']    
         depth = record.samples[sample]['AD']
         if geno != (0,0) and geno != (1,1) and geno != (2,2):
-        # if record.samples[sample].phased != True:
-            # if geno == (1,1,2) or geno == (1,2,2):
             if geno == (1,2):
                 phased_locus = seq[he]
                 for i in range(len(phased_locus)):
                     phased_locus[i] += 1
             else:
                 phased_locus=seq[he]
-            # print (phased_locus)
+
+            # check if it needs to reverse the genotype of the locus
+            ref_order = [0, 1]
+            for block in record_block_haps:
+                if record.pos >= block[0] and record.pos <= block[1]:
+                    if block[2] == 1:
+                        ref_order = [1, 0]
+                    break
+            record.pos
             update_phased_locus=[]
             for pp in range(2):
                 update_phased_locus.append(phased_locus[int(ref_order[pp])])
@@ -614,8 +527,8 @@ def block_phase(outdir,seq_list,snp_list,vcffile,gene):
             update_seqlist.append(phased_locus)
             he+=1
         out.write(record)
-        if str(record.pos) in gene_dict.keys():  #rephase new order
-            ref_order=gene_dict[str(record.pos)]
+        # if str(record.pos) in gene_dict.keys():  #rephase new order
+        #     ref_order=gene_dict[str(record.pos)]
 
     m.close()
     out.close()
@@ -751,119 +664,6 @@ def alignments_seg(seg_set):
     # print (segs_list, new_seg_set)
     return new_seg_set
 ########align the segs from SV haps result
-
-class AddSV():
-    def __init__(self,balance_lh,hap,vcffile,strainsNum,ins):
-        self.balance_lh,self.hap,self.vcffile = balance_lh,hap,vcffile 
-        self.ins = ins 
-        self.strainsNum=strainsNum
-        self.copy_num,self.index_locus,self.source,self.sink=self.read_balanced()
-        self.segs=list(self.copy_num.keys())  
-        self.ins_seq = self.read_ins()
-
-    def read_balanced(self):
-        #read the copy number of each seg, and record multicopy segs and corresponding copy number.
-        copy_num={}
-        index_locus={}
-        for line in open(self.balance_lh,'r'):
-            line=line.strip()
-            array=line.split()
-            if str(array[0]) == 'SOURCE':
-                locus=array[1].split(':')
-                source = locus[1]
-            elif str(array[0]) == 'SINK':
-                locus=array[1].split(':')
-                sink = locus[1]
-            elif str(array[0]) == 'SEG':
-                locus=array[1].split(':')
-                index_locus[locus[1]] = [int(locus[3]),int(locus[4])]
-                copy_num[locus[1]] = float(array[3])
-        return copy_num,index_locus,source,sink
-
-    def if_normal(self):  #regard the seg with one copy in each hap as normal segs, abnormal otherwise.
-        line=open(self.hap,'r').readline().strip()
-        seg_order=[]
-        array = line.split()
-        hap_num = 0
-        for i in range(len(array)):
-            if array[i] == self.source + '+':
-                new_hap = array[i] + ' '
-                if self.source == self.sink:
-                    seg_order.append(new_hap)
-                    hap_num += 1
-            elif array[i] == self.sink + '+':
-                new_hap = new_hap + array[i] + ' '
-                seg_order.append(new_hap)
-                hap_num += 1
-            else:
-                new_hap = new_hap + array[i] + ' '
-            if hap_num == self.strainsNum:
-                break
-        normal_seg=[]
-        abnormal_seg=[]
-        for seg in self.segs:
-            num=0
-            fresh_copy=0  #count the copy number once again.
-            for arr in seg_order:
-                if str(seg)+'+' in arr.split() or str(seg)+'-' in arr.split():
-                    num+=1
-                for mysegs in arr.split():
-                    if str(seg)+'+' == mysegs or str(seg)+'-' == mysegs:
-                        fresh_copy += 1
-            # if num == self.strainsNum and self.copy_num[seg] == self.strainsNum:
-            #     normal_seg.append(seg)
-            if num == self.strainsNum and fresh_copy == self.strainsNum:
-                normal_seg.append(seg)
-            else:
-                abnormal_seg.append(seg)
-        # print ('if normal', normal_seg, abnormal_seg)
-
-        #insertion locus
-        # ins_locus = {}
-        # for i in range(len(array)):
-        #     if array[i][:-1] in self.ins_seq.keys() and array[i][:-1] not in ins_locus.keys():
-        #         ins_locus[array[i][:-1]] = self.index_locus[array[i-1][:-1]][1]
-        # print ('insert',ins_locus)
-
-        return seg_order,normal_seg,abnormal_seg,self.copy_num,self.index_locus,self.ins_seq
-
-    def read_seg(self):
-        index_locus={}       
-        i=0
-        for line in open(self.seg_file,'r'):
-            if line[0] == 'I':
-                continue
-            line=line.strip()
-            array=line.split()
-            if i == 0:
-                fir_extend=array[0]
-            sec_extend=array[0]
-            index_locus[array[0]] = [array[2],array[3]]
-            i+=1
-        # del index_locus[fir_extend]
-        # del index_locus[sec_extend]
-        return index_locus
-
-    def read_ins(self):
-        ins_seq={}
-        if os.path.isfile(self.ins):
-            for line in open(self.ins,'r'):
-                if line[0] == 'I':
-                    continue
-                array=line.strip().split()
-                seg_ID = array[1].split('_')
-                ins_seq[seg_ID[1]] = array[-1]
-        else:
-            print ('no insertion for this gene')
-        return ins_seq
-
-    def deletion_locus(self):
-        deletion_region = []
-        for seg_ID in self.index_locus.keys():
-            if float(self.copy_num[seg_ID]) < self.strainsNum and seg_ID not in self.ins_seq.keys():
-                deletion_region.append(self.index_locus[seg_ID])
-                # print ('deletion', seg_ID, self.index_locus[seg_ID])    
-        return deletion_region
 
 def focus_region():
     return {'HLA_A':[1000,4503],'HLA_B':[1000,5081],'HLA_C':[1000,5304],'HLA_DPA1':[1000,10775],\
@@ -1714,7 +1514,6 @@ if __name__ == "__main__":
         # read small variants
         snp_list,beta_set,snp_index_dict = read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,\
             freq_bias,strainsNum,deletion_region, snp_qual)   
-        os.system('tabix -f %s/middle.vcf.gz'%(outdir))   
 
 
         if len(snp_list)==0:
@@ -1736,7 +1535,8 @@ if __name__ == "__main__":
             os.system(order)
             extract_linkage_for_indel(bamfile,snp_list,snp_index_dict,outdir) # linkage for indel
             allele_imba(beta_set) # linkage from allele imbalance
-            os.system('cat %s/fragment.file %s/fragment.add.file %s/fragment.imbalance.file>%s/fragment.all.file'%(outdir, outdir, outdir, outdir))
+            os.system('cat %s/fragment.file %s/fragment.add.file %s/fragment.imbalance.file>%s/fragment.all.file'%(outdir,\
+             outdir, outdir, outdir))
             
             # the order to phase with only ngs data.
             order='%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/fragment.sorted.file --out \
@@ -1867,16 +1667,22 @@ if __name__ == "__main__":
             if gene == 'HLA_DRB1':
                 split_vcf(gene, outdir, deletion_region)  
             print ('Start link blocks with database...')
-            if gene == 'HLA_DRB1':
-                reph='perl %s/whole/rephase.DRB1.pl %s/%s_break_points_spechap.txt\
-                    %s %s %s/%s_break_points_phased.txt %s %s'%(sys.path[0], outdir,gene,outdir,strainsNum,outdir,\
-                    gene,args.block_len,args.points_num)
-            else:
-                reph='perl %s/whole/rephaseV1.pl %s/%s_break_points_spechap.txt\
-                    %s %s %s/%s_break_points_phased.txt %s %s'%(sys.path[0],outdir,gene,outdir,strainsNum,outdir,\
-                    gene,args.block_len,args.points_num)
+            # if gene == 'HLA_DRB1':
+            #     reph='perl %s/whole/rephase.DRB1.pl %s/%s_break_points_spechap.txt\
+            #         %s %s %s/%s_break_points_phased.txt %s %s'%(sys.path[0], outdir,gene,outdir,strainsNum,outdir,\
+            #         gene,args.block_len,args.points_num)
+            # else:
+            #     reph='perl %s/whole/rephaseV1.pl %s/%s_break_points_spechap.txt\
+            #         %s %s %s/%s_break_points_phased.txt %s %s'%(sys.path[0],outdir,gene,outdir,strainsNum,outdir,\
+            #         gene,args.block_len,args.points_num)
+            # map the haps in each block to thee database
+            reph='perl %s/whole/read_unphased_block.pl %s/%s_break_points_spechap.txt\
+                %s 2 %s/%s_break_points_score.txt'%(sys.path[0],outdir,gene,outdir,outdir,gene)
             os.system(str(reph))
-
+            # phase block with spectral graph theory
+            spec_block = "python3 %s/phase_unlinked_block.py %s/%s_break_points_score.txt %s/%s_break_points_phased.txt"\
+                %(sys.path[0],outdir,gene,outdir,gene)
+            os.system(str(spec_block))
 
             seq_list = read_spechap_seq('%s/%s.vcf.gz'%(outdir, gene), snp_list) # get the haplotypes
             update_seqlist = block_phase(outdir,seq_list,snp_list,vcffile,gene)   # phase the unlinked blocks

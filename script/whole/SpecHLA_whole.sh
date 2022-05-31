@@ -107,10 +107,10 @@ echo Start profiling HLA for $sample.
 mkdir -p $outdir
 # exec >$outdir/$sample.log 2>&1 #redirect log info to the outdir
 group='@RG\tID:'$sample'\tSM:'$sample
-echo use ${num_threads:-5} threads.
+echo use ${num_threads:-5} thread(s).
 
 
-:<<!
+# :<<!
 # ################ remove the repeat read name #################
 python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
