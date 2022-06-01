@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use FindBin qw($Bin);
 #perl annoHLA.pl HLA_10_T_50-50 /mnt/disk2_workspace/wangmengyao/NeedleHLA/simu_data/simu_20200318/assembly/HLA_10_T_50-50/phase/HLA_10_T_50-50 ./ 2
-my ($sample,$fadir,$workdir,$k,$pop, $version) = @ARGV;
+my ($sample,$fadir,$workdir,$k,$pop) = @ARGV;
 
 my $db="$Bin/../../db/HLA";
 my $bin="$Bin/../../bin";
@@ -19,13 +19,8 @@ while(<FIN>){
     else{$hashp{$gene} = ($a+$b+$c)/3}
 }
 close FIN;
-my ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000);
-if($version eq "pstrain"){
-     ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (30,500,200,100,100,100,100,70);
-}
-elsif($version eq "spechap"){
-     ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (500,10000,10000,10000,10000,10000,10000,70);
-}
+#my ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000);
+my ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (10000,500,10000,10000,10000,10000,10000,70);
 
 my %hashm;
 open INL, "$db/hla_nom_g.txt" or die "$!\n";

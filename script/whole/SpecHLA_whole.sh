@@ -24,9 +24,6 @@
 ###   -p        The population of the sample: Asian, Black, or Caucasian. Use mean frequency
 ###             if not provided.
 ###   -j        Number of threads [5]
-###   -f        True or False. The annotation database only includes the alleles with population 
-###             frequency higher than zero if set True. Otherwise, it includes all alleles. Default 
-###             is True.
 ###   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
 ###             is 2. It should be set larger to infer novel alleles.
 ###   -v        True or False. Consider long InDels if True, else only consider short variants. 
@@ -56,8 +53,6 @@ while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:" opt; do
     p) pop="$OPTARG"
     ;;
     m) nm="$OPTARG"
-    ;;
-    f) annotation="$OPTARG"
     ;;
     v) long_indel="$OPTARG"
     ;;
@@ -170,7 +165,7 @@ HLA_DQA1:1000-7492,HLA_DQB1:1000-8480,HLA_DRB1:1000-12229 $outdir/$sample.realig
 # !
 
 
-!
+
 # ###################### call long indel #############################################
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
@@ -223,23 +218,11 @@ python3 $dir/../phase_tgs.py \
 done
 # ###############################################################################################################
 
-
+!
 
 # ############################ annotation ####################################
-echo start annotation.
-if [ ${annotation:-True} == True ]
-then
-  if [ ${phase:-True} == True ]
-  then
-    annotation_parameter=spechap
-  else
-    annotation_parameter=pstrain
-  fi
-else
-  annotation_parameter=all
-fi
-
-perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop $annotation_parameter
+echo start annotation...
+perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop
 # #############################################################################
 
 
