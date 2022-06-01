@@ -21,7 +21,7 @@ while(<IN>){
       $count += 1;
 }
 close IN;
-
+#ouput block region
 my %hashlen=('HLA_A'=>'3503', 'HLA_B'=>'4081', 'HLA_C'=>'4304', 'HLA_DPA1'=>'9775','HLA_DPB1'=>'11468','HLA_DQA1'=>'6492','HLA_DQB1'=>7480,'HLA_DRB1'=>'11229');
 my %hashr;
 open OUT, ">$outfile";
@@ -34,15 +34,16 @@ foreach my $ge(sort keys %hash){
         `tabix -f $vcf.gz`;
         ($start1,$n) = (1001,0);
         while($n<=$#lines){               
-                my @oarrs = (split /\s/, $lines[$n])[0,1,2,3,4,5];
-                $break1 = $oarrs[1];
+                my @oarrs = (split /\s/, $lines[$n])[0,1,2];
+                $break1 = $oarrs[2];
                 my $out = join("\t", @oarrs);
                 $n += 1;
                 if($n>$#lines){ $break2=$hashlen{$gene} + 1000; $n+=1; }
-                else{($break2) = (split /\s/, $lines[$n])[1];}
-                $end1 = $break1 -2;
-                $start2 = $break1 -1;
-                $end2 = $break2 - 2;
+                else{($break2) = (split /\s/, $lines[$n])[2];}
+                $end1 = $break1;
+                $start2 = $break1 + 1;
+                $end2 = $break2;
+                #skip the long indel enriched region
                 if(($gene eq "HLA_DQB1") && ($break2 >4230) && ($break2 <4600)){$end2 = 4230}
                 elsif(($gene eq "HLA_DQB1") && ($break1 < 4230) && ($break2>4230) && ($break2 <4600)){$end2 = 4230}
                 elsif(($gene eq "HLA_DQB1") && ($break1 >=4230) && ($break1<4600) && ($break2>4600)){$end1 = 4230; $start2 =4600}
@@ -58,6 +59,7 @@ foreach my $ge(sort keys %hash){
                 $start1 = $start2;
        }
 }
+#return combination of each two hap
 foreach my $region1(sort keys %hashr){ 
         foreach my $region2(sort keys %hashr){
                 next if($region1 eq $region2);
