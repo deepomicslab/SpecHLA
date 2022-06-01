@@ -242,7 +242,7 @@ In the directory of one specific sample, you will find the below files:
 | Output | Description |
 | --- | --- |
 | hla.result.txt | HLA-typing results for all alleles |
-| hla.allele.*.HLA_*.fasta | Sequence of each allele |
+| hla.allele.\*.HLA_\*.fasta | Sequence of each allele |
 | HLA_*_freq.txt | Haplotype frequencies of each gene |
 | HLA_*.rephase.vcf.gz | Phased vcf file for each gene |
 
@@ -250,7 +250,7 @@ If you performed pedigree phasing, you will find below files in the output/ fold
 | Output | Description |
 | --- | --- |
 | trio/HLA_*.rephase.vcf.gz | Phased vcf file after pedigree phasing |
-| trio/hla.allele.*.HLA_*.fasta | Sequence of each allele after pedigree phasing|
+| trio/hla.allele.\*.HLA_\*.fasta | Sequence of each allele after pedigree phasing|
 
 An example for the formats of "hla.result.txt" is as below:
 ```
