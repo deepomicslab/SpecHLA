@@ -50,19 +50,10 @@ optional.add_argument("--snp_qual",help="The minimum quality of SNPs to be consi
      step (default is 0.01).",dest='snp_qual',metavar='',default=0.01, type=float)
 optional.add_argument("--indel_len",help="The maximum length for indel to be considered in HLAtyping\
      step (default is 150).",dest='indel_len',metavar='',default=150, type=int)
-optional.add_argument("--block_len",help="The minimum length for block to be considered in final\
-     result (default is 300).",dest='block_len',metavar='',default=300, type=int)
-optional.add_argument("--points_num",help="The minimum hete loci number for block to be considered\
-     in final result (default is 2).",dest='points_num',metavar='',default=2, type=int)
 optional.add_argument("--weight_imb",help="The weight of using phase information of allele imbalance\
  [0-1], default is 0. (default is 0)",dest='weight_imb',metavar='',default=0, type=float)
-optional.add_argument("--reads_num",help="The number of supporting reads between two adjcent loci\
-     lower than this value will be regard as break points.(default is 10)",dest='reads_num',\
-     metavar='',default=10, type=int)
-optional.add_argument("--noise_num",help="If the haplotype number is 2, there will be at most two \
-    types of linked reads. If the third type of reads number is over this value, then these two \
-    loci will be regarded as break points.(default is 5)",dest='noise_num',metavar='',default=5, \
-    type=int)
+
+
 
 parser._action_groups.append(optional)
 args = parser.parse_args()
@@ -237,13 +228,18 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,strainsNum,d
     return snp_list, beta_set, snp_index_dict
 
 def freq_output(outdir, gene, fresh_alpha):
+    # output the haplotype frequencies
     ra_file=open(outdir+'/%s_freq.txt'%(gene),'w')    
     print ('# HLA\tFrequency',file=ra_file)
     for j in range(len(fresh_alpha)):
         print ('str-'+str(j+1),fresh_alpha[j],file=ra_file)
     ra_file.close()
         
-def reads_support(samfile,first):   
+def reads_support(samfile,first):  
+    """
+    Input: Bam file, hete variant
+    Output: the reads support each allele of the variant 
+    """ 
     reads_list=[]
     allele_num=len(first[3])+1
     for i in range(allele_num):
@@ -293,9 +289,12 @@ def reads_support(samfile,first):
     return reads_list
 
 def link_reads(samfile,left,right,new_left,snp_index_dict,f):
+    """
+    check the reads that support 1/2 indels
+    print the reads in a formate same as ExtractHAIRs, which can be recognized by SpecHap
+    """
     left_reads=new_left
     right_reads=reads_support(samfile,right)
-    delta_count=[]
     for i in range(2):
         for j in range(2):
             left_set=left_reads[i]
@@ -312,12 +311,14 @@ def link_reads(samfile,left,right,new_left,snp_index_dict,f):
                     else:
                         print('2 %s %s %s %s %s II 60'%(name, left_index, left_geno, right_index, right_geno), file=f)
             same_num=len(reads_name)
-            delta_count.append(same_num)
-    return delta_count,right_reads
+    return right_reads
 
 def extract_linkage_for_indel(bamfile,snp_list,snp_index_dict,outdir):
-    # ExtractHAIR may loss some linkage info for indel
-    # read bam and find the linkage for indels.
+    """
+    The tool ExtractHAIR of SpecHap can not get linager info for indels with genotype as 1/2
+    HLA genes have many 1/2 indels
+    This function checks the bam and extract the linkage info for indels to avoid linkage loss
+    """
     f = open(outdir + '/fragment.add.file', 'w')
     samfile = pysam.AlignmentFile(bamfile, "rb")
     new_left=''
@@ -326,7 +327,7 @@ def extract_linkage_for_indel(bamfile,snp_list,snp_index_dict,outdir):
         right=snp_list[i+1]  
         if new_left=='':   
             new_left=reads_support(samfile,left)
-        delta_count,right_reads=link_reads(samfile,left,right,new_left,snp_index_dict, f)
+        right_reads=link_reads(samfile,left,right,new_left,snp_index_dict,f)
         new_left=right_reads
     f.close()
 
@@ -338,6 +339,12 @@ def isin(x,seq):
         return False
 
 def block_phase(outdir,seq_list,snp_list,gene,gene_vcf,rephase_vcf):
+    """
+    according to the block phase results
+    refine the phased haplotypes
+    output rephase_vcf
+    return the haps
+    """
     file=outdir+'/%s_break_points_phased.txt'%(gene)
     record_block_haps = []
     if os.path.isfile(file) and os.path.getsize(file):
@@ -405,8 +412,6 @@ def block_phase(outdir,seq_list,snp_list,gene,gene_vcf,rephase_vcf):
 
 def gene_phased(update_seqlist,snp_list, gene):
     gene_profile={}
-    # gene_name=['HLA_A','HLA_B','HLA_C','HLA_DQB1','HLA_DRB1','HLA_DQA1','HLA_DPA1','HLA_DPB1']
-    # for gene in gene_name:
     gene_snp=[]
     gene_seq=[]
     for i in range(len(snp_list)):
@@ -418,76 +423,28 @@ def gene_phased(update_seqlist,snp_list, gene):
     gene_profile[gene] = [gene_snp,gene_seq]
     return gene_profile
 
-def no_snv_gene_phased(gene_vcf, outdir, gene, strainsNum):
-    in_vcf = VariantFile(gene_vcf)
-    out_vcf = VariantFile('%s/%s.rephase.vcf.gz'%(outdir, gene),'w',header=in_vcf.header)
-    sample = list(in_vcf.header.samples)[0]
-    for record in in_vcf.fetch():
-        if record.chrom == gene and record.samples[sample]['GT'] == (1, 1, 1):
-            # print (gene, record)
-            phased_locus=[1] * strainsNum
-            record.samples[sample]['GT']= tuple(phased_locus)
-            record.samples[sample].phased=True
-            out_vcf.write(record)
-    in_vcf.close()
-    out_vcf.close()
-    os.system('tabix -f %s/%s.rephase.vcf.gz'%(outdir,gene))
+def no_snv_gene_phased(outdir, gene):
+    """
+    The haplotype frequency is [1, 0], if there is no hete variant
+    output the frequency file
+    return an empty gene_profile
+    """
+
     ra_file=open(outdir+'/%s_freq.txt'%(gene),'w')    
     print ('# HLA\tFrequency',file=ra_file)
     print ('str-'+str(1), 1, file=ra_file)
-    for j in range(1, strainsNum):
-        print ('str-'+str(j+1), 0, file=ra_file)
+    print ('str-'+str(2), 0, file=ra_file)
     ra_file.close()
 
-    ####
     gene_profile={}
-    gene_name=['HLA_A','HLA_B','HLA_C','HLA_DQB1','HLA_DRB1','HLA_DQA1','HLA_DPA1','HLA_DPB1']
-    for gene in gene_name:
-        gene_snp=[]
-        gene_seq=[]
-        gene_profile[gene] = [gene_snp,gene_seq]
+    gene_snp=[]
+    gene_seq=[]
+    gene_profile[gene] = [gene_snp,gene_seq]
+
     return gene_profile
 
-def read_dup():
-    dup_dict={}
-    for line in open(sys.path[0]+'/complex_region.txt','r'):
-        line=line.strip()
-        array=line.split()
-        dup_dict[array[0]]=array[1:]
-    return dup_dict
-
-def isOut(index, myset):
-    if index < len(myset):
-        return myset[index]
-    else:
-        return 'NA'
-
-def exists_index(seg_set):
-    exists_dict = {}
-    for i in range(len(seg_set)):
-        for j in range(1000):
-            if isOut(j, seg_set[i]) != 'NA':
-                if seg_set[i][j] not in exists_dict.keys():
-                    exists_dict[seg_set[i][j]] = [j]
-                else:
-                    exists_dict[seg_set[i][j]].append(j)
-    for key in exists_dict.keys():
-        exists_dict[key] = sorted(exists_dict[key])
-    #to ensure the following segs index is larger than previous segs
-    newflag = True
-    while newflag:
-        newflag = False
-        for i in range(len(seg_set)):
-            for j in range(1000):
-                if isOut(j, seg_set[i]) != 'NA' and isOut(j+1, seg_set[i]) != 'NA':
-                    if max(exists_dict[seg_set[i][j+1]]) <= max(exists_dict[seg_set[i][j]]) or\
-                        min(exists_dict[seg_set[i][j+1]]) <= min(exists_dict[seg_set[i][j]]) :
-                            newflag = True
-                            for w in range(len(exists_dict[seg_set[i][j+1]])):
-                                exists_dict[seg_set[i][j+1]][w] = exists_dict[seg_set[i][j+1]][w] + 1
-    return exists_dict
-
 def focus_region():
+    # return the gene interval on the reference
     return {'HLA_A':[1000,4503],'HLA_B':[1000,5081],'HLA_C':[1000,5304],'HLA_DPA1':[1000,10775],\
         'HLA_DPB1':[1000,12468],'HLA_DQA1':[1000,7492],'HLA_DQB1':[1000,8480],'HLA_DRB1':[1000,12229]}
 
@@ -799,6 +756,7 @@ def chrom_seq(file):
     return seg_sequence
 
 def read_fasta(file):
+    # return the sequence saved in fasta file
     seq=''
     for line in open(file, 'r'):
         if line[0] == '>':
@@ -1408,18 +1366,8 @@ def link_blocks():
     Phasing unlinked blocks guided by HLA database
     """
     # link phase blocks with database
-    # if gene == 'HLA_DRB1':
-    #     split_vcf(gene, outdir, deletion_region)  
     print ('Start link blocks with database...')
-    # if gene == 'HLA_DRB1':
-    #     reph='perl %s/whole/rephase.DRB1.pl %s/%s_break_points_spechap.txt\
-    #         %s %s %s/%s_break_points_phased.txt %s %s'%(sys.path[0], outdir,gene,outdir,strainsNum,outdir,\
-    #         gene,args.block_len,args.points_num)
-    # else:
-    #     reph='perl %s/whole/rephaseV1.pl %s/%s_break_points_spechap.txt\
-    #         %s %s %s/%s_break_points_phased.txt %s %s'%(sys.path[0],outdir,gene,outdir,strainsNum,outdir,\
-    #         gene,args.block_len,args.points_num)
-    # map the haps in each block to thee database
+    # map the haps in each block to the database
     reph='perl %s/whole/read_unphased_block.pl %s/%s_break_points_spechap.txt\
         %s 2 %s/%s_break_points_score.txt'%(sys.path[0],outdir,gene,outdir,outdir,gene)
     os.system(str(reph))
@@ -1476,7 +1424,7 @@ if __name__ == "__main__":
         
         if len(snp_list)==0:
             print ('No heterozygous locus, no need to phase.')
-            gene_profile = no_snv_gene_phased(gene_vcf, outdir, gene, strainsNum)
+            gene_profile = no_snv_gene_phased(outdir, gene)
             os.system("cp %s %s"%(gene_vcf, rephase_vcf)) # get the phase result directly
             os.system('tabix -f %s'%(rephase_vcf))
         else:  

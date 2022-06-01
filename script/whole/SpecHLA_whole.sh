@@ -193,7 +193,7 @@ fi
 # #############################################################################################
 
 
-# ###################### phase, link blocks, calculate haplotype ratio, give typing results ##############
+# ########### phase, link blocks, calculate haplotype ratio, give typing results ##############
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
@@ -206,7 +206,7 @@ python3 $dir/../phase_tgs.py \
 --fq2 $outdir/$hla.R2.fq.gz \
 --gene HLA_$hla \
 --freq_bias ${maf:-0.05} \
---block_len 200 --points_num 1 --reads_num 2 --snp_qual ${snp_quality:-0.01} \
+--snp_qual ${snp_quality:-0.01} \
 --ref $hla_ref \
 --tgs ${tgs:-NA} \
 --nanopore ${nanopore_data:-NA} \
@@ -216,7 +216,7 @@ python3 $dir/../phase_tgs.py \
 --sa $sample \
 --weight_imb ${weight_imb:-0}
 done
-# ###############################################################################################################
+# ##################################################################################################
 
 
 
