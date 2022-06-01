@@ -239,17 +239,18 @@ bcftools view -g het -v snps  deepvariant/pacbio-15kb-hapsort-wgs.vcf.gz  chr6:2
 SpecHLA will automaticly build a folder named `output/` in the current path. In the `output/` folder, the results of each sample are saved in a folder named as the sample ID.  
 
 In the directory of one specific sample, you will find the below files:
-```
-"hla.result.txt" contains the Typing results of each allele.
-"hla.allele.*.HLA_*.fasta" contains the Haplotyping sequence results of each allele.
-"HLA_*_freq.txt" contains the Haplotype Ratios in each gene.
-"HLA_*.rephase.vcf.gz" contains the phasing result of small variants.
-```
+| Output | Description |
+| --- | --- |
+| hla.result.txt | HLA-typing results for all alleles |
+| hla.allele.*.HLA_*.fasta | Sequence of each allele |
+| HLA_*_freq.txt | Haplotype frequencies of each gene |
+| HLA_*.rephase.vcf.gz | Phased vcf file for each gene |
+
 If you performed pedigree phasing, you will find below files in the output/ folder.
-```
-"trio/HLA_*.rephase.vcf.gz" contains the updated phasing result after pedigree phasing.
-"trio/hla.allele.*.HLA_*.fasta" contains the Haplotyping sequence results after pedigree phasing.
-```
+| Output | Description |
+| --- | --- |
+| trio/HLA_*.rephase.vcf.gz | Phased vcf file after pedigree phasing |
+| trio/hla.allele.*.HLA_*.fasta | Sequence of each allele after pedigree phasing|
 
 An example for the formats of "hla.result.txt" is as below:
 ```
