@@ -6,7 +6,7 @@
 ### 
 ###
 ### Usage:
-###   sh SpecHLA_tgs.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
+###   sh SpecHLA_whole.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
 ###
 ### Options:
 ###   -n        Sample ID. <required>

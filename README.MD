@@ -9,15 +9,17 @@
     + [Third party packages](#third-party-packages)
   * [Basic Usage](#basic-usage)
     + [Extract HLA-related reads](#extract-hla-related-reads)
-    + [Exon Mode (profile HLA in exons)](#exon-mode--profile-hla-in-exons-)
-    + [Whole Mode (PE reads, also integrating TGS, 10X, Hi-C reads)](#whole-mode--pe-reads--also-integrating-tgs--10x--hi-c-reads-)
+    + [Whole Mode](#whole-mode)
+    + [Exon Mode](#exon-mode)
     + [Pedigree phasing](#pedigree-phasing)
     + [Detect HLA LOH in cancer samples](#detect-hla-loh-in-cancer-samples)
-    + [TGS only Mode (Testing)](#tgs-only-mode--testing-)
-    + [TGS only Assembly-based Typing (Testing)](#tgs-only-assembly-based-typing--testing-)
+    + [TGS only alignment-based typing Testing](#tgs-only-alignment-based-typing-testing)
+    + [TGS only assembly-based typing Testing](#tgs-only-assembly-based-typing-testing)
   * [Interpret output](#interpret-output)
   * [Simulation](#simulation)
   * [Getting help](#getting-help)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
 
 ## Install  
@@ -106,40 +108,15 @@ USAGE: <PATH-TO>/ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome>
 
  -r          : hg38 or hg19
 ```
-### Exon Mode (profile HLA in exons)
-```
-The Exon version of SpecHLA, performs HLA assembly and HLA Typing.
 
-Usage:
-  sh SpecHLA_exon.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
-
-Options:
-  -n        Sample ID.
-  -1        The first fastq file.
-  -2        The second fastq file.
-  -o        The output folder to store the typing results.
-  -p        The population of the sample: Asian, Black, or Caucasian. Use mean frequency
-            if not provided.
-  -f        True or False. The annotation database only includes the alleles with population
-            frequency higher than zero if set True. Otherwise, it includes all alleles. Default
-            is True.
-  -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
-            is 3. It should be set larger to infer novel alleles.
-  -g        True or False. Split more blocks if set True; then rely more on allele database.
-            Otherwise, split less blocks. Default is True.
-  -s        True or False. Use SpecHap to phase if True, else use PStrain. Default is True.
-            We recommend SpecHap.
-  -h        Show this message.
-```
-
-### Whole Mode (PE reads, also integrating TGS, 10X, Hi-C reads)
+### Whole Mode 
 Users can integrate the PacBio, Nanopore, 10X linked-reads, Hi-C data to improve the performance.
 ```
 Full-length HLA typing with paired-end reads. This script can use PacBio, Nanopore,
 Hi-C, and 10X sequencing data to improve the phasing performance if provided.
 
 Usage:
-  sh SpecHLA_tgs.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
+  sh SpecHLA_whole.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
 
 Options:
   -n        Sample ID. <required>
@@ -167,6 +144,32 @@ Options:
             We recommend use SpecHap.
   -a        Use this long InDel file if provided.
   -r        The minimum Minor Allele Frequency (MAF), default is 0.05.
+  -h        Show this message.
+```
+
+### Exon Mode
+```
+The Exon version of SpecHLA, performs HLA assembly and HLA Typing.
+
+Usage:
+  sh SpecHLA_exon.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -p <Asian>
+
+Options:
+  -n        Sample ID.
+  -1        The first fastq file.
+  -2        The second fastq file.
+  -o        The output folder to store the typing results.
+  -p        The population of the sample: Asian, Black, or Caucasian. Use mean frequency
+            if not provided.
+  -f        True or False. The annotation database only includes the alleles with population
+            frequency higher than zero if set True. Otherwise, it includes all alleles. Default
+            is True.
+  -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
+            is 3. It should be set larger to infer novel alleles.
+  -g        True or False. Split more blocks if set True; then rely more on allele database.
+            Otherwise, split less blocks. Default is True.
+  -s        True or False. Use SpecHap to phase if True, else use PStrain. Default is True.
+            We recommend SpecHap.
   -h        Show this message.
 ```
 
@@ -198,14 +201,14 @@ OPTIONS:
 ```
 
 
-### TGS only Mode (Testing)
+### TGS only alignment-based typing Testing
 If you only have PacBio or Nanopore reads, you can perform haplotyping with
 ```
 sh SpecHLA_single.sh -n <sample> -t <sample.pacbio.fq.gz> -p <Asian>
 ```
 Please install Longshot 0.4.1 and add it to the system path to call small variants with TGS data. Please use "sh SpecHLA_single.sh -h" to see detailed usage information.
 
-### TGS only Assembly-based Typing (Testing)
+### TGS only assembly-based typing Testing
 To assemble the TGS reads, and perform HLA typing based on the contigs, please use `/assembly/MHC.TGS.mapping.sh`. 
 ```
 USAGE: <PATH-TO>/MHC.TGS.mapping.sh -s <sample_id> -f <mhc.read> -v <mhc.vcf> -r <refGenomedir> -t <Sequencer>
@@ -252,8 +255,6 @@ zcat tmp.*.fastq.gz |pigz > sample.MHConly.fastq.gz
 
 bcftools view -g het -v snps  deepvariant/pacbio-15kb-hapsort-wgs.vcf.gz  chr6:28477797-33448354 > sample.mhc.het.vcf
 ```
-
-
 
 ## Interpret output
 SpecHLA will automaticly build a folder named `output/` in the current path. In the `output/` folder, the results of each sample are saved in a folder named as the sample ID.  
