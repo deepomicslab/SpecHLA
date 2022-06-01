@@ -19,9 +19,6 @@
   * [Simulation](#simulation)
   * [Getting help](#getting-help)
 
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
-
 ## Install  
 First, create the env with conda, and activate the env.
 ```
