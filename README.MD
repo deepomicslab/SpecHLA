@@ -1,5 +1,25 @@
 # SpecHLA: a comprehensive package for HLA haplotyping and LOH inference
 
+- [SpecHLA: a comprehensive package for HLA haplotyping and LOH inference](#spechla--a-comprehensive-package-for-hla-haplotyping-and-loh-inference)
+  * [Install](#install)
+  * [Run](#run)
+  * [Test](#test)
+  * [Dependencies](#dependencies)
+    + [Programming](#programming)
+    + [Third party packages](#third-party-packages)
+  * [Basic Usage](#basic-usage)
+    + [Extract HLA-related reads](#extract-hla-related-reads)
+    + [Exon Mode (profile HLA in exons)](#exon-mode--profile-hla-in-exons-)
+    + [Whole Mode (PE reads, also integrating TGS, 10X, Hi-C reads)](#whole-mode--pe-reads--also-integrating-tgs--10x--hi-c-reads-)
+    + [Pedigree phasing](#pedigree-phasing)
+    + [Detect HLA LOH in cancer samples](#detect-hla-loh-in-cancer-samples)
+    + [TGS only Mode (Testing)](#tgs-only-mode--testing-)
+    + [TGS only Assembly-based Typing (Testing)](#tgs-only-assembly-based-typing--testing-)
+  * [Interpret output](#interpret-output)
+  * [Simulation](#simulation)
+  * [Getting help](#getting-help)
+
+
 ## Install  
 First, create the env with conda, and activate the env.
 ```
