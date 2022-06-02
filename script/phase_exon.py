@@ -570,103 +570,6 @@ def isin(x,seq):
     except :
         return False
 
-def relate_order(file):
-    block_dict={}
-    dict={}
-    previous_gene=''
-    for line in open(file,'r'):
-        if line[0] == '#':
-            continue
-        line=line.strip()
-        array=line.split()
-        gene_name=array[0]
-        locus=array[1]
-        array=array[6:]
-        hla_num=len(array)
-        if gene_name != previous_gene:
-            block_dict[previous_gene] = dict
-            dict={}
-            previous_gene=gene_name            
-            ref_order=[]
-            for j in range(hla_num):
-                ref_order.append(j)
-        if len(array)<len(ref_order):
-            continue
-        new_order=[]
-        # print (hla_num,ref_order,array)
-        for e in range(hla_num):
-            new_order.append(array[int(ref_order[e])])
-        ref_order=new_order[:]
-        dict[locus]=ref_order
-        # print (gene_name,ref_order)
-    block_dict[previous_gene] = dict
-    # print (block_dict)
-    return block_dict
-
-def newphase(outdir,final_alpha,seq_list,snp_list,vcffile,gene):
-    exon_region_list = exon_region()
-    exon_region_accumulate_list = exon_accumulate_locus(exon_region_list)
-    file=outdir+'/%s_break_points_phased.txt'%(gene)
-    block_dict=relate_order(file)
-    seq=np.array(seq_list)
-    seq=np.transpose(seq)
-    snp=snp_list  
-    update_seqlist=[]
-    alpha=final_alpha   
-    k=len(alpha) 
-    ##############################
-
-    if gene in block_dict.keys():
-        gene_dict=block_dict[gene]
-    else:
-        gene_dict={}
-    ref_order=[]
-    for orde in range(k):
-        ref_order.append(orde)
-    he=0
-    m = VariantFile('%s/middle.vcf.gz'%(outdir))
-    rephase_file = '%s/%s.rephase.vcf.gz'%(outdir,gene)
-    if os.path.isfile(rephase_file):
-        os.system('rm %s'%(rephase_file))
-    out = VariantFile(rephase_file,'w',header=m.header)
-    sample = list(m.header.samples)[0]
-    for record in m.fetch():
-        geno = record.samples[sample]['GT']    
-        depth = record.samples[sample]['AD']
-        if record.samples[sample].phased != True:
-            if geno == (1,1,2) or geno == (1,2,2):
-                phased_locus = seq[he]
-                for i in range(len(phased_locus)):
-                    phased_locus[i] += 1
-            else:
-                phased_locus=seq[he]
-
-            update_phased_locus=[]
-            for pp in range(k):
-                update_phased_locus.append(phased_locus[int(ref_order[pp])])
-            phased_locus=update_phased_locus[:]
-            record.samples[sample]['GT']= tuple(phased_locus)
-            record.samples[sample].phased=True
-
-            if phased_locus[0] > 1 or phased_locus[1]>1:
-                phased_locus[0]-=1
-                phased_locus[1]-=1
-            update_seqlist.append(phased_locus)
-            he+=1
-        chrom, locus, record.ref, record.alts = update_locus_for_exon(record.chrom, float(record.pos), exon_region_accumulate_list, record.ref, record.alts)
-        record.chrom, record.pos = chrom, int(locus)
-        out.write(record)
-        # print ('new order',gene_dict)
-        if str(locus) in gene_dict.keys():  #rephase new order
-            ref_order=gene_dict[str(locus)]
-            # print ('yes', ref_order)
-            # print ('new order',record.pos, ref_order)
-
-    m.close()
-    out.close()
-    os.system('tabix %s/%s.rephase.vcf.gz'%(outdir,gene))
-    return update_seqlist
-
 def gene_phased(update_seqlist,snp_list):
     gene_profile={}
     gene_name=['HLA_A','HLA_B','HLA_C','HLA_DQB1','HLA_DRB1','HLA_DQA1','HLA_DPA1','HLA_DPB1']
@@ -845,7 +748,8 @@ def rephase_output(outdir,final_alpha,seq_list,snp_list,vcffile,gene, index):
                 phased_locus[1]-=1
             update_seqlist.append(phased_locus)
             he+=1
-        chrom, locus, record.ref, record.alts = update_locus_for_exon(record.chrom, float(record.pos), exon_region_accumulate_list, record.ref, record.alts)
+        chrom, locus, record.ref, record.alts = update_locus_for_exon(record.chrom, \
+            float(record.pos), exon_region_accumulate_list, record.ref, record.alts)
         record.chrom, record.pos = chrom, int(locus)
         out.write(record)
 
@@ -856,7 +760,8 @@ def rephase_output(outdir,final_alpha,seq_list,snp_list,vcffile,gene, index):
     for i in range(1, k+1):
         fastq2 = '%s/../bin/samtools faidx %s %s | \
         %s/../bin/bcftools consensus -H %s %s/%s.%s.rephase.vcf.gz\
-         >%s/%s.%s.%s.fasta'%(sys.path[0], exon_ref, gene, sys.path[0], i, outdir, gene, index, outdir, gene, index,i)
+         >%s/%s.%s.%s.fasta'%(sys.path[0], exon_ref, gene, sys.path[0], \
+         i, outdir, gene, index, outdir, gene, index,i)
         os.system(fastq2)
 
 def all_table(k,allele_num):

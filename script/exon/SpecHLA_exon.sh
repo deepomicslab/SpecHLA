@@ -76,7 +76,7 @@ fi
 
 echo Start profiling HLA for $sample.
 mkdir -p $outdir
-exec >$outdir/$sample.log 2>&1
+# exec >$outdir/$sample.log 2>&1
 group='@RG\tID:'$sample'\tSM:'$sample
 
 # :<<!
@@ -87,10 +87,6 @@ python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
 fq1=$outdir/$sample.uniq.name.R1.gz
 fq2=$outdir/$sample.uniq.name.R2.gz
 # ###############################################################
-
-
-
-
 
 # ################### assign the reads to original gene################
 ## map the HLA reads to the allele database ##
@@ -104,6 +100,7 @@ else
     $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
 fi
 $bin/samtools index $outdir/$sample.map_database.bam
+
 ## assign the reads to corresponding gene ##
 python3 $dir/../assign_reads_to_genes.py -n $bin -o $outdir -b ${outdir}/${sample}.map_database.bam -nm ${nm:-3}
 python3 $dir/../check_assign.py $fq1 $fq2 $outdir
@@ -133,8 +130,8 @@ $bin/samtools index $outdir/$sample.merge.bam
 # ################################### local assembly and realignment #################################
 sh $dir/../run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70 $dir/select.region.exon.txt ${num_threads:-5}
 echo realignment is done.
-echo "$bin/freebayes -a -f $hlaref -p 3 $outdir/$sample.realign.sort.fixmate.bam > $outdir/$sample.realign.vcf && rm -rf $outdir/$sample.realign.vcf.gz "
-$bin/freebayes -a -f $hlaref -p 3 $outdir/$sample.realign.sort.fixmate.bam > $outdir/$sample.realign.vcf && rm -rf $outdir/$sample.realign.vcf.gz 
+!
+$bin/freebayes -a -f $hlaref -p 3 $outdir/$sample.realign.sort.bam > $outdir/$sample.realign.vcf && rm -rf $outdir/$sample.realign.vcf.gz 
 bgzip -f $outdir/$sample.realign.vcf
 tabix -f $outdir/$sample.realign.vcf.gz
 #cp $outdir/$sample.realign.vcf $outdir/$sample.realign.filter.vcf

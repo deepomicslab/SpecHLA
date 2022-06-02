@@ -39,12 +39,12 @@ Note: `Novoalign` requires a license in `bin/`, if it is not detected, SpecHLA w
 Then we can perform HLA typing in exons.
 ```
 cd SpecHLA/script/exon/
-sh SpecHLA_exon.sh -h
+bash SpecHLA_exon.sh -h
 ```
 Perform HLA typing in whole genes with paired-end data. Also, PacBio, Nanopore, Hi-C, or 10X could be integrated.
 ```
 cd SpecHLA/script/whole/
-sh SpecHLA_whole.sh -h
+bash SpecHLA_whole.sh -h
 ```
 Adpot pedigree information to refine the typing results.
 ```
