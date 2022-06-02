@@ -42,8 +42,6 @@ flag_data = parser.add_mutually_exclusive_group(required=False)
 required.add_argument("--ref",help="The hla reference file used in alignment",dest='ref',metavar='', type=str)
 required.add_argument("-b", "--bam",help="The bam file of the input samples.",dest='bamfile',metavar='')
 required.add_argument("-v", "--vcf",help="The vcf file of the input samples.",dest='vcf',metavar='')
-required.add_argument("-a", "--phase",help="Choose phasing method, SpecHap if True, otherwise use PStrain.\
-     Default is SpecHap.",dest='phase_flag',metavar='',default=True,type=str2bool)
 # required.add_argument("-e", "--anno",help="Choose annotation, allele with population freq>0 if True, otherwise use all.\
 #      Default is True.",dest='anno_flag',metavar='',default=True,type=str2bool)
 required.add_argument("-o", "--outdir",help="The output directory.",dest='outdir',metavar='')
@@ -876,7 +874,7 @@ if __name__ == "__main__":
         for gene in ['HLA_A','HLA_B','HLA_C','HLA_DQB1','HLA_DRB1','HLA_DQA1','HLA_DPA1','HLA_DPB1']:
         # for gene in ['HLA_B']:
 
-            ###### read and refine the variants in vcf
+            # read and refine the variants in vcf
             snp_list,beta_set,allele_set = read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,\
                 freq_bias,strainsNum)     
             if len(snp_list)==0:
@@ -890,28 +888,26 @@ if __name__ == "__main__":
                 final_alpha,seq_list,loss = wo.given_k()  
                 output(outdir,final_alpha,seq_list,snp_list,gene)
 
-            ##### Phase-with-SpecHap
-            if args.phase_flag == True:
-                my_new_vcf = '%s/%s.vcf.gz'%(outdir, gene)
-                os.system('gzip -f -d %s'%(my_new_vcf))
-                my_new_vcf = '%s/%s.vcf'%(outdir, gene)
-                hla_ref = '%s/../db/ref/hla.ref.extend.fa'%(sys.path[0])
-                order = '%s/../bin/ExtractHAIRs --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s \
-                --out %s/frament.file'%(sys.path[0], hla_ref, bamfile, my_new_vcf, outdir)
-                os.system(order)
-                os.system('sort -k3 %s/frament.file >%s/frament.sorted.file'%(outdir, outdir))
-                os.system('bgzip %s'%(my_new_vcf))
-                my_new_vcf = '%s/%s.vcf.gz'%(outdir, gene)
-                os.system('tabix -f %s'%(my_new_vcf))
-                os.system('cp %s/%s.vcf.gz %s/%s.vcf.pstain.gz'%(outdir, gene, outdir, gene))
-                order = '%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/frament.sorted.file \
-                --out %s/%s.specHap.phased.vcf'%(sys.path[0], my_new_vcf, outdir, outdir,gene)
-                os.system(order)
-                break_points_index = convert(outdir, gene, '%s/%s.specHap.phased.vcf'%(outdir,gene))
-                os.system('tabix -f %s'%(my_new_vcf))
-                seq_list = read_spechap_seq('%s/%s.vcf.gz'%(outdir, gene), snp_list)
-            else:
-                use_pstrain_break_point_flag = True
+            # Phase-with-SpecHap
+            my_new_vcf = '%s/%s.vcf.gz'%(outdir, gene)
+            os.system('gzip -f -d %s'%(my_new_vcf))
+            my_new_vcf = '%s/%s.vcf'%(outdir, gene)
+            hla_ref = '%s/../db/ref/hla.ref.extend.fa'%(sys.path[0])
+            order = '%s/../bin/ExtractHAIRs --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s \
+            --out %s/frament.file'%(sys.path[0], hla_ref, bamfile, my_new_vcf, outdir)
+            os.system(order)
+            os.system('sort -k3 %s/frament.file >%s/frament.sorted.file'%(outdir, outdir))
+            os.system('bgzip %s'%(my_new_vcf))
+            my_new_vcf = '%s/%s.vcf.gz'%(outdir, gene)
+            os.system('tabix -f %s'%(my_new_vcf))
+            os.system('cp %s/%s.vcf.gz %s/%s.vcf.pstain.gz'%(outdir, gene, outdir, gene))
+            order = '%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/frament.sorted.file \
+            --out %s/%s.specHap.phased.vcf'%(sys.path[0], my_new_vcf, outdir, outdir,gene)
+            os.system(order)
+            break_points_index = convert(outdir, gene, '%s/%s.specHap.phased.vcf'%(outdir,gene))
+            os.system('tabix -f %s'%(my_new_vcf))
+            seq_list = read_spechap_seq('%s/%s.vcf.gz'%(outdir, gene), snp_list)
+
 
             if use_pstrain_break_point_flag:
                 break_points_index = generate_break_points(outdir,snp_list,delta_set,strainsNum)

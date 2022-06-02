@@ -198,23 +198,23 @@ hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
 python3 $dir/../phase_tgs.py \
--o $outdir \
--b $bam \
--s $bfile \
--v $vcf \
---fq1 $outdir/$hla.R1.fq.gz \
---fq2 $outdir/$hla.R2.fq.gz \
---gene HLA_$hla \
---freq_bias ${maf:-0.05} \
---snp_qual ${snp_quality:-0.01} \
---ref $hla_ref \
---tgs ${tgs:-NA} \
---nanopore ${nanopore_data:-NA} \
---hic_fwd ${hic_data_fwd:-NA} \
---hic_rev ${hic_data_rev:-NA} \
---tenx ${tenx_data:-NA} \
---sa $sample \
---weight_imb ${weight_imb:-0}
+  -o $outdir \
+  -b $bam \
+  -s $bfile \
+  -v $vcf \
+  --fq1 $outdir/$hla.R1.fq.gz \
+  --fq2 $outdir/$hla.R2.fq.gz \
+  --gene HLA_$hla \
+  --freq_bias ${maf:-0.05} \
+  --snp_qual ${snp_quality:-0.01} \
+  --ref $hla_ref \
+  --tgs ${tgs:-NA} \
+  --nanopore ${nanopore_data:-NA} \
+  --hic_fwd ${hic_data_fwd:-NA} \
+  --hic_rev ${hic_data_rev:-NA} \
+  --tenx ${tenx_data:-NA} \
+  --sa $sample \
+  --weight_imb ${weight_imb:-0}
 done
 # ##################################################################################################
 

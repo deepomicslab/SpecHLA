@@ -22,8 +22,6 @@
 ###             is 3. It should be set larger to infer novel alleles.
 ###   -g        True or False. Split more blocks if set True; then rely more on allele database. 
 ###             Otherwise, split less blocks. Default is True.
-###   -s        True or False. Use SpecHap to phase if True, else use PStrain. Default is True.
-###             We recommend SpecHap.
 ###   -h        Show this message.
 
 help() {
@@ -35,7 +33,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
     exit 1
 fi
 
-while getopts ":n:1:2:p:s:m:g:f:o:j:" opt; do
+while getopts ":n:1:2:p:m:g:f:o:j:" opt; do
   case $opt in
     n) sample="$OPTARG"
     ;;
@@ -44,8 +42,6 @@ while getopts ":n:1:2:p:s:m:g:f:o:j:" opt; do
     2) fq2="$OPTARG"
     ;;
     p) pop="$OPTARG"
-    ;;
-    s) phase="$OPTARG"
     ;;
     m) nm="$OPTARG"
     ;;
@@ -142,17 +138,15 @@ $bin/bcftools filter -R $dir/exon_extent.bed $outdir/$sample.realign.vcf.gz |gre
 # !
 # ###################### phase, link blocks, calculate haplotype ratio, give typing results ##############
 python3 $dir/../phase_exon.py -b $outdir/$sample.realign.sort.bam -v $outdir/$sample.realign.filter.vcf \
--o $outdir/ -g ${pstrain_bk:-True} --snp_dp 0 --block_len 80 --points_num 1 --freq_bias 0.1 --reads_num 2 -a ${phase:-True} 
+-o $outdir/ -g ${pstrain_bk:-True} --snp_dp 0 --block_len 80 --points_num 1 --freq_bias 0.1 --reads_num 2
+
+
+
 if [ ${annotation:-True} == True ]
 then
-  if [ ${phase:-True} == True ]
-  then
-    annotation_parameter=spechap
-  else
-    annotation_parameter=pstrain
-  fi
+  annotation_parameter=with_pop
 else
-  annotation_parameter=all
+  annotation_parameter=no_pop
 fi
 # #####################################################################################################
 
