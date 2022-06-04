@@ -236,11 +236,16 @@ python3 $dir/../phase_tgs.py \
 done
 # ##################################################################################################
 
-
+!
 
 # ############################ annotation ####################################
 echo start annotation...
-perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop
+# perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop
+if [ $focus_exon_flag == 1 ];then #exon
+    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -m spechap -r exon
+else
+    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -m spechap -r whole
+fi
 # #############################################################################
 
 

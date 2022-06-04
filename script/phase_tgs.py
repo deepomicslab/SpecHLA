@@ -1370,8 +1370,12 @@ def link_blocks():
     # link phase blocks with database
     print ('Start link blocks with database...')
     # map the haps in each block to the database
-    reph='perl %s/whole/read_unphased_block.pl %s/%s_break_points_spechap.txt\
-        %s 2 %s/%s_break_points_score.txt'%(sys.path[0],outdir,gene,outdir,outdir,gene)
+    if args.focus_exon_flag == 1:
+        reph='perl %s/whole/read_unphased_block.pl %s/%s_break_points_spechap.txt\
+            %s 2 %s/%s_break_points_score.txt wes'%(sys.path[0],outdir,gene,outdir,outdir,gene)
+    else:
+        reph='perl %s/whole/read_unphased_block.pl %s/%s_break_points_spechap.txt\
+            %s 2 %s/%s_break_points_score.txt wgs'%(sys.path[0],outdir,gene,outdir,outdir,gene)        
     os.system(str(reph))
     # phase block with spectral graph theory
     spec_block = "python3 %s/phase_unlinked_block.py %s/%s_break_points_score.txt %s/%s_break_points_phased.txt"\

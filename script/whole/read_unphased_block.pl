@@ -1,11 +1,10 @@
 #!/usr/bin/perl -w
 use FindBin qw($Bin);
-#perl rephase.pl break_points.txt ./ 2 prephase_breakpoints.txt 300 5
-my ($bfile, $vdir, $k, $outfile) = @ARGV;
+#perl  read_unphased_block.pl  break_points.txt ./ 2 prephase_breakpoints.txt 300 5
+my ($bfile, $vdir, $k, $outfile, $wxs) = @ARGV;
 
 my $db="$Bin/../../db/HLA";
 my $bin="$Bin/../../bin";
-
 my $hla_ref="$db/hla.ref.extend.fa";
 my $outdir="$vdir/tmp";
 `rm -rf $outdir`;
@@ -22,7 +21,9 @@ while(<IN>){
 }
 close IN;
 #ouput block region
-my %hashlen=('HLA_A'=>'3503', 'HLA_B'=>'4081', 'HLA_C'=>'4304', 'HLA_DPA1'=>'9775','HLA_DPB1'=>'11468','HLA_DQA1'=>'6492','HLA_DQB1'=>7480,'HLA_DRB1'=>'11229');
+my %hashlen=('HLA_A'=>'3503', 'HLA_B'=>'4081', 'HLA_C'=>'4304', 'HLA_DPA1'=>'9775','HLA_DPB1'=>'11468','HLA_DQA1'=>'6492','HLA_DQB1'=>'7480','HLA_DRB1'=>'11229');
+my %hashe=('HLA_A'=>'1504-1773;2015-2290;2870-3145', 'HLA_B'=>'1486-1755;2001-2276;2851-3126', 'HLA_C'=>'1699-1968;2215-2490;3078-3353', 'HLA_DPA1'=>'5208-5453;5794-6075','HLA_DPB1'=>'6002-6265;10217-10498','HLA_DQA1'=>'5600-5848;6262-6543','HLA_DQB1'=>'3073-3342;6232-6513','HLA_DRB1'=>'6972-7241');
+
 my %hashr;
 open OUT, ">$outfile";
 my ($ref,$region1,$region2,$break1,$break2,$vcf,$start1,$start2,$end1,$end2,$gene,$n,$score1,$score2);
@@ -34,7 +35,7 @@ foreach my $ge(sort keys %hash){
         `tabix -f $vcf.gz`;
         ($start1,$n) = (1001,0);
         while($n<=$#lines){               
-                my @oarrs = (split /\s/, $lines[$n])[0,1,2];
+                my @oarrs = (split /\s/, $lines[$n]);
                 $break1 = $oarrs[2];
                 my $out = join("\t", @oarrs);
                 $n += 1;
@@ -54,14 +55,44 @@ foreach my $ge(sort keys %hash){
                 elsif(($gene eq "HLA_DRB1") && ($break1 < 3950) && ($break2>4300)){$end1 = 3950; $start2=4300 }
                 $region1 = "$gene".":"."$start1"."-"."$end1";
                 $region2 = "$gene".":"."$start2"."-"."$end2";
-                $hashr{$region1} = $region2;
-                $hashr{$region2} = $region1;
+                $hashr{$region1} = $start1;
+                $hashr{$region2} = $start2;
                 $start1 = $start2;
        }
 }
+my %hashrr;
+#add exon boundary for wes data
+if($wxs eq "wes"){
+       my @arrs = (split /;/, $hashe{$gene});
+       my $start = (split /-/,$arrs[0])[0];
+       my $end = (split /-/,$arrs[-1])[1];
+       foreach my $region(sort {$hashr{$a} <=> $hashr{$b}} keys %hashr){
+                      my ($g,$rr) = (split /:/,$region)[0,1];
+                      my ($s,$e) = (split /-/,$rr)[0,1];
+                      next if($e <= $start || $s >= $end);
+                      foreach my $arr (@arrs){
+                           my ($es,$ee) = (split /-/,$arr)[0,1];
+                           if($s <= $es && $e >= $ee){
+                                   my $re = "$gene".":"."$es"."-"."$ee"; 
+                                   next if($ee - $es < 30);
+                                   $hashrr{$re} = $region}
+                           if($s <= $es && $e < $ee && $e > $es){
+                                   my $re1 = "$gene".":"."$es"."-"."$e";
+                                   next if($e -$es < 30);
+                                   $hashrr{$re1} = $region;
+                                   my $re2 = "$gene".":"."$e"."-"."$ee";
+                                   next if($ee - $e < 30);
+                                   $hashrr{$re2} = $region;
+                           }
+                           
+                      }
+        }
+
+}else{%hashrr = %hashr;}
+
 #return combination of each two hap
-foreach my $region1(sort keys %hashr){ 
-        foreach my $region2(sort keys %hashr){
+foreach my $region1(sort keys %hashrr){ 
+        foreach my $region2(sort keys %hashrr){
                 next if($region1 eq $region2);
                 for(my $j=1; $j<=$k; $j++){
                      `$bin/samtools faidx $hla_ref $region1 | $bin/bcftools consensus -H $j $vcf.gz | sed  "s/$region1\$/allele$j.break1/" > $outdir/allele$j.break1.fa`;
