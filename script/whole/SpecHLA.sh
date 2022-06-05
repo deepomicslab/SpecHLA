@@ -211,6 +211,17 @@ fi
 
 
 # ########### phase, link blocks, calculate haplotype ratio, give typing results ##############
+if [ "$maf" == "" ];then
+    if [ $focus_exon_flag != 1 ]; then
+        my_maf=0.05
+    else
+        my_maf=0.1
+    fi
+else
+    my_maf=$maf
+fi
+
+echo Minimum Minor Allele Frequency is $my_maf.
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
@@ -222,7 +233,7 @@ python3 $dir/../phase_tgs.py \
   --fq1 $outdir/$hla.R1.fq.gz \
   --fq2 $outdir/$hla.R2.fq.gz \
   --gene HLA_$hla \
-  --freq_bias ${maf:-0.05} \
+  --freq_bias $my_maf \
   --snp_qual ${snp_quality:-0.01} \
   --ref $hla_ref \
   --tgs ${tgs:-NA} \
@@ -236,7 +247,7 @@ python3 $dir/../phase_tgs.py \
 done
 # ##################################################################################################
 
-# !
+!
 
 # ############################ annotation ####################################
 echo start annotation...

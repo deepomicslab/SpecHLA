@@ -134,19 +134,52 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,strainsNum,d
             continue
         if dp < snp_dp:
             continue
-        if geno == (0,1,2):
-            continue
+        # if geno == (0,1,2):
+        #     continue
         if len(record.ref) > indel_len:
             continue
-        if len(record.alts) > 2:
-            continue
+        # if len(record.alts) > 2:
+        #     continue
         alt_too_long = False
         for alt_allele in record.alts:
             if len(alt_allele) > indel_len:
                 alt_too_long = True
         if alt_too_long:
             continue
-
+        if geno == (1,2,3) or geno == (0, 1, 2):
+            # if the locus has three alleles, select top two allele or discard this locus.
+            norm_depth = np.array(depth)/sum(depth)
+            dp_sort=np.argsort(norm_depth)
+            max_two_freq = norm_depth[dp_sort[-1]] + norm_depth[dp_sort[-2]]
+            alt_genos = []
+            fresh_depth = []
+            sum_freq = 0
+            ref_flag = False
+            for i in range(2):
+                sum_freq += norm_depth[dp_sort[-(1+i)]]
+                if dp_sort[-(1+i)] == 0:
+                    ref_flag = True
+                if dp_sort[-(1+i)] != 0:
+                    alt_genos.append(record.alts[dp_sort[-(1+i)] - 1])
+                    fresh_depth.append(depth[dp_sort[-(1+i)]])
+            if ref_flag == False :
+                star_geno = 1
+                fresh_depth = [depth[0]] + fresh_depth
+            else:
+                star_geno = 0
+                fresh_depth = [depth[0]] + fresh_depth
+            new_geno = []
+            for i in range(2):
+                new_geno.append(i + star_geno)
+            new_geno.append(new_geno[-1])
+            if sum_freq > 0.7:
+                # print ('before', record)
+                record.alts = alt_genos
+                record.samples[sample]['GT'] = tuple(new_geno) 
+                record.samples[sample]['AD'] = fresh_depth
+                geno = tuple(new_geno) 
+            else:
+                continue
 
         snp_index_dict[record.pos] = snp_index
         snp_index += 1
@@ -184,6 +217,7 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,strainsNum,d
         if geno == (1,1,1):
             record.samples[sample]['GT']= tuple([1,1])
             record.samples[sample].phased=True
+    
         else:
             if geno == (1,1,2) or geno == (1,2,2):                
                 snp = [record.chrom,record.pos,record.alts[0],record.alts[1],record.ref]
