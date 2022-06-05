@@ -329,8 +329,9 @@ sub whole_blast{
     }
 }
 
-
-open OUT, ">$dir/hla.result.txt";
+open COUT, ">$dir/hla.result.txt";
+print COUT "Sample\tHLA_A_1\tHLA_A_2\tHLA_B_1\tHLA_B_2\tHLA_C_1\tHLA_C_2\tHLA_DPA1_1\tHLA_DPA1_2\tHLA_DPB1_1\tHLA_DPB1_2\tHLA_DQA1_1\tHLA_DQA1_2\tHLA_DQB1_1\tHLA_DQB1_2\tHLA_DRB1_1\tHLA_DRB1_2\n";
+open OUT, ">$dir/hla.result.details.txt";
 print OUT "Gene\tG_best\tallele\tdetails:allele;Score;Caucasian;Black;Asian\n";
 if($wxs eq "exon"){
        &exon_blast; 
@@ -338,6 +339,7 @@ if($wxs eq "exon"){
 if($wxs eq "whole"){
        &whole_blast;
 }
+my $hout = $sample;
 foreach my $hla(@hlas){
        for(my $i=1;$i<=$k;$i++){
              my $id = "$hla"."_"."$i";
@@ -352,12 +354,17 @@ foreach my $hla(@hlas){
                  if(exists $hashpp{$kid}) {$line3 .= "$oo;$hashpp{$kid}\t"}
                  else{$line3 .= "$oo;-;-;-\t";} 
              }
-             my $max = 0;
+             my $max = 0; my $out = "-";
              foreach my $gg(sort {$ggs{$b} <=> $ggs{$a}} keys %ggs ){
-                  if($ggs{$gg} >= $max){$max = $ggs{$gg};$line1 .= $gg}
+                  if($ggs{$gg} >= $max){
+                       $max = $ggs{$gg};$line1 .= $gg;
+                       if($out eq "-"){$out = $gg;}
+                  }
              }
+             $hout .= "\t$out";
              print OUT "$id\t$line1\t$line2\t$line3\n";
        }    
 }
 close OUT;
-
+print COUT "$hout\n";
+close COUT;

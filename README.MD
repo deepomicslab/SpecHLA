@@ -57,7 +57,7 @@ perl SpecHLA/script/cal.hla.copy.pl  -purity <Purity> -ploidy <Ploidy> -F freq.l
 ```
 ## Test
 Please go to the `example/` folder, and run `sh ./test_exon.sh` in `exon/` or `sh ./test_whole.sh` in `whole/`. 
-If you install successfully, you will find results in the `output/`.
+If we install successfully, we will find results in the `output/`.
 
 
 ## Dependencies 
@@ -260,6 +260,7 @@ In the directory of one specific sample, you will find the below files:
 | Output | Description |
 | --- | --- |
 | hla.result.txt | HLA-typing results for all alleles |
+| hla.result.details.txt | Detail results of mapping the allele to the database |
 | hla.allele.\*.HLA_\*.fasta | Sequence of each allele |
 | HLA_*_freq.txt | Haplotype frequencies of each gene |
 | HLA_*.rephase.vcf.gz | Phased vcf file for each gene |
