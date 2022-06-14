@@ -87,12 +87,12 @@ def constr_graph(score_file, block_phase_file):
         mat[2*frag2_index+1][2*frag1_index+1] = score1
         mat[2*frag2_index+1][2*frag1_index] = score2
         mat[2*frag2_index][2*frag1_index+1] = score2
-    print ("block linkage graph:", mat)
+    print ("block linkage graph:\n", mat)
     f.close()
     
     fiedler_vec = get_fiedler_vec(mat)
     hapotype = get_hap(fiedler_vec)
-    print ("fiedler_vec", fiedler_vec, hapotype)
+    print ("fiedler_vec:\n", fiedler_vec, hapotype)
     output(frag_list, hapotype, block_phase_file)
 
 def output(frag_list, hapotype, block_phase_file):

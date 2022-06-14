@@ -23,7 +23,17 @@ close IN;
 #ouput block region
 my %hashlen=('HLA_A'=>'3503', 'HLA_B'=>'4081', 'HLA_C'=>'4304', 'HLA_DPA1'=>'9775','HLA_DPB1'=>'11468','HLA_DQA1'=>'6492','HLA_DQB1'=>'7480','HLA_DRB1'=>'11229');
 my %hashe=('HLA_A'=>'1504-1773;2015-2290;2870-3145', 'HLA_B'=>'1486-1755;2001-2276;2851-3126', 'HLA_C'=>'1699-1968;2215-2490;3078-3353', 'HLA_DPA1'=>'5208-5453;5794-6075','HLA_DPB1'=>'6002-6265;10217-10498','HLA_DQA1'=>'5600-5848;6262-6543','HLA_DQB1'=>'3073-3342;6232-6513','HLA_DRB1'=>'6972-7241');
-
+my (%hasha,%hashb);
+foreach my $key(sort keys %hashe){
+     my @rrs = (split /;/,$hashe{$key});
+     foreach my $rr(@rrs){
+         my ($s,$e) = (split /-/,$rr)[0,1];
+         my $o1 = "$key\t$s";
+         my $o2 = "$key\t$e";
+         $hasha{$o1} = $key;
+         $hashb{$o2} = $key;
+     }
+}
 my %hashr;
 open OUT, ">$outfile";
 my ($ref,$region1,$region2,$break1,$break2,$vcf,$start1,$start2,$end1,$end2,$gene,$n,$score1,$score2);
@@ -63,44 +73,51 @@ foreach my $ge(sort keys %hash){
 my %hashrr;
 #add exon boundary for wes data
 if($wxs eq "wes"){
+       $ref = "$db/exon/$gene.fasta";
        my @arrs = (split /;/, $hashe{$gene});
        my $start = (split /-/,$arrs[0])[0];
        my $end = (split /-/,$arrs[-1])[1];
        foreach my $region(sort {$hashr{$a} <=> $hashr{$b}} keys %hashr){
+                      #print "$region\t$hashr{$region}\n";
                       my ($g,$rr) = (split /:/,$region)[0,1];
                       my ($s,$e) = (split /-/,$rr)[0,1];
                       next if($e <= $start || $s >= $end);
+                      my ($re,$ore) = ($region,"");
                       foreach my $arr (@arrs){
                            my ($es,$ee) = (split /-/,$arr)[0,1];
-                           if($s <= $es && $e >= $ee){
-                                   my $re = "$gene".":"."$es"."-"."$ee"; 
-                                   next if($ee - $es < 30);
-                                   $hashrr{$re} = $region}
-                           if($s <= $es && $e < $ee && $e > $es){
-                                   my $re1 = "$gene".":"."$es"."-"."$e";
-                                   next if($e -$es < 30);
-                                   $hashrr{$re1} = $region;
-                                   my $re2 = "$gene".":"."$e"."-"."$ee";
-                                   next if($ee - $e < 30);
-                                   $hashrr{$re2} = $region;
-                           }
+                           next if($ee <= $s);
+                           if($s < $es && $ee <= $e){$ore .= "$g".":"."$arr\t";}
                            
+                           if(($e >= $es && $e <= $ee) || ($s>=$es && $s <= $ee)){
+                                   $re = "$gene".":"."$s"."-"."$e";
+                                   my $ss = $s; my $se = $ee;
+                                   if($s<$es && $e >$es){$ss = $es}
+                                   if($e > $es && $e < $ee){$se = $e}
+                                   $ore .= "$g".":"."$ss"."-"."$se\t";    
+                                  
+                           }
+                            
                       }
+                      print "$re\t$ore\n";
+                      $hashrr{$re} = $ore;
         }
 
 }else{%hashrr = %hashr;}
-
+$n=0;
 #return combination of each two hap
 foreach my $region1(sort keys %hashrr){ 
         foreach my $region2(sort keys %hashrr){
                 next if($region1 eq $region2);
+                my $re1 = $hashrr{$region1};
+                my $re2 = $hashrr{$region2};
                 for(my $j=1; $j<=$k; $j++){
-                     `$bin/samtools faidx $hla_ref $region1 | $bin/bcftools consensus -H $j $vcf.gz | sed  "s/$region1\$/allele$j.break1/" > $outdir/allele$j.break1.fa`;
-                     `$bin/samtools faidx $hla_ref $region2 | $bin/bcftools consensus -H $j $vcf.gz | sed  "s/$region2\$/allele$j.break2/" > $outdir/allele$j.break2.fa`;
+                     `echo ">allele$j.break1" > $outdir/allele$j.break1.fa`;
+                     `echo ">allele$j.break2" > $outdir/allele$j.break2.fa`;
+                     `$bin/samtools faidx $hla_ref $re1 | $bin/bcftools consensus -H $j $vcf.gz | grep -v ">" >> $outdir/allele$j.break1.fa`;
+                     `$bin/samtools faidx $hla_ref $re2 | $bin/bcftools consensus -H $j $vcf.gz | grep -v ">" >> $outdir/allele$j.break2.fa`;
                 }
                 `cat $outdir/allele1.break1.fa $outdir/allele1.break2.fa $outdir/allele2.break1.fa $outdir/allele2.break2.fa > $outdir/allele.break.merge.$n.fa`;
-                `$bin/blastn -query $outdir/allele.break.merge.$n.fa -out $outdir/allele.break.merge.blast.$n -db $ref -outfmt 7 -max_target_seqs 100 -num_threads 4 -strand plus`;
-                 
+                `$bin/blastn -query $outdir/allele.break.merge.$n.fa -out $outdir/allele.break.merge.blast.$n -db $ref -outfmt 6 -max_target_seqs 10000 -num_threads 4 -strand plus`; 
                 
                  open TE, "$outdir/allele.break.merge.blast.$n" or die "blast\t$!\n";
                  my (%hash1,%hash2,%hash11,%hash12,%hash21,%hash22); my ($score1,$score2) = (0,0);
@@ -139,8 +156,8 @@ foreach my $region1(sort keys %hashrr){
                       }
                            
        #if($region1 eq "HLA_DRB1:2433-2601" && $region2 eq "HLA_DRB1:2602-3808" ){print "$region1\t$region2\t$hh\t$ss1\t$ss2\t$rss1\t$rss2\t$S1\t$S2\t$score1\t$score2\t$max\n"}
-
                  }
+                 $n += 1;
                  my $out = "";
                  if(exists $hash1{$max}){$out .= $hash1{$max}}
                  if(exists $hash2{$max}){$out .= $hash2{$max}}
@@ -148,3 +165,4 @@ foreach my $region1(sort keys %hashrr){
         }
 }                
 close OUT;
+

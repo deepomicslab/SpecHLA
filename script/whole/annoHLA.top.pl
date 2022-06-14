@@ -124,7 +124,7 @@ sub exon_blast{
                      $hash4{$nhla} += $si;
                  }
                  my $tag = "$class"."_"."$i";
-                 my %hash_max;
+                 my (%hash_max, %hash_score);
                  my ($hh,$mscorel) = ("",0);
                  foreach my $hla (sort keys %hash1){
                          my $mis = $hash1{$hla};
@@ -157,7 +157,7 @@ sub exon_blast{
                                  if($tf==0){$ttf=-10}
                                  $scorel = $ts * (2**($ttf/$C_c))
                          }else{$scorel = $ts * (2**($ttf/$C_dpb));}
-                        
+                         $hash_score{$scorel} .= "$hh;$ts\t";      
                          if($scorel>=$mscorel){$mscorel = $scorel;$hh=$hla;$hash_max{$mscorel} .= "$hla;$ts\t"}
                  }
                  #exclude region HLA_B:670-730
@@ -192,6 +192,7 @@ sub exon_blast{
                          }
                          $hh = $hashc{$shla};
                          $hash_max{$mscorel} = "$hh;$mscorel";
+                         $hash_score{$mscorel} = "$hh;$mscorel";
                  }
                  if($hh =~ /DRB1\*14:01/){
                           ` $bin/samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf`;
@@ -200,11 +201,20 @@ sub exon_blast{
                                  chomp;
                                  next if(/^#/);
                                  my $alt = (split)[4];
-                                 if($alt =~ /T/){} else{$hh = "DRB1*14:54";$hash_max{$mscorel} = "$hh;$mscorel"}      
+                                 if($alt =~ /T/){} else{$hh = "DRB1*14:54";
+                                          $hash_max{$mscorel} = "$hh;$mscorel";
+                                          $hash_score{$mscorel} = "$hh;$mscorel";
+                                 }      
                           }
                           close TE;            
                 }
-                $hash{$tag} = $hash_max{$mscorel};
+                my $n=10; my $tout;
+                foreach my $cs(sort {$b <=> $a} keys %hash_score){
+                   if($n>0){$tout .= "$hash_score{$cs}\t";$n -= 1;}
+                }
+                #$hash{$tag} = $hash_max{$mscorel};
+                $hash{$tag} = $tout;
+
          }
 #        `rm -rf $workdir/*`;
           
@@ -354,6 +364,7 @@ foreach my $hla(@hlas){
              my @arrs = (split /\t/,$hash{$id});
              my ($line1,$line2,$line3,%ggs);
              foreach my $oo(@arrs){
+                 if($oo =~ /:/){
                  my ($allele,$score) = (split /;/,$oo)[0,1];
                  $score = sprintf "%.3f", $score;
                  my @tes = (split /:/,$allele);
@@ -366,7 +377,7 @@ foreach my $hla(@hlas){
                  else{$ggs{$allele} += 1}
                  if(exists $hashpp{$kid}){$line3 .= "$oo;$hashpp{$kid}\t"}
                  else{$line3 .= "$oo;-;-;-\t";} 
-             }
+             }}
              my $max = 0; my $out="-";
              foreach my $gg(sort {$ggs{$b} <=> $ggs{$a}} keys %ggs ){
                   if($ggs{$gg} >= $max){
@@ -376,7 +387,7 @@ foreach my $hla(@hlas){
              }
              $hout .= "\t$out";
              my @lines3 = (split /\t/,$line3); @lines3 = uniq(@lines3);
-             $line3 = join(";",@lines3);
+             $line3 = join("\t",@lines3);
              print OUT "$id\t$line1\t$line2\t$line3\n";
        }    
 }
