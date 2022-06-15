@@ -197,7 +197,7 @@ fi
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
-python3 $dir/../phase_tgs.py \
+python3 $dir/../phase_variants.py \
   -o $outdir \
   -b $bam \
   -s $bfile \
@@ -222,7 +222,7 @@ done
 
 # ############################ annotation ####################################
 echo start annotation...
-perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop
+perl $dir/annoHLA.pl $sample $outdir $outdir 2 $pop
 # #############################################################################
 
 

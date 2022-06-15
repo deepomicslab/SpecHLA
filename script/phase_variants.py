@@ -15,13 +15,13 @@ def str2bool(v):
 
 Usage = \
 """
-python3 phase_tgs.py [options] 
+python3 phase_variants.py [options] 
 
-Help information can be found by python3 phase_tgs.py -h/--help, additional information can be found in \
+Help information can be found by python3 phase_variants.py -h/--help, additional information can be found in \
 README.MD or https://github.com/deepomicslab/SpecHLA.
 """
 scripts_dir=sys.path[0]+'/'
-parser = ArgumentParser(description="SpecHLA.",prog='python3 phase_tgs.py',usage=Usage)
+parser = ArgumentParser(description="SpecHLA.",prog='python3 phase_variants.py',usage=Usage)
 optional=parser._action_groups.pop()
 required=parser.add_argument_group('required arguments')
 flag_parser = parser.add_mutually_exclusive_group(required=False)
@@ -133,8 +133,11 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,\
             continue
         if record.chrom == 'HLA_DRB1' and record.pos >= 3898 and record.pos <= 4400:
             continue
-        if dp < snp_dp:
+        # print (record, dp)
+        if dp < snp_dp and args.focus_exon_flag != 1: # depth cutoff for wgs
             continue
+        if record.info['DP'] < snp_dp and args.focus_exon_flag == 1: # depth cutoff for wes
+            continue 
         # if geno == (0,1,2):
         #     continue
         if len(record.ref) > indel_len:

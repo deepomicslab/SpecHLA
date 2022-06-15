@@ -2,13 +2,12 @@
 use FindBin qw($Bin);
 use Getopt::Long;
 
-my ($sample, $dir, $pop, $mode, $wxs, $help);
+my ($sample, $dir, $pop, $wxs, $help);
 
 GetOptions(
            "s=s"     =>      \$sample,
            "i=s"     =>      \$dir,
            "p=s"     =>      \$pop,
-           "m=s"     =>      \$mode,
            "r=s"     =>      \$wxs,
            "h"       =>      \$help
 );
@@ -20,15 +19,14 @@ usage: perl $0 [options]
         -s       <tr>    sample name
         -i       <tr>    the directory of phased sequence
         -p       <tr>    population information "Asian|Black|Caucasian|Unknown|nonuse"
-        -m       <tr>    Spechla mode "pstrain|spechap"
         -r       <tr>    focus region "exon|whole" ("exon" is suitable for WES or RNAseq; "whole" is suitable for WGS )
         -help|?           print help information
 e.g.:
-        perl $0 -s samplename -i indir -p Unknown -m spechap -r exon
+        perl $0 -s samplename -i indir -p Unknown -r exon
 USE
-die $usage unless ($sample && $dir && $pop && $mode && $wxs) ;
+die $usage unless ($sample && $dir && $pop && $wxs) ;
 
-print "parameter:\tsample:$sample\tdir:$dir\tpop:$pop\tmode:$mode\twxs:$wxs\n";
+print "parameter:\tsample:$sample\tdir:$dir\tpop:$pop\twxs:$wxs\n";
 
 my $k = 2;
 my (%hashp, %hashpp, %hashg, %hashc, %hash,%hashdd);
@@ -57,18 +55,14 @@ while(<FIN>){
 close FIN;
 
 my ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000);
-if($wxs eq "whole" && $mode eq "pstrain"){
-     ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (30,500,200,100,100,100,100,70);
-}
-elsif($wxs eq "whole" && $mode eq "spechap"){
+if($wxs eq "whole"){
      ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (500,10000,10000,10000,10000,10000,10000,70);
 }
-elsif($wxs eq "exon" && $mode eq "pstrain"){
+elsif($wxs eq "exon"){
      ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (20,8,200,100,100,100,100,50);
 }
-elsif($wxs eq "exon" && $mode eq "spechap"){
-     ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (20,8,200,100,100,100,100,50);
-}
+my %hash_C = ('HLA_A'=>$C_a, 'HLA_B'=>$C_b, 'HLA_C'=>$C_c, 'HLA_DPA1'=>$C_dpa,'HLA_DPB1'=>$C_dpb,'HLA_DQA1'=>$C_dqa,'HLA_DQB1'=>$C_dqb,'HLA_DRB1'=>$C_drb);
+
 #Convert HLA nomenclature
 open INL, "$db/hla_nom_g.txt" or die "$!\n";
 while(<INL>){
@@ -112,6 +106,7 @@ sub exon_blast{
                 `less $fa |grep -v ">" >>$workdir/$class.$i.temp.fasta`;
                 my $seq = `less $fa|grep -v ">"`; chomp $seq; $seq=~s/\s+//g;
                 `$bin/blastn -query $workdir/$class.$i.temp.fasta -out $workdir/$class.$i.blast.out1 -db $ref -outfmt 6 -num_threads 4 -max_target_seqs 1000 `;
+                ## Read blast result
                 open BIN, "$workdir/$class.$i.blast.out1" or die "$!\n";
                 my (%hash1, %hash2,%hash3, %hashas, %hashhk, %hash4);
                 while(<BIN>){
@@ -131,11 +126,11 @@ sub exon_blast{
                          my $len = $hash2{$hla};
                          my $score = 100 * (1 - $mis/$len);
                          if($class =~ /DRB1/){$score = $hash4{$hla} / 499}
-                    
+                        
                          my @tt = (split /:/, $hla);
                          my $kid = "$tt[0]".":"."$tt[1]";
                          my $fre=0;
-                         if(exists $hashp{$kid}){$fre=$hashp{$kid}}
+                         if(exists $hashp{$kid}){$fre=$hashp{$kid}} #fre:population frequency of 4 digit HLA allele
                          $hash3{$hla} = $score;
                          my ($ts,$tf) = ($score,$fre);
                          next if(($tf == 0) && ($ts < 99.5) && $pop ne "nonuse" && (!$class =~ /DRB1/));
@@ -143,21 +138,11 @@ sub exon_blast{
                          if(($tf > 0) && ($ts==100)){$ttf = 1}
                          if($tf == 0 && $pop ne "nonuse"){$ttf = -1}
                          if($pop eq "nonuse"){$ttf = 0}
+                         if($tf==0 && ($class eq "HLA_A" || $class eq "HLA_C")){$ttf = -10}
                          my $scorel=0;
-                         if($class eq "HLA_B"){$scorel = $ts * (2**($ttf/$C_b));}
-                         elsif($class eq "HLA_DRB1"){
-                                 #if($tf >0){$scorel = $ts ;}else{$scorel=70}
-                                 $scorel = $ts * (2 ** ($ttf/$C_drb))
-                         }
-                         elsif($class eq "HLA_A"){
-                                  if($tf==0){$ttf=-10}
-                                  $scorel = $ts * (2**($ttf/$C_a))
-                         }
-                         elsif($class eq "HLA_C"){
-                                 if($tf==0){$ttf=-10}
-                                 $scorel = $ts * (2**($ttf/$C_c))
-                         }else{$scorel = $ts * (2**($ttf/$C_dpb));}
-                        
+                         $scorel = $ts * (2 ** ($ttf / $hash_C{$class})); ##adjust blast score with population frequency and hyper parameters.
+                         
+
                          if($scorel>=$mscorel){$mscorel = $scorel;$hh=$hla;$hash_max{$mscorel} .= "$hla;$ts\t"}
                  }
                  #exclude region HLA_B:670-730
@@ -187,12 +172,12 @@ sub exon_blast{
                          my ($shla,$btc) = ("",0);
                          foreach my $b3(sort keys %hashbt){
                                  my $ss = ($hashbt{$b3} /10 )* (2 ** ($hashbf{$b3}/7));
-                              #          print "$hashc{$b3}\t$ss\t$hashbt{$b3}\t$hashbf{$b3}\n";
                                  if($ss >= $btc){$btc=$ss;$shla=$b3}
                          }
                          $hh = $hashc{$shla};
                          $hash_max{$mscorel} = "$hh;$mscorel";
                  }
+                 #DRB1*14:01 and DRB1*14:54 differ in HLA_DRB1:9519
                  if($hh =~ /DRB1\*14:01/){
                           ` $bin/samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf`;
                           open TE, "$workdir/snp.vcf" or die "$!\n";
@@ -218,6 +203,7 @@ sub whole_blast{
         if($class eq "DRB1"){$ref="$db/whole/HLA_DRB1.exon";}
         for(my $i=1;$i<=$k;$i++){
                my $fa="$fadir/hla.allele.$i.$class.fasta";
+               #extract the diversity region for annotation
                if($class eq "HLA_DQB1"){
                        my $j = $i -1;
                        `$bin/samtools faidx $fa $class\_$j:500-2400 $class\_$j:5200-7300 >$fadir/$class.temp.fasta`;
@@ -264,7 +250,7 @@ sub whole_blast{
                `$bin/blastn -query $fa -out $workdir/$tag.blast.out1 -db $ref -outfmt 7 -num_threads 4 -max_target_seqs 1000 `;
                `$bin/blastn -query $ref.fasta -out $workdir/$tag.blast.out2 -db $fa -outfmt 7 -num_threads 4 -max_target_seqs 1000 `;
                my (%hash_max,%hash11,%hash12, %hash21, %hash22,$gene,$score);
-              
+               ## read blast score
                open IN1, "$workdir/$tag.blast.out1" or die "$!\n";
                while(<IN1>){
                        chomp;
@@ -294,8 +280,8 @@ sub whole_blast{
                       my @tt = (split /:/, $key);
                       my $kid = "$tt[0]".":"."$tt[1]";
                       my $fre=0;
-                      if(exists $hashp{$kid}){$fre=$hashp{$kid}}
-                      my $s1 = 100 * (1 - $hash12{$key}/$hash11{$key});
+                      if(exists $hashp{$kid}){$fre=$hashp{$kid}} ## population frequency of 4 digit hla allele
+                      my $s1 = 100 * (1 - $hash12{$key}/$hash11{$key}); #blast score
                       my $s2 = 100 * (1 - $hash22{$key}/$hash21{$key});
                       my $s  = $s1;
                       #my $s = ($s1 + $s2)/2;
@@ -306,17 +292,9 @@ sub whole_blast{
                       next if(($tf == 0) && ($ts < 95));
                       if(($tf > 0) && ($ts==100)){$ttf = 1}
                       if($tf == 0){$ttf = -1}
+                      if($tf==0 && ($class eq "HLA_A" || $class eq "HLA_C")){$ttf = -10}
                       my $scorel=0;
-                      if($class eq "HLA_B"){$scorel = $ts * (2**($ttf/$C_b));}
-                      elsif($class eq "HLA_DRB1"){$scorel = $ts * (2**($ttf/$C_drb))}
-                      elsif($class eq "HLA_A"){
-                                  if($tf==0){$ttf=-10}
-                                  $scorel = $ts * (2**($ttf/$C_a))
-                      }
-                      elsif($class eq "HLA_C"){
-                                 if($tf==0){$ttf=-10}
-                                 $scorel = $ts * (2**($ttf/$C_c))
-                      }else{$scorel = $ts * (2 ** ($ttf/$C_dpa))}
+                      $scorel = $ts * (2 ** ($ttf / $hash_C{$class})); #adjust blast score with population frequency and hyper parameter
 
                       if($scorel >= $score){
                              $score = $scorel;
@@ -347,6 +325,8 @@ sub uniq {
   my %seen;
   return grep { !$seen{$_}++ } @_;
 }
+
+#print the alleles annotation of best score for each HLA gene
 my $hout = $sample;
 foreach my $hla(@hlas){
        for(my $i=1;$i<=$k;$i++){
@@ -376,7 +356,7 @@ foreach my $hla(@hlas){
              }
              $hout .= "\t$out";
              my @lines3 = (split /\t/,$line3); @lines3 = uniq(@lines3);
-             $line3 = join(";",@lines3);
+             $line3 = join("\t",@lines3);
              print OUT "$id\t$line1\t$line2\t$line3\n";
        }    
 }

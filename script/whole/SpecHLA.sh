@@ -31,8 +31,10 @@
 ###   -v        True or False. Consider long InDels if True, else only consider short variants. 
 ###             Default is False.
 ###   -q        Minimum variant quality. Default is 0.01. Set it larger in high quality samples.
+###   -s        Minimum mapping depth. Default is 5.
 ###   -a        Use this long InDel file if provided.
-###   -r        The minimum Minor Allele Frequency (MAF), default is 0.05.
+###   -r        The minimum Minor Allele Frequency (MAF), default is 0.05 for whole gene and
+###             0.1 for exon typing.
 ###   -h        Show this message.
 
 help() {
@@ -44,7 +46,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
     exit 1
 fi
 
-while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:" opt; do
+while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:" opt; do
   case $opt in
     n) sample="$OPTARG"
     ;;
@@ -81,6 +83,8 @@ while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:" opt; do
     w) weight_imb="$OPTARG"
     ;;
     u) focus_exon="$OPTARG"
+    ;;
+    s) snp_dp="$OPTARG"
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
@@ -223,11 +227,11 @@ else
 fi
 
 echo Minimum Minor Allele Frequency is $my_maf.
-# hlas=(A)
+# hlas=(B)
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
-python3 $dir/../phase_tgs.py \
+python3 $dir/../phase_variants.py \
   -o $outdir \
   -b $bam \
   -s $bfile \
@@ -237,6 +241,7 @@ python3 $dir/../phase_tgs.py \
   --gene HLA_$hla \
   --freq_bias $my_maf \
   --snp_qual ${snp_quality:-0.01} \
+  --snp_dp ${snp_dp:-5} \
   --ref $hla_ref \
   --tgs ${tgs:-NA} \
   --nanopore ${nanopore_data:-NA} \
@@ -245,19 +250,19 @@ python3 $dir/../phase_tgs.py \
   --tenx ${tenx_data:-NA} \
   --sa $sample \
   --weight_imb ${weight_imb:-0} \
-  --exon $focus_exon_flag
+  --exon $focus_exon_flag 
 done
 # ##################################################################################################
 
-# !
+!
 
 # ############################ annotation ####################################
 echo start annotation...
 # perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop
 if [ $focus_exon_flag == 1 ];then #exon
-    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -m spechap -r exon
+    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -r exon
 else
-    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -m spechap -r whole
+    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -r whole
 fi
 # #############################################################################
 
