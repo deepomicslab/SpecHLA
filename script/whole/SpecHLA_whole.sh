@@ -85,7 +85,7 @@ done
 
 
 dir=$(cd `dirname $0`; pwd)
-export LD_LIBRARY_PATH=$dir/../spechla_env/lib
+export LD_LIBRARY_PATH=$dir/../../spechla_env/lib
 bin=$dir/../../bin
 db=$dir/../../db
 hlaref=$db/ref/hla.ref.extend.fa
@@ -105,7 +105,7 @@ group='@RG\tID:'$sample'\tSM:'$sample
 echo use ${num_threads:-5} threads.
 
 
-:<<!
+# :<<!
 # ################ remove the repeat read name #################
 python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
@@ -128,8 +128,8 @@ else
     $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
 fi
 $bin/samtools index $outdir/$sample.map_database.bam
-python3 $dir/../assign_reads_to_genes.py -n $bin -o $outdir -b ${outdir}/${sample}.map_database.bam -nm ${nm:-2}
-python3 $dir/../check_assign.py $fq1 $fq2 $outdir
+python3 $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir \
+-b ${outdir}/${sample}.map_database.bam -nm ${nm:-2}
 # #############################################################################################################
 
 

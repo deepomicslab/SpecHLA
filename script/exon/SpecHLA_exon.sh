@@ -58,7 +58,7 @@ while getopts ":n:1:2:p:m:g:f:o:j:" opt; do
   esac
 done
 dir=$(cd `dirname $0`; pwd)
-export LD_LIBRARY_PATH=$dir/../spechla_env/lib
+export LD_LIBRARY_PATH=$dir/../../spechla_env/lib
 bin=$dir/../../bin
 db=$dir/../../db
 hlaref=$db/ref/hla.ref.extend.fa
@@ -98,8 +98,8 @@ fi
 $bin/samtools index $outdir/$sample.map_database.bam
 
 ## assign the reads to corresponding gene ##
-python3 $dir/../assign_reads_to_genes.py -n $bin -o $outdir -b ${outdir}/${sample}.map_database.bam -nm ${nm:-3}
-python3 $dir/../check_assign.py $fq1 $fq2 $outdir
+python3 $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir \
+-b ${outdir}/${sample}.map_database.bam -nm ${nm:-2}
 # #####################################################################
 
 
