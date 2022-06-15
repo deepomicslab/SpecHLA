@@ -124,6 +124,11 @@ def check_score(dict, options, name, pair_dict):
     # print (gene_dict)
 
 class Each_read():
+    """
+    for each pair-end reads
+    record all the alignment scores
+    assign the pair-end read to gene loci by alignment scores
+    """
 
     def __init__(self):
         self.dict = {}
@@ -132,6 +137,10 @@ class Each_read():
         self.read_name = ''   
 
     def add_one_alignment(self, alignment):
+        """
+        given a alignment record,
+        save the mapping situations to the read's dicts.
+        """
         flag = True
         if alignment.is_unmapped or alignment.reference_name != alignment.next_reference_name:
             flag = False
@@ -152,6 +161,10 @@ class Each_read():
                 self.pair_dict[t_name] += 1
     
     def assign(self):
+        """
+        determine which locus the read should be assigned
+        """
+        
         flag = True
         if len(self.dict) == 0:
             flag = False
@@ -168,6 +181,12 @@ class Each_read():
         return first_align
 
 def assign_fastq(file, gene, index, assign_dict):
+    """
+    extract gene-specific reads from the raw read file,
+    generate gene-specific fastq files
+    read name in the original fastq should be
+    @<read name> or @<read name>/1
+    """
     i = 0
     #gene = 'A'
     outfile = options.outdir + '/%s.R%s.fq'%(gene, index)
@@ -199,11 +218,12 @@ def assign_fastq(file, gene, index, assign_dict):
 
 def main():
     print ('start assigning reads...')
-    read_dict = {}
-    assign_dict = {}
+    read_dict = {} # record the aligment scores for each read
+    assign_dict = {} # record assigned gene for each read
     bamfile = pysam.AlignmentFile(options.bam, 'rb')
     t0 = time.time()
 
+    # record alignment scores for all the read
     for alignment in bamfile:
         t_name = alignment.reference_name
         read_name = alignment.query_name
@@ -217,12 +237,14 @@ def main():
     t1 = time.time()
     print ("read bam cost %s"%(t1 - t0))
 
+    # assign genes for each read
     for read_name in read_dict:
         assigned_locus = read_dict[read_name].assign()
         if assigned_locus == 'REMOVE':
             continue
         assign_dict[read_name] = assigned_locus
 
+    # generate gene-specific fastq
     for gene in ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']:
         assign_fastq(options.fq1, gene, 1, assign_dict)
         assign_fastq(options.fq2, gene, 2, assign_dict)
@@ -232,7 +254,7 @@ def main():
 if __name__ == "__main__":
     from argparse import ArgumentParser
 
-    parser = ArgumentParser(description='Extract reads by read name from bam file')
+    parser = ArgumentParser(description='Read assignment')
     parser.add_argument('-b', '--bam', help='bam file', required=True)
     parser.add_argument('-o', '--outdir', help='outdir', required=True)  
     parser.add_argument('-1', '--fq1', help='bin dir', required=True) 
