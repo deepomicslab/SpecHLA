@@ -21,7 +21,7 @@ Help information can be found by python3 phase_variants.py -h/--help, additional
 README.MD or https://github.com/deepomicslab/SpecHLA.
 """
 scripts_dir=sys.path[0]+'/'
-parser = ArgumentParser(description="SpecHLA.",prog='python3 phase_variants.py',usage=Usage)
+parser = ArgumentParser(description="SpecHLA",prog='python3 phase_variants.py',usage=Usage)
 optional=parser._action_groups.pop()
 required=parser.add_argument_group('required arguments')
 flag_parser = parser.add_mutually_exclusive_group(required=False)
@@ -1095,41 +1095,6 @@ def get_deletion_region(long_indel_file, gene):
             break
     # print ('#ordered deletion region:', deletion_region)
     return deletion_region, ins_seq
-
-def split_vcf(gene, outdir, deletion_region):
-    vcf = '%s/%s.vcf.gz'%(outdir,gene)
-    os.system('tabix -f %s'%(vcf))
-    # if len(deletion_region) == 0:
-    #     print ('no sv!')
-    #     return 0
-    vcf_gap = []
-    start = 1001
-    break_points_list = [3950]
-    # for dele in deletion_region:
-    #     if abs(start - dele[0]) < 1:
-    #         continue
-    #     break_points_list.append(dele[0])
-    break_points_list = sorted(break_points_list)
-    start = 1001
-    for b_point in break_points_list: 
-        if b_point - start < 500:
-            continue
-        if b_point >6000 and b_point < 7000:
-            continue
-        vcf_gap.append([start, b_point])
-        start = b_point
-    if focus_region()[gene][1] - start >= 500:
-        vcf_gap.append([start, focus_region()[gene][1]])
-    else:
-        vcf_gap[-1][1] = focus_region()[gene][1] 
-    os.system('rm %s/%s_part_*_*_*.vcf'%(outdir, gene))
-    i = 0
-    for gap in vcf_gap:
-        order = "%s/../bin/bcftools filter -t %s:%s-%s %s -o %s/%s_part_%s_%s_%s.vcf"%(sys.path[0],gene, gap[0], gap[1], vcf, outdir, gene, i, gap[0], gap[1])
-        os.system(order)
-        i+=1
-    print (vcf_gap)
-    return break_points_list
 
 def get_unphased_loci(outdir, gene, invcf, snp_list, spec_vcf):
     """

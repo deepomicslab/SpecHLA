@@ -74,6 +74,7 @@ while(<INL>){
                 my @arrs = (split /\//,$line);
                 foreach my $kk(@arrs){
                         my $hla = "$tag"."$kk";
+                        next if($hla =~ /DQB1\*02:02/);
                         $hashg{$hla} = $value;
                 }
         }else{
@@ -189,6 +190,18 @@ sub exon_blast{
                           }
                           close TE;            
                 }
+                #if($hh =~ /DQB1\*02:01/){
+                #          ` $bin/samtools  mpileup -r HLA_DQB1:6352-6352 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf`;
+                #          open TE, "$workdir/snp.vcf" or die "$!\n";
+                #          while(<TE>){
+                #                 chomp;
+                #                 next if(/^#/);
+                #                 my $alt = (split)[4];
+                #                 if($alt =~ /G/){} else{$hh = "DQB1*02:02:01";$hash_max{$mscorel} = "$hh;$mscorel"}      
+                #          }
+                #          close TE;            
+                #}
+
                 $hash{$tag} = $hash_max{$mscorel};
          }
 #        `rm -rf $workdir/*`;
@@ -336,14 +349,12 @@ foreach my $hla(@hlas){
              foreach my $oo(@arrs){
                  my ($allele,$score) = (split /;/,$oo)[0,1];
                  $score = sprintf "%.3f", $score;
-                 my @tes = (split /:/,$allele);
-                 $alle = "$tes[0]".":"."$tes[1]";
-                 $oo = "$alle".";"."$score";
                  my @tt = (split /:/, $allele);
                  my $kid = "$tt[0]".":"."$tt[1]";
                  $line2 .= "$allele;";
+                 $oo = "$kid".";"."$score";
                  if(exists $hashg{$allele}){$ggs{$hashg{$allele}} += 1}
-                 else{$ggs{$allele} += 1}
+                 else{$ggs{$kid} += 1}
                  if(exists $hashpp{$kid}){$line3 .= "$oo;$hashpp{$kid}\t"}
                  else{$line3 .= "$oo;-;-;-\t";} 
              }
