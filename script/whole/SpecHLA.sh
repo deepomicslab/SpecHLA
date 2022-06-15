@@ -135,7 +135,7 @@ else
     $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
 fi
 $bin/samtools index $outdir/$sample.map_database.bam
-!
+
 python3 $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir \
 -b ${outdir}/${sample}.map_database.bam -nm ${nm:-2}
 # #############################################################################################################
@@ -182,7 +182,7 @@ fi
 # #####################################################################################################
 
 
-
+!
 
 # ###################### call long indel #############################################
 bam=$outdir/$sample.realign.sort.bam
@@ -223,8 +223,8 @@ else
 fi
 
 echo Minimum Minor Allele Frequency is $my_maf.
-hlas=(A)
-# hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
+# hlas=(A)
+hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
 python3 $dir/../phase_tgs.py \

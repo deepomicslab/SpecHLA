@@ -264,12 +264,15 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,\
     print ("The number of short hete loci is %s."%(len(snp_list)))
     return snp_list, beta_set, snp_index_dict
 
-def freq_output(outdir, gene, fresh_alpha):
+def freq_output(outdir, gene, fresh_alpha, hete_var_num):
     # output the haplotype frequencies
     ra_file=open(outdir+'/%s_freq.txt'%(gene),'w')    
-    print ('# HLA\tFrequency',file=ra_file)
+    print ('# Haplotype\tFrequency',file=ra_file)
     for j in range(len(fresh_alpha)):
-        print ('str-'+str(j+1),fresh_alpha[j],file=ra_file)
+        print ('hla.allele.%s.%s.fasta'%(str(j+1), gene),fresh_alpha[j],file=ra_file)
+        # print ('str-'+str(j+1),fresh_alpha[j],file=ra_file)
+    print ("# The number of heterozygote variant is %s"%(hete_var_num),file=ra_file)
+    # print ("# Frequency inference is more reliable with more heterozygotes variants.",file=ra_file)
     ra_file.close()
         
 def reads_support(samfile,first):  
@@ -474,11 +477,9 @@ def no_snv_gene_phased(outdir, gene):
     return an empty gene_profile
     """
 
-    ra_file=open(outdir+'/%s_freq.txt'%(gene),'w')    
-    print ('# HLA\tFrequency',file=ra_file)
-    print ('str-'+str(1), 1, file=ra_file)
-    print ('str-'+str(2), 0, file=ra_file)
-    ra_file.close()
+    fresh_alpha = [1, 0]
+    hete_var_num = 0 # num of hete variants is zero
+    freq_output(outdir, gene, fresh_alpha, hete_var_num)
 
     gene_profile={}
     gene_snp=[]
@@ -845,23 +846,6 @@ def segment_mapping_pre(fq1, fq2, ins_seq, outdir, gene, gene_ref):
         ins_seq[ins] = read_fasta('%s/fresh_ins.fa'%(outdir))
     # print (ins_seq)
     return ins_seq
-
-    # map_call = """\
-    #     bindir=%s/../bin/
-    #     outdir=%s/ 
-    #     sample='newref_insertion' 
-    #     $bindir/samtools faidx %s 
-    #     $bindir/bwa index %s
-    #     group='@RG\\tID:sample\\tSM:sample'  #only -B 1
-    #     /home/wangmengyao/packages/Novoalign/novocraft/novoindex %s.ndx %s
-    #     /home/wangmengyao/packages/Novoalign/novocraft/novoalign -g 10 -x 1 -F STDFQ -o SAM -o FullNW  -d %s.ndx -f %s %s| $bindir/samtools view -q 1 -F 4 -Sb | $bindir/samtools sort > $outdir/$sample.sort.bam
-    #     java -jar  $bindir/picard.jar MarkDuplicates INPUT=$outdir/$sample.sort.bam OUTPUT=$outdir/$sample.bam METRICS_FILE=$outdir/metrics.txt
-    #     rm -rf $outdir/$sample.sort.bam 
-    #     $bindir/samtools index $outdir/$sample.bam 
-    #     $bindir/freebayes -f %s -p 2 $outdir/$sample.bam > $outdir/$sample.freebayes.vcf 
-    #     """%(sys.path[0], outdir, newref, newref, newref, newref, newref, fq1, fq2, newref)
-        # -B 1 -O 1,1 -L 1,1 -U 1 
-    # print (map_call)
     
 def segment_mapping(fq1, fq2, ins_seq, outdir, gene, gene_ref):
     newref=outdir+'/newref_insertion.fa'
@@ -1106,7 +1090,7 @@ def get_deletion_region(long_indel_file, gene):
         # print (deletion_region)
         if flag:
             break
-    print ('#ordered deletion region:', deletion_region)
+    # print ('#ordered deletion region:', deletion_region)
     return deletion_region, ins_seq
 
 def split_vcf(gene, outdir, deletion_region):
@@ -1420,6 +1404,7 @@ def all_poss_block_link():
         start = pos + 1
     block_intervals.append([start, 100000])
     all_poss = poss_link(len(block_intervals))
+    print ("Num of all possible haps is %s."%(len(all_poss)))
     record_all_block_haps = []
     for i in range(len(all_poss)):
         # print (all_poss[i], rephase_vcf)
@@ -1440,11 +1425,25 @@ def all_poss_block_link():
             print (">%s"%(gene), file = out_f)
             print (sequence, file = out_f)
             out_f.close()
-    selected_poss_index = 3
+    selected_poss_index = select_poss()
+    print ("Selected combination is ", selected_poss_index)
     record_block_haps = record_all_block_haps[selected_poss_index]
     update_seqlist = block_phase(outdir,seq_list,snp_list,gene,gene_vcf,rephase_vcf,record_block_haps) 
     return update_seqlist
-    
+
+def select_poss():
+    # map all possible haps to allele database
+    # select the hap with highest mapping score
+    reph='perl %s/whole/select.combination.pl -g %s -i %s -s %s -p Unknown'%(sys.path[0],gene,outdir,args.sample_id)        
+    os.system(str(reph))    
+    selected_fasta = "%s/result.%s.fasta"%(outdir, gene)
+    f = open(selected_fasta, 'r')
+    first_line = f.readline()
+    array = first_line.strip().split(".")
+    selected_poss_index = int(array[1])
+    f.close()
+    return selected_poss_index
+
 def poss_link(block_num):
     # generate all possible linkage of blocks
     mytable=[]
@@ -1574,7 +1573,7 @@ if __name__ == "__main__":
             # compute haplotype frequency with least-square
             fresh_alpha = compute_allele_frequency(update_seqlist, beta_set) 
             # output haplotype frequencies
-            freq_output(outdir, gene, fresh_alpha)
+            freq_output(outdir, gene, fresh_alpha, len(snp_list))
             # get the phase info to phase long Indel later
             gene_profile = gene_phased(update_seqlist,snp_list,gene)
             print ('Small variant-phasing of %s is done! Haplotype ratio is %s:%s'%(gene, fresh_alpha[0], fresh_alpha[1]))
