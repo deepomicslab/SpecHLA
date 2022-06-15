@@ -150,7 +150,8 @@ Example: python3 phase_pedigree.py --trio NA12878:NA12891:NA12892 --workdir outp
 
 required arguments:
   --trio           The trio infromation; give sample names in the order of
-                   child:mother:father. Example: NA12878:NA12891:NA12892
+                   child:mother:father. Example: NA12878:NA12891:NA12892. 
+                   The order of mother and father can be ambiguous.
   -o , --workdir   The directory consists of all samples' results. The workdir
                    running previous scipts.
 ```

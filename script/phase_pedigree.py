@@ -32,7 +32,7 @@ flag_parser = parser.add_mutually_exclusive_group(required=False)
 flag_data = parser.add_mutually_exclusive_group(required=False)
 #necessary parameter
 required.add_argument("--trio",help="The trio infromation; give sample names in the order of child:mother:father.\
- Example: NA12878:NA12891:NA12892",dest='trio',metavar='', type=str)
+ Example: NA12878:NA12891:NA12892. The order of mother and father can be ambiguous.",dest='trio',metavar='', type=str)
 required.add_argument("-o", "--workdir",help="The directory consists of all samples' results.\
  The workdir running previous scipts.",dest='workdir',metavar='')
 #alternative parameter
