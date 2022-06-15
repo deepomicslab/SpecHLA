@@ -23,15 +23,15 @@
 ###   -c        fwd hi-c fastq file.
 ###   -d        rev hi-c fastq file.
 ###   -w        The weight of using phase information of allele imbalance [0-1], default is 0.
-###   -p        The population of the sample: Asian, Black, or Caucasian. Use mean frequency
-###             if not provided.
+###   -p        The population of the sample [ Asian, Black, Caucasian, nonuse]. Use mean frequency
+###             if not provided. nonuse indicates only adopting mapping score to annotate the allele. 
 ###   -j        Number of threads [5]
 ###   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
 ###             is 2. It should be set larger to infer novel alleles.
 ###   -v        True or False. Consider long InDels if True, else only consider short variants. 
 ###             Default is False.
 ###   -q        Minimum variant quality. Default is 0.01. Set it larger in high quality samples.
-###   -s        Minimum mapping depth. Default is 5.
+###   -s        Minimum mapping depth of variant. Default is 5.
 ###   -a        Use this long InDel file if provided.
 ###   -r        The minimum Minor Allele Frequency (MAF), default is 0.05 for whole gene and
 ###             0.1 for exon typing.
@@ -186,7 +186,7 @@ fi
 # #####################################################################################################
 
 
-# !
+!
 
 # ###################### call long indel #############################################
 bam=$outdir/$sample.realign.sort.bam

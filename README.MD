@@ -136,7 +136,7 @@ Options:
   -v        True or False. Consider long InDels if True, else only consider short variants.
             Default is False.
   -q        Minimum variant quality. Default is 0.01. Set it larger in high quality samples.
-  -s        Minimum mapping depth. Default is 5.
+  -s        Minimum mapping depth of variant. Default is 5.
   -a        Use this long InDel file if provided.
   -r        The minimum Minor Allele Frequency (MAF), default is 0.05 for whole gene and
             0.1 for exon typing.
@@ -188,12 +188,19 @@ If you performed pedigree phasing, you will find below files in the output/ fold
 | trio/HLA_*.rephase.vcf.gz | Phased vcf file after pedigree phasing |
 | trio/hla.allele.\*.HLA_\*.fasta | Sequence of each allele after pedigree phasing|
 
-An example for the formats of "hla.result.txt" is as below:
+An example for "hla.result.txt" is as below:
 ```
 Sample  HLA_A_1 HLA_A_2 HLA_B_1 HLA_B_2 HLA_C_1 HLA_C_2 HLA_DPA1_1      HLA_DPA1_2      HLA_DPB1_1      HLA_DPB1_2      HLA_DQA1_1      HLA_DQA1_2      HLA_DQB1_1      HLA_DQB1_2      HLA_DRB1_1      HLA_DRB1_2
 NA06985 A*02:01:01G     A*03:01:01G     B*07:02:01G     B*57:01:01G     C*07:02:01G     C*06:02:01G     DPA1*01:03:01G  DPA1*01:03:01G  DPB1*04:01:01G  DPB1*04:01:01G  DQA1*01:02:01G  DQA1*01:02:01G  DQB1*06:02:01G  DQB1*06:02:01G  DRB1*15:01:01G  DRB1*15:01:01G
 ```
-This means the typing result of each gene's haplotype.  
+An example for "HLA_*_freq.txt" is as below:
+```
+# Haplotype     Frequency
+hla.allele.1.HLA_A.fasta 0.532
+hla.allele.2.HLA_A.fasta 0.468
+# The number of heterozygote variant is 30
+```
+ 
 
 ## Simulation
 Please go to the `simulation/` folder, and run `simu.hla.sh` like:

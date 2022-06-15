@@ -269,7 +269,7 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,\
     in_vcf.close()
     md_vcf.close()
     os.system('tabix -f %s'%(gene_vcf))
-    print ("The number of short hete loci is %s."%(len(snp_list)))
+    print ("Num of small variant is %s in %s."%(len(snp_list), gene))
     return snp_list, beta_set, snp_index_dict
 
 def freq_output(outdir, gene, fresh_alpha, hete_var_num):
