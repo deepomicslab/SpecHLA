@@ -175,18 +175,18 @@ rm -rf $outdir/$sample.realign.vcf.gz
 bgzip -f $outdir/$sample.realign.vcf
 tabix -f $outdir/$sample.realign.vcf.gz
 less $outdir/$sample.realign.vcf.gz |grep "#" > $outdir/$sample.realign.filter.vcf
-
+echo BAM and VCF are ready.
 if [ $focus_exon_flag == 1 ];then #exon
     $bin/bcftools filter -R $dir/exon_extent.bed $outdir/$sample.realign.vcf.gz |grep -v "#"  >> $outdir/$sample.realign.filter.vcf  
 else # full length
-    $bin/bcftools filter -t HLA_A:1000-4503,HLA_B:1000-5081,HLA_C:1000-5304,HLA_DPA1:1000-10775,HLA_DPB1:1000-12468,\
-    HLA_DQA1:1000-7492,HLA_DQB1:1000-8480,HLA_DRB1:1000-12229 $outdir/$sample.realign.vcf.gz |grep -v "#" \
-    >> $outdir/$sample.realign.filter.vcf  
+    $bin/bcftools filter\
+     -t HLA_A:1000-4503,HLA_B:1000-5081,HLA_C:1000-5304,HLA_DPA1:1000-10775,HLA_DPB1:1000-12468,HLA_DQA1:1000-7492,HLA_DQB1:1000-8480,HLA_DRB1:1000-12229\
+      $outdir/$sample.realign.vcf.gz |grep -v "#" >> $outdir/$sample.realign.filter.vcf  
 fi
 # #####################################################################################################
 
 
-!
+# !
 
 # ###################### call long indel #############################################
 bam=$outdir/$sample.realign.sort.bam
