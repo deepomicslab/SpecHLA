@@ -1451,9 +1451,10 @@ def link_blocks():
         #     %s 2 %s/%s_break_points_score.txt wes'%(sys.path[0],outdir,gene,outdir,outdir,gene)
     else:
         reph='perl %s/whole/read_unphased_block.pl %s/%s_break_points_spechap.txt\
-            %s 2 %s/%s_break_points_score.txt wgs'%(sys.path[0],outdir,gene,outdir,outdir,gene)        
+            %s 2 %s/%s_break_points_score.txt wgs'%(sys.path[0],outdir,gene,outdir,outdir,gene)      
         os.system(str(reph))
         # phase block with spectral graph theory
+        print ("phase block with spectral graph theory")
         spec_block = "python3 %s/phase_unlinked_block.py %s/%s_break_points_score.txt %s/%s_break_points_phased.txt"\
             %(sys.path[0],outdir,gene,outdir,gene)
         os.system(str(spec_block))       

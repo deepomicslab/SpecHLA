@@ -81,7 +81,7 @@ echo Start profiling HLA for $sample.
 mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
 
-python3 $dir/../general_pipeline.py $sample $tgs $outdir
+python3 $dir/../assign_long_reads.py $sample $tgs $outdir
 $bin/minimap2 -a $hlaref $tgs | $bin/samtools view -H  >$outdir/header.sam
 
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
@@ -108,14 +108,13 @@ for hla in ${hlas[@]}; do
 
 if [ ${long_indel:-True} != False ]
   then
-bfile=$outdir/$sample.$hla.sv.breakpoint.txt
-hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-$bin/pbmm2 align $hla_ref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --preset HIFI --sample $sample --rg '@RG\tID:movie1'
-$bin/pbsv discover $outdir/$sample.movie1.bam $outdir/$sample.svsig.gz
-$bin/pbsv call -m 150 --max-ins-length 4000 -t DEL,INS $hla_ref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
-echo $bin/pbsv call -m 150 --max-ins-length 4000 -t DEL,INS $hla_ref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
-python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $bfile
-echo -----------------
+    bfile=$outdir/$sample.$hla.sv.breakpoint.txt
+    hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
+    $bin/pbmm2 align $hla_ref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --preset HIFI --sample $sample --rg '@RG\tID:movie1'
+    $bin/pbsv discover $outdir/$sample.movie1.bam $outdir/$sample.svsig.gz
+    $bin/pbsv call -m 150 --max-ins-length 4000 -t DEL,INS $hla_ref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
+    python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $bfile
+    echo -----------------
 fi
 
 hla_ref=$db/ref/HLA_$hla.fa

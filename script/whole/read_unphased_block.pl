@@ -108,14 +108,15 @@ $n=0;
 foreach my $region1(sort keys %hashrr){ 
         foreach my $region2(sort keys %hashrr){
                 next if($region1 eq $region2);
-                my $re1 = $hashrr{$region1};
-                my $re2 = $hashrr{$region2};
+                my ($re1,$re2); 
+                if($wxs eq "wes"){$re1 = $hashrr{$region1};$re2 = $hashrr{$region2}}
+                else{$re1 = $region1; $re2 = $region2}
                 for(my $j=1; $j<=$k; $j++){
                      `echo ">allele$j.break1" > $outdir/allele$j.break1.fa`;
                      `echo ">allele$j.break2" > $outdir/allele$j.break2.fa`;
                      `$bin/samtools faidx $hla_ref $re1 | $bin/bcftools consensus -H $j $vcf.gz | grep -v ">" >> $outdir/allele$j.break1.fa`;
                      `$bin/samtools faidx $hla_ref $re2 | $bin/bcftools consensus -H $j $vcf.gz | grep -v ">" >> $outdir/allele$j.break2.fa`;
-                }
+               }
                 `cat $outdir/allele1.break1.fa $outdir/allele1.break2.fa $outdir/allele2.break1.fa $outdir/allele2.break2.fa > $outdir/allele.break.merge.$n.fa`;
                 `$bin/blastn -query $outdir/allele.break.merge.$n.fa -out $outdir/allele.break.merge.blast.$n -db $ref -outfmt 6 -max_target_seqs 10000 -num_threads 4 -strand plus`; 
                 

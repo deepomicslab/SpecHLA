@@ -14,7 +14,6 @@ class Read_Obj():
                 mis_NM = ta[1]  
 
         self.read_length = 0
-
         self.match_num = 0        
         for ci in read.cigar:
             self.read_length += ci[1]
@@ -93,7 +92,7 @@ class Pacbio_Binning():
         outdir={self.outdir}
         bin={sys.path[0]}/../bin
         sample={self.ID}
-        $bin/minimap2 -p 0.1 -N 100000 -a $ref $fq > $outdir/$sample.db.sam
+        $bin/minimap2 -t 12 -p 0.1 -N 100000 -a $ref $fq > $outdir/$sample.db.sam
         echo alignment done.
         """
         os.system(alignDB_order)
