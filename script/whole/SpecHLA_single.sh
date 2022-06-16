@@ -81,68 +81,107 @@ echo Start profiling HLA for $sample.
 mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
 
-python3 $dir/../assign_long_reads.py $sample $tgs $outdir
-$bin/minimap2 -a $hlaref $tgs | $bin/samtools view -H  >$outdir/header.sam
 
-hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
+# python3 $dir/../assign_long_reads.py $sample $tgs $outdir
+# $bin/minimap2 -a $hlaref $tgs | $bin/samtools view -H  >$outdir/header.sam
+
+# hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
+hlas=(A)
 for hla in ${hlas[@]}; do
         hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-        $bin/minimap2 -a $hla_ref $outdir/$hla.fq.gz | $bin/samtools view -bS -F 0x800 -| $bin/samtools sort - >$outdir/$hla.bam
-        $bin/samtools index $outdir/$hla.bam
-done
-$bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.merge.bam $outdir/A.bam $outdir/B.bam $outdir/C.bam $outdir/DPA1.bam $outdir/DPB1.bam $outdir/DQA1.bam $outdir/DQB1.bam $outdir/DRB1.bam
-$bin/samtools index $outdir/$sample.merge.bam
-longshot --bam $outdir/$sample.merge.bam --ref $db/ref/hla.ref.extend.fa --out $outdir/$sample.longshot.vcf -F
-bgzip -f $outdir/$sample.longshot.vcf
-$bin/tabix -f $outdir/$sample.longshot.vcf.gz
+        # $bin/minimap2 -a $hla_ref $outdir/$hla.fq.gz | $bin/samtools view -bS -F 0x800 -| $bin/samtools sort - >$outdir/$hla.bam
+        # $bin/samtools index $outdir/$hla.bam
+        # longshot --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf -F
+        # # cat $outdir/$sample.$hla.longshot.raw.vcf|grep "#" >$outdir/$sample.$hla.longshot.vcf
+        # # cat $outdir/$sample.$hla.longshot.raw.vcf|grep "PASS" >$outdir/$sample.$hla.longshot.vcf
+        # bgzip -f $outdir/$sample.$hla.longshot.vcf
+        # tabix -f $outdir/$sample.$hla.longshot.vcf.gz
 
-bam=$outdir/$sample.merge.bam
-vcf=$outdir/$sample.longshot.vcf.gz
-
-echo start haplotyping.
-
-# hlas=(A)
-bfile=nothing
-hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
-for hla in ${hlas[@]}; do
-
-if [ ${long_indel:-True} != False ]
-  then
-    bfile=$outdir/$sample.$hla.sv.breakpoint.txt
-    hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-    $bin/pbmm2 align $hla_ref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --preset HIFI --sample $sample --rg '@RG\tID:movie1'
-    $bin/pbsv discover $outdir/$sample.movie1.bam $outdir/$sample.svsig.gz
-    $bin/pbsv call -m 150 --max-ins-length 4000 -t DEL,INS $hla_ref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
-    python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $bfile
-    echo -----------------
-fi
-
-hla_ref=$db/ref/HLA_$hla.fa
-python3 $dir/../single_tgs.py \
--o $outdir \
--b $bam \
--s $bfile \
--v $vcf \
---gene HLA_$hla \
---freq_bias ${maf:-0.05} \
---block_len 200 --points_num 1 --reads_num 2 --snp_qual ${snp_quality:-0.01} \
---ref $hla_ref \
---tgs $outdir/$hla.fq.gz \
---nanopore ${nanopore_data:-NA} \
---hic_fwd ${hic_data_fwd:-NA} \
---hic_rev ${hic_data_rev:-NA} \
---tenx ${tenx_data:-NA} \
---snp_qual 5 \
---sa $sample
+        $bin/samtools faidx $hla_ref |$bin/bcftools consensus -H 1 $outdir/$sample.$hla.longshot.vcf.gz >$outdir/hla.allele.$hla.1.fasta
+        $bin/samtools faidx $hla_ref |$bin/bcftools consensus -H 2 $outdir/$sample.$hla.longshot.vcf.gz >$outdir/hla.allele.$hla.2.fasta
+        echo "$bin/samtools faidx $hla_ref |$bin/bcftools consensus -H 1 $outdir/$sample.$hla.longshot.vcf.gz >$outdir/hla.allele.$hla.1.fasta"
 done
 
 
-echo start annotation.
 
 
-rm $outdir/hla.allele.*.HLA_*.fasta.fai
-perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop spechap
+# perl $dir/annoHLA.pl -s $sample -i $outdir -p Unknown -r whole
 
 # sh $dir/../clear_output.sh $outdir/
 cat $outdir/hla.result.txt
-echo $sample is done.
+
+
+
+
+
+
+
+
+
+# python3 $dir/../assign_long_reads.py $sample $tgs $outdir
+# $bin/minimap2 -a $hlaref $tgs | $bin/samtools view -H  >$outdir/header.sam
+
+# hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
+# for hla in ${hlas[@]}; do
+#         hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
+#         $bin/minimap2 -a $hla_ref $outdir/$hla.fq.gz | $bin/samtools view -bS -F 0x800 -| $bin/samtools sort - >$outdir/$hla.bam
+#         $bin/samtools index $outdir/$hla.bam
+# done
+# $bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.realign.sort.bam $outdir/A.bam $outdir/B.bam $outdir/C.bam $outdir/DPA1.bam $outdir/DPB1.bam $outdir/DQA1.bam $outdir/DQB1.bam $outdir/DRB1.bam
+# $bin/samtools index $outdir/$sample.realign.sort.bam
+# longshot --bam $outdir/$sample.realign.sort.bam --ref $db/ref/hla.ref.extend.fa --out $outdir/$sample.realign.filter.vcf -F
+# bgzip -f $outdir/$sample.realign.filter.vcf
+# tabix -f $outdir/$sample.realign.filter.vcf.gz
+
+# bam=$outdir/$sample.realign.sort.bam
+# vcf=$outdir/$sample.realign.filter.vcf.gz
+
+
+
+# echo start haplotyping.
+
+# # hlas=(A)
+# bfile=nothing
+# hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
+# for hla in ${hlas[@]}; do
+
+    # if [ ${long_indel:-False} != False ]
+    #   then
+    #     bfile=$outdir/$sample.$hla.sv.breakpoint.txt
+    #     hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
+    #     $bin/pbmm2 align $hla_ref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --preset HIFI --sample $sample --rg '@RG\tID:movie1'
+    #     $bin/pbsv discover $outdir/$sample.movie1.bam $outdir/$sample.svsig.gz
+    #     $bin/pbsv call -m 150 --max-ins-length 4000 -t DEL,INS $hla_ref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
+    #     python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $bfile
+    #     echo -----------------
+    # fi
+
+    # hla_ref=$db/ref/HLA_$hla.fa
+    # python3 $dir/../single_tgs.py \
+    # -o $outdir \
+    # -b $bam \
+    # -s $bfile \
+    # -v $vcf \
+    # --gene HLA_$hla \
+    # --freq_bias ${maf:-0.05} \
+    # --block_len 200 --points_num 1 --reads_num 2 --snp_qual ${snp_quality:-0.01} \
+    # --ref $hla_ref \
+    # --tgs $outdir/$hla.fq.gz \
+    # --nanopore ${nanopore_data:-NA} \
+    # --hic_fwd ${hic_data_fwd:-NA} \
+    # --hic_rev ${hic_data_rev:-NA} \
+    # --tenx ${tenx_data:-NA} \
+    # --snp_qual 5 \
+    # --sa $sample
+# done
+
+
+# echo start annotation.
+
+
+# rm $outdir/hla.allele.*.HLA_*.fasta.fai
+# perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop spechap
+
+# # sh $dir/../clear_output.sh $outdir/
+# cat $outdir/hla.result.txt
+# echo $sample is done.

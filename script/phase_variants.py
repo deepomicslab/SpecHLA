@@ -349,7 +349,10 @@ def link_reads(samfile,left,right,new_left,snp_index_dict,f):
             right_set=right_reads[j]
             reads_name = set(left_set).intersection(set(right_set))
             for name in reads_name:
-                if len(left[2]) > 1 or len(left[3]) > 1 or len(right[2]) > 1 or len(right[3]) > 1:
+                # if len(left[2]) > 1 or len(left[3]) > 1 or len(right[2]) > 1 or len(right[3]) > 1:
+                # check if these is one Indel wit 1/2 genotype.
+                if ((len(left[2]) > 1 or len(left[3]) > 1) and left[2] != left[4]) or\
+                     ((len(right[2]) > 1 or len(right[3]) > 1) and right[2] != right[2]):
                     left_index = snp_index_dict[int(left[1])]
                     right_index = snp_index_dict[int(right[1])]
                     left_geno = i
@@ -880,6 +883,21 @@ def segment_mapping(fq1, fq2, ins_seq, outdir, gene, gene_ref):
         """%(sys.path[0], outdir, newref, newref, newref, fq1, fq2, newref)
     os.system(map_call)
 
+def get_insertion_linkage(ins_seq):
+    """
+    To get the linkage information for long insertions
+    The long insertion sequence and the reference are combined to generate a modified reference
+    Map the reads to the modified reference
+    """
+    if len(ins_seq) > 0:
+        ins_seq = segment_mapping_pre(fq1, fq2, ins_seq, outdir, gene, hla_ref)
+        segment_mapping(fq1, fq2, ins_seq, outdir, gene, hla_ref)
+    else:
+        os.system('cp %s/%s.bam %s/newref_insertion.bam'%(outdir, gene.split('_')[-1], outdir))
+        os.system('%s/../bin/samtools index %s/newref_insertion.bam'%(sys.path[0], outdir))
+        os.system('zcat %s > %s/newref_insertion.freebayes.vcf'%(gene_vcf, outdir))
+    return ins_seq
+
 def get_copy_number(outdir, deletion_region, gene, ins_seq):
     os.system('%s/../bin/samtools depth -a %s/newref_insertion.bam >%s/newref_insertion.depth'%(sys.path[0],outdir, outdir))
     normal_depth = []
@@ -1378,6 +1396,10 @@ def all_poss_block_link():
     block_intervals.append([start, 100000])
     all_poss = poss_link(len(block_intervals))
     print ("Num of all possible haps is %s."%(len(all_poss)))
+    if len(all_poss) > 512:
+        print ("ERROR: Too many blocks, the phasing process must be wrong.")
+        print ("-----------------------------------------------------------")
+        sys.exit(1)
     record_all_block_haps = []
     for i in range(len(all_poss)):
         # print (all_poss[i], rephase_vcf)
@@ -1462,21 +1484,6 @@ def link_blocks():
         # refine the haplotype
         update_seqlist = block_phase(outdir,seq_list,snp_list,gene,gene_vcf,rephase_vcf,record_block_haps)  
     return update_seqlist
-
-def get_insertion_linkage(ins_seq):
-    """
-    To get the linkage information for long insertions
-    The long insertion sequence and the reference are combined to generate a modified reference
-    Map the reads to the modified reference
-    """
-    if len(ins_seq) > 0:
-        ins_seq = segment_mapping_pre(fq1, fq2, ins_seq, outdir, gene, hla_ref)
-        segment_mapping(fq1, fq2, ins_seq, outdir, gene, hla_ref)
-    else:
-        os.system('cp %s/%s.bam %s/newref_insertion.bam'%(outdir, gene.split('_')[-1], outdir))
-        os.system('%s/../bin/samtools index %s/newref_insertion.bam'%(sys.path[0], outdir))
-        os.system('zcat %s > %s/newref_insertion.freebayes.vcf'%(gene_vcf, outdir))
-    return ins_seq
 
 def vcf2fasta(rephase_vcf):
     exon_bed = "%s/whole/exon_extent.bed"%(sys.path[0])

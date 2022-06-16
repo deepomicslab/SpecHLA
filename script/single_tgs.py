@@ -400,7 +400,7 @@ def newphase(outdir,seq_list,snp_list,gene):
     for orde in range(k):
         ref_order.append(orde)
     he=0
-    os.system('%s/../bin/tabix -f %s/middle.vcf.gz'%(sys.path[0],outdir))
+    os.system('tabix -f %s/middle.vcf.gz'%(outdir))
     m = VariantFile('%s/middle.vcf.gz'%(outdir))
     rephase_file = '%s/%s.rephase.vcf.gz'%(outdir,gene)
     if os.path.isfile(rephase_file):
@@ -436,7 +436,7 @@ def newphase(outdir,seq_list,snp_list,gene):
 
     m.close()
     out.close()
-    os.system('%s/../bin/tabix -f %s/%s.rephase.vcf.gz'%(sys.path[0],outdir,gene))
+    os.system('tabix -f %s/%s.rephase.vcf.gz'%(outdir,gene))
     return update_seqlist
 
 def gene_phased(update_seqlist,snp_list, gene):
@@ -465,7 +465,7 @@ def no_snv_gene_phased(vcffile, outdir, gene, strainsNum):
             out_vcf.write(record)
     in_vcf.close()
     out_vcf.close()
-    os.system('%s/../bin/tabix -f %s/%s.rephase.vcf.gz'%(sys.path[0],outdir,gene))
+    os.system('tabix -f %s/%s.rephase.vcf.gz'%(outdir,gene))
     ra_file=open(outdir+'/%s_freq.txt'%(gene),'w')    
     print ('# HLA\tFrequency',file=ra_file)
     print ('str-'+str(1), 1, file=ra_file)
@@ -1020,7 +1020,7 @@ def find_deletion_region(sv_list):
 
 def split_vcf(gene, outdir, deletion_region):
     vcf = '%s/%s.vcf.gz'%(outdir,gene)
-    os.system('%s/../bin/tabix -f %s'%(sys.path[0], vcf))
+    os.system('tabix -f %s'%(vcf))
     vcf_gap = []
     start = 1001
     break_points_list = [3950]
@@ -1141,7 +1141,7 @@ if __name__ == "__main__":
             gene_profile = no_snv_gene_phased(vcffile, outdir, gene, strainsNum)
         else:
             my_new_vcf = '%s/middle.vcf.gz'%(outdir)
-            os.system('%s/../bin/tabix -f %s'%(sys.path[0], my_new_vcf))
+            os.system('tabix -f %s'%( my_new_vcf))
             extract_order = '%s/../bin/ExtractHAIRs --pacbio 1 --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, my_new_vcf, outdir)
             os.system(extract_order)  
             print (extract_order)  
@@ -1151,12 +1151,13 @@ if __name__ == "__main__":
             seq_list = read_spechap_seq('%s/%s.specHap.phased.vcf'%(outdir, gene), snp_list)           
             convert(outdir, gene, '%s/%s.specHap.phased.vcf'%(outdir,gene), seq_list, snp_list)
 
-            if gene == 'HLA_DRB1':
-                split_vcf(gene, outdir, deletion_region)
-            reph='perl %s/whole/rephaseV1.pl %s/%s_break_points_spechap.txt\
-                %s %s %s/%s_break_points_phased.txt %s %s'%(sys.path[0],outdir,gene,outdir,strainsNum,outdir,\
-                gene,args.block_len,args.points_num)
-            os.system(str(reph))
+            # if gene == 'HLA_DRB1':
+            #     split_vcf(gene, outdir, deletion_region)
+            # reph='perl %s/whole/rephaseV1.pl %s/%s_break_points_spechap.txt\
+            #     %s %s %s/%s_break_points_phased.txt %s %s'%(sys.path[0],outdir,gene,outdir,strainsNum,outdir,\
+            #     gene,args.block_len,args.points_num)
+            # os.system(str(reph))
+            os.system("echo >%s/%s_break_points_phased.txt"%(outdir,gene))
             update_seqlist=newphase(outdir,seq_list,snp_list,gene)  
             # print (update_seqlist) 
             gene_profile=gene_phased(update_seqlist,snp_list,gene)
