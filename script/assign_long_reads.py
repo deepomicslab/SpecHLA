@@ -6,6 +6,8 @@ import gzip
 Min_score = 0.1  #the read is too long, so the score can be very low.
 Min_diff = 0.001
 
+interval_dict = {"A":"HLA_A:1000-4503"}
+
 class Read_Obj():
     def __init__(self, read):
         mis_NM = 0
@@ -171,6 +173,23 @@ class PacBio():
         alignDB_order = self.map2db()
         os.system(alignDB_order)
 
+
+class Para():
+
+    def __init__(self):
+
+        # self.db = 
+        self.longshot_vcf = ''
+        self.gene_ref = ''
+
+
+class Fasta():
+
+    def test(self):
+        print ("hi")
+
+    def convert(self):
+
     # def smallVariants(self):
 
 
@@ -185,16 +204,18 @@ if __name__ == "__main__":
     # ID = "child_1"
     # raw_fq = "/mnt/d/HLAPro_backup/insert/single_pacbio/fq/child_1_A.fastq"
     # outdir = "/mnt/d/HLAPro_backup/insert/single_pacbio"
+
     ID = sys.argv[1]
     raw_fq = sys.argv[2]
     outdir = sys.argv[3]
     
     # ref = "/mnt/d/HLAPro_backup/HLAPro/db/ref/HLA_A.fa"
-
-
+    print (sys.path[0])
+    fa = Fasta()
+    fa.test()
     ###assign reads
-    pbin = Pacbio_Binning(raw_fq, outdir, ID)
-    pbin.read_bam()
+    # pbin = Pacbio_Binning(raw_fq, outdir, ID)
+    # pbin.read_bam()
 
     # pac = PacBio(gene, outdir, ID, ref, db)
     # pac.run()

@@ -97,15 +97,27 @@ for hla in ${hlas[@]}; do
         # bgzip -f $outdir/$sample.$hla.longshot.vcf
         # tabix -f $outdir/$sample.$hla.longshot.vcf.gz
 
-        $bin/samtools faidx $hla_ref |$bin/bcftools consensus -H 1 $outdir/$sample.$hla.longshot.vcf.gz >$outdir/hla.allele.$hla.1.fasta
-        $bin/samtools faidx $hla_ref |$bin/bcftools consensus -H 2 $outdir/$sample.$hla.longshot.vcf.gz >$outdir/hla.allele.$hla.2.fasta
-        echo "$bin/samtools faidx $hla_ref |$bin/bcftools consensus -H 1 $outdir/$sample.$hla.longshot.vcf.gz >$outdir/hla.allele.$hla.1.fasta"
+        $bin/samtools faidx $hla_ref HLA_A:1000-4503 |$bin/bcftools consensus -H 1 $outdir/$sample.$hla.longshot.vcf.gz >$outdir/hla.allele.1.HLA_$hla.raw.fasta
+        echo ">HLA_${hla}_0" >$outdir/hla.allele.1.HLA_$hla.fasta
+        cat $outdir/hla.allele.1.HLA_$hla.raw.fasta|grep -v ">" >>$outdir/hla.allele.1.HLA_$hla.fasta
+        
+        $bin/samtools faidx $outdir/hla.allele.1.HLA_$hla.fasta
+
+
+        $bin/samtools faidx $hla_ref HLA_A:1000-4503 |$bin/bcftools consensus -H 2 $outdir/$sample.$hla.longshot.vcf.gz >$outdir/hla.allele.2.HLA_$hla.raw.fasta
+        echo ">HLA_${hla}_1" >$outdir/hla.allele.2.HLA_$hla.fasta
+        cat $outdir/hla.allele.2.HLA_$hla.raw.fasta|grep -v ">" >>$outdir/hla.allele.2.HLA_$hla.fasta
+
+        $bin/samtools faidx $outdir/hla.allele.2.HLA_$hla.fasta
+
+        # $bin/samtools faidx $outdir/hla.allele.*.HLA_$hla.fasta
+
 done
 
 
 
 
-# perl $dir/annoHLA.pl -s $sample -i $outdir -p Unknown -r whole
+perl $dir/annoHLA.pl -s $sample -i $outdir -p Unknown -r whole
 
 # sh $dir/../clear_output.sh $outdir/
 cat $outdir/hla.result.txt
