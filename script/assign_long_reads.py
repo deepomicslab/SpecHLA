@@ -2,11 +2,13 @@ import sys
 import os
 import pysam
 import gzip
+import argparse
 
-Min_score = 0.1  #the read is too long, so the score can be very low.
-Min_diff = 0.001
+interval_dict = {"A":"HLA_A:1000-4503", "B":"HLA_B:1000-5081","C": "HLA_C:1000-5304","DPA1":"HLA_DPA1:1000-10775",\
+    "DPB1":"HLA_DPB1:1000-12468","DQA1":"HLA_DQA1:1000-7492","DQB1":"HLA_DQB1:1000-8480","DRB1":"HLA_DRB1:1000-12229" }
+gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
+# gene_list = ['A']
 
-interval_dict = {"A":"HLA_A:1000-4503"}
 
 class Read_Obj():
     def __init__(self, read):
@@ -21,14 +23,17 @@ class Read_Obj():
             self.read_length += ci[1]
             if ci[0] == 0:
                 self.match_num += ci[1]
-        # print (read.query_name, read.reference_name, read_length, mis_NM)   
+            elif ci[0] == 4 and ci[1] > 50:
+                self.read_length -= ci[1]
+        # print (read.query_name, read.reference_name, self.read_length, mis_NM)   
         # self.read_length = len(read.query_sequence) 
 
         self.read_name = read.query_name
         self.allele_name = read.reference_name
         self.mismatch_num = mis_NM
         self.mismatch_rate = round(float(mis_NM)/self.read_length, 6)
-        self.match_rate = round(float(self.match_num)/self.read_length, 6)
+        self.match_rate = 1 - self.mismatch_rate
+        # self.match_rate = round(float(self.match_num)/self.read_length, 6)
         self.loci_name = self.allele_name.split("*")[0]
 
 class Score_Obj():
@@ -40,7 +45,8 @@ class Score_Obj():
     
     def add_read(self, read_obj):
         self.reads_len_dict[read_obj.read_name] = read_obj.read_length
-        score = round(read_obj.match_rate * (1 - read_obj.mismatch_rate), 6)
+        # score = round(read_obj.match_rate * (1 - read_obj.mismatch_rate), 6)
+        score = read_obj.match_rate
         if read_obj.read_name not in self.loci_score:
             self.loci_score[read_obj.read_name] = {}
             self.loci_score[read_obj.read_name][read_obj.loci_name] = score
@@ -73,28 +79,24 @@ class Score_Obj():
 
 class Pacbio_Binning():
 
-    def __init__(self, raw_fq, outdir, ID):
+    def __init__(self):
         
          
-        self.fastq = raw_fq
-        self.outdir = outdir
-        self.ID = ID
         self.db = f"{sys.path[0]}/../db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta"
-   
         self.map2db()
-        self.sam = f"{self.outdir}/{self.ID}.db.sam"
+        self.sam = f"{parameter.outdir}/{parameter.sample}.db.sam"
         self.bamfile = pysam.AlignmentFile(self.sam, 'r')   
-        self.assign_file = f"{self.outdir}/{self.ID}.assign.txt"
+        self.assign_file = f"{parameter.outdir}/{parameter.sample}.assign.txt"
 
 
     def map2db(self):
         alignDB_order = f"""
-        fq={self.fastq}
+        fq={parameter.raw_fq}
         ref={self.db}
-        outdir={self.outdir}
+        outdir={parameter.outdir}
         bin={sys.path[0]}/../bin
-        sample={self.ID}
-        $bin/minimap2 -t 12 -p 0.1 -N 100000 -a $ref $fq > $outdir/$sample.db.sam
+        sample={parameter.sample}
+        $bin/minimap2 -t {parameter.threads} -p 0.1 -N 100000 -a $ref $fq > $outdir/$sample.db.sam
         echo alignment done.
         """
         os.system(alignDB_order)
@@ -109,20 +111,20 @@ class Pacbio_Binning():
             scor.add_read(read_obj)
             # print (read_obj.read_name, read_obj.mismatch_rate, read_obj.allele_name )
         read_loci = scor.assign(self.assign_file)
-        for gene in ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']:
+        for gene in gene_list:
             self.filter_fq(gene, read_loci)
         print ("reads-binning done.")
 
     def filter_fq(self, gene, dict):
         i = 0
         #gene = 'A'
-        outfile = self.outdir + '/%s.fq'%(gene)
+        outfile = parameter.outdir + '/%s.fq'%(gene)
         out = open(outfile, 'w')
         flag = False
-        if self.fastq.split(".")[-1] == "gz":
-            f = gzip.open(self.fastq,'rt')
+        if parameter.raw_fq.split(".")[-1] == "gz":
+            f = gzip.open(parameter.raw_fq,'rt')
         else:
-            f = open(self.fastq)
+            f = open(parameter.raw_fq)
         for line in f:
             line = line.strip()
             if i % 4 == 0:
@@ -141,56 +143,89 @@ class Pacbio_Binning():
         out.close()
         os.system('gzip -f %s'%(outfile))
 
+class VCF():
 
+    def call_snp(self, gene):
+        call_command = """
+        db=%s
+        hla=%s
+        sample=%s
+        bin=%s
+        outdir=%s
+        hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
+        $bin/minimap2 -a $hla_ref $outdir/$hla.fq.gz | $bin/samtools view -bS -F 0x800 -| $bin/samtools sort - >$outdir/$hla.bam
+        $bin/samtools index $outdir/$hla.bam
+        longshot -F -S -A -Q 10 -E 0.3 -e 5 --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
 
-class PacBio():
+        bgzip -f $outdir/$sample.$hla.longshot.vcf
+        tabix -f $outdir/$sample.$hla.longshot.vcf.gz
+        """%(parameter.db, gene, parameter.sample, parameter.bin, parameter.outdir)
+        os.system(call_command)
 
-    def __init__(self, gene, outdir, ID, db):
-        self.fq = self.outdir + '/%s.fq.gz'%(gene)
-        self.outdir = outdir
-        self.ID = ID
-        self.ref = f"{sys.path[0]}/../db/HLA/HLA_{gene}/HLA_{gene}.fa"
-        self.db = db
-
-    def alignment(self):
-        alignment_order = f"""
-        fq={self.fq}
-        ref={self.ref}
-        outdir={self.outdir}
-        bin={sys.path[0]}/../bin
-        sample={self.ID}
-        $bin/minimap2 -a $ref $fq > $outdir/$sample.tgs.sam
-        $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
-        $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
-        $bin/samtools index $outdir/$sample.tgs.sort.bam
-        echo alignment done.
-        """
-        return alignment_order
-
-    def run(self):
-        # alignment_order = self.alignment()
-        # os.system(alignment_order)
-        alignDB_order = self.map2db()
-        os.system(alignDB_order)
-
-
-class Para():
+class Parameters():
 
     def __init__(self):
 
-        # self.db = 
-        self.longshot_vcf = ''
-        self.gene_ref = ''
+        self.sample = args["n"]
+        self.raw_fq = args["r"]
+        outdir = args["o"]
+        self.population = args["p"]
+        self.threads = args["j"]
+        self.db = "%s/../db/"%(sys.path[0])
+        self.bin = "%s/../bin/"%(sys.path[0])      
+        self.outdir = "%s/%s/"%(outdir, self.sample)
+        self.whole_dir = "%s/whole/"%(sys.path[0])
+
+        if not os.path.exists(self.outdir):
+            os.system("mkdir %s"%(self.outdir))
 
 
 class Fasta():
 
-    def test(self):
-        print ("hi")
+    def vcf2fasta(self, gene):
+        # vcf = VCF()
+        # vcf.call_snp(gene)
 
-    def convert(self):
+        for index in range(2):
+            order = """
+            sample=%s
+            bin=%s
+            db=%s
+            outdir=%s
+            hla=%s
+            i=%s
+            j=%s
+            hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
+            $bin/minimap2 -t %s -a $hla_ref $outdir/$hla.fq.gz | $bin/samtools view -bS -F 0x800 -| $bin/samtools sort - >$outdir/$hla.bam
+            $bin/samtools index $outdir/$hla.bam
 
-    # def smallVariants(self):
+
+            longshot -F -S -A -Q 10 -E 0.3 -e 5 --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
+            bgzip -f $outdir/$sample.$hla.longshot.vcf
+            tabix -f $outdir/$sample.$hla.longshot.vcf.gz
+
+
+            $bin/samtools faidx $hla_ref %s |$bin/bcftools consensus -H $i $outdir/$sample.$hla.longshot.vcf.gz >$outdir/hla.allele.$i.HLA_$hla.raw.fasta
+            echo ">HLA_%s_$j" >$outdir/hla.allele.$i.HLA_$hla.fasta
+            cat $outdir/hla.allele.$i.HLA_$hla.raw.fasta|grep -v ">" >>$outdir/hla.allele.$i.HLA_$hla.fasta
+            
+            $bin/samtools faidx $outdir/hla.allele.$i.HLA_$hla.fasta        
+            """%(parameter.sample, parameter.bin, parameter.db, parameter.outdir, gene, index+1, index,parameter.threads, interval_dict[gene], gene)
+            os.system(order)
+
+
+    def get_fasta(self):
+        for gene in gene_list:
+            self.vcf2fasta(gene)
+        self.annotation()
+
+    def annotation(self):
+        anno = """
+        perl %s/annoHLA.pl -s %s -i %s -p %s -r whole
+        cat %s/hla.result.txt
+        """%(parameter.whole_dir, parameter.sample, parameter.outdir, parameter.population, parameter.outdir)
+        os.system(anno)
+
 
 
     # def phase(self):
@@ -200,22 +235,34 @@ class Fasta():
     #  --out %s/%s.specHap.phased.vcf'%(sys.path[0],my_new_vcf, outdir, outdir,gene)
 
 if __name__ == "__main__":   
-# fq = "/mnt/d/HLAPro_backup/insert/high_pacbio/child_1/child_1.fastq"
-    # ID = "child_1"
-    # raw_fq = "/mnt/d/HLAPro_backup/insert/single_pacbio/fq/child_1_A.fastq"
-    # outdir = "/mnt/d/HLAPro_backup/insert/single_pacbio"
 
-    ID = sys.argv[1]
-    raw_fq = sys.argv[2]
-    outdir = sys.argv[3]
-    
-    # ref = "/mnt/d/HLAPro_backup/HLAPro/db/ref/HLA_A.fa"
-    print (sys.path[0])
-    fa = Fasta()
-    fa.test()
+
+    parser = argparse.ArgumentParser(description="HLA Typing with long-reads", add_help=False, \
+    usage="%(prog)s -h", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    required = parser.add_argument_group("required arguments")
+    optional = parser.add_argument_group("optional arguments")
+    required.add_argument("-r", type=str, help="fastq file for the long-reads sample", metavar="\b")
+    required.add_argument("-n", type=str, help="Sample ID", metavar="\b")
+    required.add_argument("-o", type=str, help="outdir", metavar="\b")
+    optional.add_argument("-p", type=str, help="Population information", metavar="\b", default="Unknown")
+    optional.add_argument("-j", type=int, help="Number of threads, default is 5.", metavar="\b", default=5)
+    optional.add_argument("-d", type=float, help="Minimum score difference to assign a read to a gene. Default is 0.001.", metavar="\b", default=0.001)
+    # optional.add_argument("-t", type=int, default=5, help="<int> number of threads", metavar="\b")
+    optional.add_argument("-h", "--help", action="help")
+    args = vars(parser.parse_args()) 
+
+    parameter = Parameters()
+    Min_score = 0.1  #the read is too long, so the score can be very low.
+    Min_diff = args["d"]  #0.001
+
     ###assign reads
-    # pbin = Pacbio_Binning(raw_fq, outdir, ID)
-    # pbin.read_bam()
+    pbin = Pacbio_Binning()
+    pbin.read_bam()
 
-    # pac = PacBio(gene, outdir, ID, ref, db)
-    # pac.run()
+    fa = Fasta()
+    fa.get_fasta()
+
+
+
+
+
