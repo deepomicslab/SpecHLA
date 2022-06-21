@@ -74,7 +74,7 @@ def start_gfServer(reference,gfServer_port,output_dir):
 	try:
 		subprocess.check_call('gfServer -canStop -log='+log_dir+'/gfserver.temp.log start localhost '+gfServer_port+' *.2bit &', shell=True)
 	except subprocess.CalledProcessError as e:
-		print >> sys.stderr, "Execution failed for gfServer:", e
+		print("Execution failed for gfServer:", e, file=sys.stderr)
 		sys.exit(1)
 	os.chdir(cwd)
 	time.sleep(5) # aspetta 5 sec
@@ -82,7 +82,7 @@ def start_gfServer(reference,gfServer_port,output_dir):
 	while not gfready:
 		gfready = read_gfServer_log(log_dir+'/gfserver.temp.log')
 		if gfready == -1:
-			print 'gfServer start error! Check '+log_dir+'/gfserver.temp.log file, exit.'
+			print('gfServer start error! Check '+log_dir+'/gfserver.temp.log file, exit.')
 			sys.exit(1)
 		time.sleep(5)
 	sys.stderr.write('gfServer ready\n')
@@ -95,7 +95,7 @@ def bwa_alignment(reference, input, output):
 		subprocess.check_call("mv "+output+".bwa.sorted.bam "+output, shell=True)
 		subprocess.check_call("samtools index "+output, shell=True)
 	except subprocess.CalledProcessError as e:
-		print >> sys.stderr, 'Execution failed for BWA mem:', e
+		print('Execution failed for BWA mem:', e, file=sys.stderr)
 		sys.exit(1)
 
 def psl2sam(hsp, query_seq_len):
@@ -145,7 +145,7 @@ def get_softclip_length(read):
 	if not read.qual:
 		qual = np.array([40] * read.rlen)
 	else:
-		qual = np.array(map(ord, list(read.qual)))
+		qual = np.array(list(map(ord, list(read.qual))))
 		qual = qual - 33
 	if read.cigar[0][0] == 4:
 		if read.cigar[-1][0] == 4:
@@ -188,8 +188,8 @@ def blat_alignment(mapping, reference, scliplen_cutoff, lowqual_cutoff, min_perc
 			continue
 		if read.is_unmapped:
 			if hetero_factor != 'a':
-				print >> denovo, '>' + read.qname
-				print >> denovo, read.seq
+				print('>' + read.qname, file=denovo)
+				print(read.seq, file=denovo)
 			continue
 		soft_len, soft_qual, soft_pos = get_softclip_length(read)
 		sclip_ratio = soft_len / float(read.rlen)
@@ -204,8 +204,8 @@ def blat_alignment(mapping, reference, scliplen_cutoff, lowqual_cutoff, min_perc
 				blat_aln = True
 			elif (soft_chr, soft_pos) in putative_indel_cluster:
 				blat_aln = True
-				print >> denovo, '>' + read.qname
-				print >> denovo, read.seq
+				print('>' + read.qname, file=denovo)
+				print(read.seq, file=denovo)
 				if not mapping:
 					blat_bam.write(read)
 					continue
@@ -213,26 +213,26 @@ def blat_alignment(mapping, reference, scliplen_cutoff, lowqual_cutoff, min_perc
 			elif prob_of_indel_with_error(input, soft_chr, soft_pos, hetero_factor) < 0.05:
 				putative_indel_cluster.add((soft_chr, soft_pos))
 				blat_aln = True
-				print >> denovo, '>' + read.qname
-				print >> denovo, read.seq
+				print('>' + read.qname, file=denovo)
+				print(read.seq, file=denovo)
 				if not mapping:
 					blat_bam.write(read)
 					continue
 			if blat_aln:
 				fa = open(output+'.temp.fa', 'w')
-				print >> fa, '>' + read.qname
-				print >> fa, read.seq
+				print('>' + read.qname, file=fa)
+				print(read.seq, file=fa)
 				fa.close()
 				try:
 					subprocess.check_call('gfClient localhost ' + gfServer_port +' '+ reference['blat'] + ' ' + output + '.temp.fa ' + output + '.temp.psl >/dev/null 2>&1 ', shell=True)
 				except subprocess.CalledProcessError as e:
-					print >> sys.stderr, 'Execution failed for gfClient:', e
+					print('Execution failed for gfClient:', e, file=sys.stderr)
 					sys.exit(1)
 				try:
 					blat = SearchIO.read(output+'.temp.psl', 'blat-psl')
-					print >> sys.stderr, 'Blat aligned read:',read.qname
+					print('Blat aligned read:',read.qname, file=sys.stderr)
 				except:
-					print >> sys.stderr, 'No blat hit for read:',read.qname
+					print('No blat hit for read:',read.qname, file=sys.stderr)
 					blat_bam.write(read)
 					continue
 				hsps = blat.hsps
@@ -282,30 +282,30 @@ def remove_assembly_fp(bam, input_vcf, output_vcf, len_cutoff, hetero_factor):
 
 def usage():
 	"""helping information"""
-	print 'Usage:'
-	print ' python ScanIndel.py -p config.txt -i sample.txt [opts]'
-	print 'Opts:'
-	print ' -o  :setting the output directory (default current working directory)'
-	print ' -F  :setting min-alternate-fraction for FreeBayes (default 0.2)'
-	print ' -C  :setting min-alternate-count for FreeBayes (default 2)'
-	print ' -d  :setting min-coverage for Freebayes (default 0)'
-	print ' -t  :setting --target for Freebayes to provide a BED file for analysis'
-	print ' -s  :softclipping percentage triggering BLAT re-alignment (default 0.2)'
+	print('Usage:')
+	print(' python ScanIndel.py -p config.txt -i sample.txt [opts]')
+	print('Opts:')
+	print(' -o  :setting the output directory (default current working directory)')
+	print(' -F  :setting min-alternate-fraction for FreeBayes (default 0.2)')
+	print(' -C  :setting min-alternate-count for FreeBayes (default 2)')
+	print(' -d  :setting min-coverage for Freebayes (default 0)')
+	print(' -t  :setting --target for Freebayes to provide a BED file for analysis')
+	print(' -s  :softclipping percentage triggering BLAT re-alignment (default 0.2)')
 
-	print ' --min_percent_hq  :min percentage of high quality base in soft clipping reads, default 0.8'
-	print ' --lowqual_cutoff  :low quality cutoff value, default 20'
-	print ' --mapq_cutoff  :low mapping quality cutoff, default 1'
-	print ' --blat_ident_pct_cutoff  :Blat sequence identity cutoff, default 0.8'
-	print ' --gfServer_port  :gfServer service port number, default 50000'
-	print ' --hetero_factor  :The factor about the indel\'s heterogenirity and heterozygosity, default 0.1'
-	print ' --bam  :the input file is BAM format'
-	print ' --rmdup  :exccute duplicate removal step before realignment'
-	print ' --assembly_only  :only execute de novo assembly for indel calling without blat realignment (default False)'
-	print ' --mapping_only  :only execute blat realignment withou de novo assembly for indel calling (default False)'
-	print ' -h --help :produce this menu'
-	print ' -v --version :show version of this tool'
-	print 'author: Rendong Yang <yang4414@umn.edu>, MSI, University of Minnesota, 2014'
-	print 'version: ' + __version__
+	print(' --min_percent_hq  :min percentage of high quality base in soft clipping reads, default 0.8')
+	print(' --lowqual_cutoff  :low quality cutoff value, default 20')
+	print(' --mapq_cutoff  :low mapping quality cutoff, default 1')
+	print(' --blat_ident_pct_cutoff  :Blat sequence identity cutoff, default 0.8')
+	print(' --gfServer_port  :gfServer service port number, default 50000')
+	print(' --hetero_factor  :The factor about the indel\'s heterogenirity and heterozygosity, default 0.1')
+	print(' --bam  :the input file is BAM format')
+	print(' --rmdup  :exccute duplicate removal step before realignment')
+	print(' --assembly_only  :only execute de novo assembly for indel calling without blat realignment (default False)')
+	print(' --mapping_only  :only execute blat realignment withou de novo assembly for indel calling (default False)')
+	print(' -h --help :produce this menu')
+	print(' -v --version :show version of this tool')
+	print('author: Rendong Yang <yang4414@umn.edu>, MSI, University of Minnesota, 2014')
+	print('version: ' + __version__)
 
 def external_tool_checking():
 	"""checking dependencies are installed"""
@@ -315,10 +315,10 @@ def external_tool_checking():
 		try:
 			path = subprocess.check_output([cmd, each], stderr=subprocess.STDOUT)
 		except subprocess.CalledProcessError:
-			print >> sys.stderr, "Checking for '" + each + "': ERROR - could not find '" + each + "'"
-			print >> sys.stderr, "Exiting."
+			print("Checking for '" + each + "': ERROR - could not find '" + each + "'", file=sys.stderr)
+			print("Exiting.", file=sys.stderr)
 			sys.exit(0)
-		print "Checking for '" + each + "': found " + path
+		print("Checking for '" + each + "': found " + str(path))
 
 def main():
 
@@ -345,10 +345,10 @@ def main():
 	try:
 		opts, args = getopt.getopt(sys.argv[1:], 'i:o:p:F:C:s:d:t:h:v', ['min_percent_hq=', 'lowqual_cutoff=', 'hetero_factor=', 'mapq_cutoff=', 'blat_ident_pct_cutoff=', 'gfServer_port=', 'bam', 'rmdup', 'assembly_only', 'mapping_only', 'help', 'version'])
 		if not opts:
-			print "Please use the -h or --help option to get usage information."
+			print("Please use the -h or --help option to get usage information.")
 			sys.exit(0)
 	except getopt.GetoptError as err:
-		print str(err)
+		print(str(err))
 		usage()
 		sys.exit(2)
 	for o, a in opts:
@@ -374,7 +374,7 @@ def main():
 		elif o == '--mapping_only': assembly = False
 		elif o == '--assembly_only': mapping = False
 		elif o in ('-v', '--version'):
-			print 'ScanIndel ' + __version__
+			print('ScanIndel ' + __version__)
 			sys.exit(0)
 		elif o in ('-h', '--help'):
 			usage()
@@ -382,19 +382,19 @@ def main():
 		else:
 			assert False, "unhandled option"
 	if not assembly and not mapping:
-		print 'Cannot set both --mapping_only and --assembly_only.'
+		print('Cannot set both --mapping_only and --assembly_only.')
 		usage()
 		sys.exit(1)
 	if not sample_file or not config_file:
-		print 'Please specify sample and config file.'
+		print('Please specify sample and config file.')
 		usage()
 		sys.exit(1)
 
-	print 'ScanIndel starts running: ' + time.strftime("%Y-%m-%d %H:%M:%S")
+	print('ScanIndel starts running: ' + time.strftime("%Y-%m-%d %H:%M:%S"))
 	start = time.time()
 	sample = read_sample_file(sample_file)
 	reference = read_config_file(config_file)
-	print 'Loaded config and sample list'
+	print('Loaded config and sample list')
 	
 	#check external tools used
 	external_tool_checking()
@@ -403,25 +403,25 @@ def main():
 	start_gfServer(reference['blat'], gfServer_port, output_dir)
 
 	for each in sample:
-		print "Analyzing sample:", each
+		print("Analyzing sample:", each)
 		if not bam:
 			bwa_start = time.time()
 			bwa_alignment(reference, sample[each], output_dir+'/'+each + '.temp.bwa.bam')
 			blat_input = output_dir+'/'+each + '.temp.bwa.bam'
 			bwa_end = time.time()
-			print 'BWA [ScanIndel] takes ' + str(bwa_end - bwa_start)+' seconds.'
+			print('BWA [ScanIndel] takes ' + str(bwa_end - bwa_start)+' seconds.')
 		else:
 			blat_input = sample[each]
 			try:
 				subprocess.check_call('samtools index ' + blat_input, shell=True)
 			except subprocess.CalledProcessError as e:
-				print >> sys.stderr, "Execution failed for samtools index:", e
+				print("Execution failed for samtools index:", e, file=sys.stderr)
 				sys.exit(1)
 		if bedfile:
 			try:
 				subprocess.check_call("intersectBed -abam " + blat_input + " -b " + bedfile+  " > " + output_dir + "/" + each + ".temp.target.map.bam", shell=True)
 			except subprocess.CalledProcessError as e:
-				print >> sys.stderr, "Execution failed for bedtools intersect:", e
+				print("Execution failed for bedtools intersect:", e, file=sys.stderr)
 				sys.exit(1)
 			os.system("samtools view -b -f 4 " + blat_input + " >" + output_dir + "/" + each + ".temp.target.unmap.bam")
 			os.system("samtools merge -f " + output_dir + "/" + each + ".temp.target.bam " + output_dir + "/" + each + ".temp.target.map.bam " + output_dir + "/" + each + ".temp.target.unmap.bam")
@@ -431,7 +431,7 @@ def main():
 			try:
 				subprocess.check_call("samtools rmdup " + blat_input + " " + output_dir + "/" + each + ".temp.rmdup.bam", shell=True)
 			except subprocess.CalledProcessError as e:
-				print >> sys.stderr, "Execution failed for samtools rmdup:", e
+				print("Execution failed for samtools rmdup:", e, file=sys.stderr)
 				sys.exit(1)
 			os.system("samtools index " + output_dir + "/" + each + ".temp.rmdup.bam")
 			blat_input = output_dir + "/" + each + '.temp.rmdup.bam'
@@ -440,22 +440,22 @@ def main():
 		blat_start = time.time()
 		readlen, empty = blat_alignment(mapping, reference, softclip_ratio, lowqual_cutoff, min_percent_hq, mapq_cutoff, blat_ident_pct_cutoff, gfServer_port, hetero_factor, blat_input, output_dir + "/" + each + '.reads.bam')
 		blat_end = time.time()
-		print 'BLAT [ScanIndel] takes ' + str(blat_end - blat_start) + ' seconds.'
+		print('BLAT [ScanIndel] takes ' + str(blat_end - blat_start) + ' seconds.')
 		
 		if assembly and os.path.getsize(output_dir + "/" + each + '.reads.bam.temp.fasta'):
-			print "start assemby"
+			print("start assemby")
 			assembly_start = time.time()
 			# de novo assemble softclip reads with breakpoint evidence and unmapped reads"
 			try:
 				subprocess.check_call('inchworm --reads ' + output_dir + "/" + each + '.reads.bam.temp.fasta --run_inchworm --DS -L ' + str(readlen + 1) + ' >' + output_dir + "/" + each + '.temp.contig', shell=True)
-				print ('inchworm --reads ' + output_dir + "/" + each + '.reads.bam.temp.fasta --run_inchworm --DS -L ' + str(readlen + 1) + ' >' + output_dir + "/" + each + '.temp.contig')
+				print(('inchworm --reads ' + output_dir + "/" + each + '.reads.bam.temp.fasta --run_inchworm --DS -L ' + str(readlen + 1) + ' >' + output_dir + "/" + each + '.temp.contig'))
 			except subprocess.CalledProcessError as e:
-				print >> sys.stderr, "Execution failed for inchworm:", e
+				print("Execution failed for inchworm:", e, file=sys.stderr)
 				sys.exit(1)
 			bwa_alignment(reference, output_dir + '/' + each + '.temp.contig', output_dir + '/' + each + '.denovo.temp.bwa.bam')
 			blat_alignment(mapping, reference, softclip_ratio, lowqual_cutoff, min_percent_hq, mapq_cutoff, blat_ident_pct_cutoff, gfServer_port, 'a', output_dir+'/'+each+'.denovo.temp.bwa.bam', output_dir+'/'+each + '.contigs.bam')
 			assembly_end = time.time()
-			print 'Assembly [ScanIndel] takes ' + str(assembly_end - assembly_start) + ' seconds.'
+			print('Assembly [ScanIndel] takes ' + str(assembly_end - assembly_start) + ' seconds.')
 		else:
 			print ("We have not found softclip and unmapped reads.")
 			sys.exit(1)
@@ -464,27 +464,27 @@ def main():
 		try:
 			subprocess.check_call('freebayes -I -X -u -F ' + str(freebayes_F) + ' -C ' + str(freebayes_C) + ' --min-coverage ' + str(depth) + ' -f ' + reference['freebayes'] + ' ' + output_dir + '/' + each + '.reads.bam > ' + output_dir + '/' + each + '.mapping.indel.vcf', shell=True)
 		except subprocess.CalledProcessError as e:
-			print >> sys.stderr, "Execution failed for freebayes:", e
+			print("Execution failed for freebayes:", e, file=sys.stderr)
 			sys.exit(1)
 		if assembly:
 			try:
 				subprocess.check_call('freebayes -I -X -u -F 0 -C 1 -f ' + reference['freebayes'] + ' ' + output_dir + '/' + each + '.contigs.bam > ' + output_dir + '/' + each + '.temp.indel.vcf', shell=True)
 				# print 'freebayes -I -X -u -F 0 -C 1 -f ' + reference['freebayes'] + ' ' + output_dir + '/' + each + '.contigs.bam > ' + output_dir + '/' + each + '.temp.indel.vcf'
 			except subprocess.CalledProcessError as e:
-				print >> sys.stderr, "Execution failed for freebayes in assembly:", e
+				print("Execution failed for freebayes in assembly:", e, file=sys.stderr)
 				sys.exit(1)
 			remove_assembly_fp(blat_input, output_dir + '/' + each + '.temp.indel.vcf', output_dir + '/' + each + '.assembly.indel.vcf', readlen * softclip_ratio, hetero_factor)
 			path = os.path.dirname(os.path.realpath(__file__))
 			os.system('python2 ' + path + '/vcf-combine.py ' + output_dir + '/'+ each + '.mapping.indel.vcf ' + output_dir + '/' + each + '.assembly.indel.vcf | bedtools sort -i stdin -header > ' + output_dir + '/' + each + '.merged.indel.vcf')
 		freebayes_end = time.time()
-		print 'Freebayes [ScanIndel] takes ' + str(freebayes_end - freebayes_start) + ' seconds.'
+		print('Freebayes [ScanIndel] takes ' + str(freebayes_end - freebayes_start) + ' seconds.')
 
 	os.system('gfServer stop localhost '+gfServer_port)
 	os.system('rm '+output_dir+'/*.temp.*')
 
-	print "ScanIndel running done: " + time.strftime("%Y-%m-%d %H:%M:%S")
+	print("ScanIndel running done: " + time.strftime("%Y-%m-%d %H:%M:%S"))
 	end = time.time()
-	print 'ScanIndel takes ' + str(end - start) + ' seconds.'
+	print('ScanIndel takes ' + str(end - start) + ' seconds.')
 
 if __name__ == '__main__':
 	main()

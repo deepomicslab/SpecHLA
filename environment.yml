@@ -11,7 +11,7 @@ dependencies:
   - biopython=1.79=py38h497a2fe_1
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.18.1=h7f98852_0
-  - ca-certificates=2022.5.18.1=ha878542_0
+  - ca-certificates=2022.6.15=ha878542_0
   - coin-or-cbc=2.10.8=h3786ebc_0
   - coin-or-cgl=0.60.6=he2f9439_0
   - coin-or-clp=1.17.6=h256e9bb_3
@@ -53,6 +53,7 @@ dependencies:
   - pysam=0.19.0=py38h8bf8b8d_0
   - python=3.8.12=ha38a3c6_3_cpython
   - python_abi=3.8=2_cp38
+  - pyvcf=0.6.8=py38h32f6830_1002
   - readline=8.1=h46c0cb4_0
   - scipy=1.8.0=py38h56a6a73_1
   - setuptools=62.3.2=py38h578d9bd_0

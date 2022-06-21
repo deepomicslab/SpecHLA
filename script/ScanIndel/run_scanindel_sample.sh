@@ -20,7 +20,7 @@ for hla in ${HLAs[@]}; do
         #samtools view -h $bam HLA_$hla | samtools sort -n - |samtools fastq - -1 $outdir/$sample.$hla.1.fastq.gz -2 $outdir/$sample.$hla.2.fastq.gz
         echo "$sample.$hla $dir/$hla.R1.fq.gz $dir/$hla.R2.fq.gz" >$hfqfile
         $bin/gfServer stop localhost $port
-        python2 $pdir/ScanIndel.py -F 0 -p $db/HLA/HLA_$hla.config.txt -i $outdir/scanindel.fq.HLA_$hla.list\
+        python $pdir/ScanIndel.py -F 0 -p $db/HLA/HLA_$hla.config.txt -i $outdir/scanindel.fq.HLA_$hla.list\
          -o $outdir/ --gfServer_port $port
         if [ -f "$outdir/$sample.$hla.merged.indel.vcf" ];then
                 perl $pdir/get_breakpoint2.pl $outdir/$sample.$hla.contigs.bam $outdir/$sample.$hla.merged.indel.vcf\
