@@ -176,6 +176,8 @@ class Parameters():
         self.outdir = "%s/%s/"%(outdir, self.sample)
         self.whole_dir = "%s/whole/"%(sys.path[0])
 
+        if not os.path.exists(args["o"]):
+            os.system("mkdir %s"%(args["o"]))
         if not os.path.exists(self.outdir):
             os.system("mkdir %s"%(self.outdir))
 
@@ -235,7 +237,6 @@ class Fasta():
     #  --out %s/%s.specHap.phased.vcf'%(sys.path[0],my_new_vcf, outdir, outdir,gene)
 
 if __name__ == "__main__":   
-
 
     parser = argparse.ArgumentParser(description="HLA Typing with long-reads", add_help=False, \
     usage="%(prog)s -h", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
