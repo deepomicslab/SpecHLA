@@ -248,12 +248,15 @@ def blat_alignment(mapping, reference, scliplen_cutoff, lowqual_cutoff, min_perc
 	blat_bam.close()
 	if hetero_factor != 'a':
 		denovo.close()
+	
 	os.system('samtools sort -o ' + output + '.temp.sorted.bam ' + output + '.temp.bam')
 	os.system('mv ' + output + '.temp.sorted.bam ' + output)
 	os.system('samtools index ' + output)
 	bwa_bam = pysam.Samfile(input, 'rb')
+	# print input, bwa_bam
 	readlen = bwa_bam.next().rlen
 	bwa_bam.close()
+	# os.system("cat "+ output+'.temp.fasta')
 	return readlen
 
 def remove_assembly_fp(bam, input_vcf, output_vcf, len_cutoff, hetero_factor):
@@ -432,11 +435,13 @@ def main():
 		blat_end = time.time()
 		print 'BLAT [ScanIndel] takes ' + str(blat_end - blat_start) + ' seconds.'
 		
-		if assembly:
+		if assembly and os.path.getsize(output_dir + "/" + each + '.reads.bam.temp.fasta'):
+			print "start assemby"
 			assembly_start = time.time()
 			# de novo assemble softclip reads with breakpoint evidence and unmapped reads"
 			try:
 				subprocess.check_call('inchworm --reads ' + output_dir + "/" + each + '.reads.bam.temp.fasta --run_inchworm --DS -L ' + str(readlen + 1) + ' >' + output_dir + "/" + each + '.temp.contig', shell=True)
+				print ('inchworm --reads ' + output_dir + "/" + each + '.reads.bam.temp.fasta --run_inchworm --DS -L ' + str(readlen + 1) + ' >' + output_dir + "/" + each + '.temp.contig')
 			except subprocess.CalledProcessError as e:
 				print >> sys.stderr, "Execution failed for inchworm:", e
 				sys.exit(1)
@@ -444,6 +449,9 @@ def main():
 			blat_alignment(mapping, reference, softclip_ratio, lowqual_cutoff, min_percent_hq, mapq_cutoff, blat_ident_pct_cutoff, gfServer_port, 'a', output_dir+'/'+each+'.denovo.temp.bwa.bam', output_dir+'/'+each + '.contigs.bam')
 			assembly_end = time.time()
 			print 'Assembly [ScanIndel] takes ' + str(assembly_end - assembly_start) + ' seconds.'
+		else:
+			print ("We have not found softclip and unmapped reads.")
+			sys.exit(1)
 
 		freebayes_start = time.time()
 		try:
@@ -451,7 +459,7 @@ def main():
 		except subprocess.CalledProcessError as e:
 			print >> sys.stderr, "Execution failed for freebayes:", e
 			sys.exit(1)
-		if assembly:
+		if assembly and os.path.getsize(output_dir + "/" + each + '.reads.bam.temp.fasta'):
 			try:
 				subprocess.check_call('freebayes -I -X -u -F 0 -C 1 -f ' + reference['freebayes'] + ' ' + output_dir + '/' + each + '.contigs.bam > ' + output_dir + '/' + each + '.temp.indel.vcf', shell=True)
 			except subprocess.CalledProcessError as e:

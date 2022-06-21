@@ -29,7 +29,9 @@
 ###   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
 ###             is 2. It should be set larger to infer novel alleles.
 ###   -v        True or False. Consider long InDels if True, else only consider short variants. 
-###             Default is False.
+###             Default is False. Calling long-InDel requires Python 2.7, with the models: pysam=0.7.7,
+###             pyvcf=0.6.7,numpy=1.12.1,biopython=1.66. Please install these modules in the system 
+###             environment before setting "-v True".
 ###   -q        Minimum variant quality. Default is 0.01. Set it larger in high quality samples.
 ###   -s        Minimum mapping depth of variant. Default is 5.
 ###   -a        Use this long InDel file if provided.
@@ -112,7 +114,7 @@ mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
 echo use ${num_threads:-5} threads.
 
-# :<<!
+:<<!
 # ################ remove the repeat read name #################
 python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz

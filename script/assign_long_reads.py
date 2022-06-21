@@ -202,7 +202,7 @@ class Fasta():
             $bin/samtools index $outdir/$hla.bam
 
 
-            longshot -F -S -A -Q 10 -E 0.3 -e 5 --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
+            longshot -F  --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
             bgzip -f $outdir/$sample.$hla.longshot.vcf
             tabix -f $outdir/$sample.$hla.longshot.vcf.gz
 
@@ -214,6 +214,7 @@ class Fasta():
             $bin/samtools faidx $outdir/hla.allele.$i.HLA_$hla.fasta        
             """%(parameter.sample, parameter.bin, parameter.db, parameter.outdir, gene, index+1, index,parameter.threads, interval_dict[gene], gene)
             os.system(order)
+            # -S -A -Q 10 -E 0.3 -e 5
 
 
     def get_fasta(self):
@@ -244,7 +245,7 @@ if __name__ == "__main__":
     optional = parser.add_argument_group("optional arguments")
     required.add_argument("-r", type=str, help="fastq file for the long-reads sample", metavar="\b")
     required.add_argument("-n", type=str, help="Sample ID", metavar="\b")
-    required.add_argument("-o", type=str, help="outdir", metavar="\b")
+    required.add_argument("-o", type=str, help="outdir", metavar="\b", default="./output")
     optional.add_argument("-p", type=str, help="Population information", metavar="\b", default="Unknown")
     optional.add_argument("-j", type=int, help="Number of threads, default is 5.", metavar="\b", default=5)
     optional.add_argument("-d", type=float, help="Minimum score difference to assign a read to a gene. Default is 0.001.", metavar="\b", default=0.001)

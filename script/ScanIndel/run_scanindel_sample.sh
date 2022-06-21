@@ -1,4 +1,3 @@
-
 sample=$1
 bam=$2
 port=$4
@@ -23,9 +22,13 @@ for hla in ${HLAs[@]}; do
         $bin/gfServer stop localhost $port
         python2 $pdir/ScanIndel.py -F 0 -p $db/HLA/HLA_$hla.config.txt -i $outdir/scanindel.fq.HLA_$hla.list\
          -o $outdir/ --gfServer_port $port
-        perl $pdir/get_breakpoint2.pl $outdir/$sample.$hla.contigs.bam $outdir/$sample.$hla.merged.indel.vcf\
-         $outdir/$sample.$hla.breakpoint.txt $outdir/$sample.$hla.ins.fa
-        cat $outdir/$sample.$hla.breakpoint.txt >> $outdir/$sample.breakpoint.txt
-        cat $outdir/$sample.$hla.ins.fa >>$outdir/$sample.ins.fa
+        if [ -f "$outdir/$sample.$hla.merged.indel.vcf" ];then
+                perl $pdir/get_breakpoint2.pl $outdir/$sample.$hla.contigs.bam $outdir/$sample.$hla.merged.indel.vcf\
+                $outdir/$sample.$hla.breakpoint.txt $outdir/$sample.$hla.ins.fa
+                cat $outdir/$sample.$hla.breakpoint.txt >> $outdir/$sample.breakpoint.txt
+                cat $outdir/$sample.$hla.ins.fa >>$outdir/$sample.ins.fa
+        else
+                echo "We found no long-indel for $hla."
+        fi
 done
 
