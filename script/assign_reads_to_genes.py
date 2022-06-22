@@ -226,6 +226,7 @@ def main():
     # record alignment scores for all the read
     for alignment in bamfile:
         t_name = alignment.reference_name
+        alignment.query_name = alignment.query_name.split("/")[0]
         read_name = alignment.query_name
         # print (read_name)
         if read_name not in read_dict.keys():
