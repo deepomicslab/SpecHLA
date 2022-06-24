@@ -9,6 +9,7 @@ import os
 import pysam
 import sys
 from pysam import VariantFile
+import pickle
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -671,8 +672,8 @@ class Share_reads():
             gap += seg_region
         for i in range(self.strainsNum):
             order='%s/../bin/samtools faidx %s/../db/ref/hla.ref.extend.fa\
-                %s |%s/../bin/bcftools\
-                consensus -H %s %s/%s.rephase.vcf.gz  >%s/%s_%s_seg.fa'%(sys.path[0],sys.path[0],gap,sys.path[0],i+1,self.outdir,\
+                %s |%s/../bin/bcftools consensus --mask %s -H %s %s/%s.rephase.vcf.gz\
+                      >%s/%s_%s_seg.fa'%(sys.path[0],sys.path[0],gap,sys.path[0],mask_bed,i+1,self.outdir,\
                 self.gene,self.outdir,self.gene,i)
             os.system(order)
             fa_file = '%s/%s_%s_seg.fa'%(self.outdir,self.gene,i)
@@ -1344,25 +1345,22 @@ def run_SpecHap():
             sample=%s
             gene=%s
             echo $gene
-            
+            rm -rf ./77
             if [ $gene == "HLA_A" ];
-                then
-                    $bin/longranger wgs --id=1 --fastqs=$fq --reference=%s/../db/ref/refdata-hla.ref.extend --sample=$sample --sex m --localcores=8 --localmem=32 --jobmode=local --vconly
-            fi
-            if [ $gene == "HLA_DRB1" ];
             then
-            rm -r ./1
+                longranger wgs --id=77 --fastqs=$fq --reference=%s/../db/ref/refdata-hla.ref.extend\
+                        --sample=$sample --sex m --localcores=8 --localmem=32 --vcmode freebayes
             fi
-            bam=./1/outs/phased_possorted_bam.bam
 
-            $bin/extractHAIRS  --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam --VCF %s --out $outdir/fragment.tenx.file
+            bam=./77/outs/phased_possorted_bam.bam
+            $bin/extractHAIRS --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam --VCF %s --out $outdir/fragment.tenx.file
             $bin/BarcodeExtract $bam $outdir/barcode_spanning.bed
             bgzip -f -c $outdir/barcode_spanning.bed > $outdir/barcode_spanning.bed.gz
             tabix -f -p bed $outdir/barcode_spanning.bed.gz
         
         """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, sys.path[0], gene_vcf)
         print ('extract linkage info from 10 X data.')
-        # print (tgs)
+        print (tgs)
         os.system(tgs)
 
         os.system('cat %s/fragment.tenx.file > %s/fragment.all.file'%(outdir, outdir))
@@ -1485,6 +1483,49 @@ def link_blocks():
         update_seqlist = block_phase(outdir,seq_list,snp_list,gene,gene_vcf,rephase_vcf,record_block_haps)  
     return update_seqlist
 
+def get_mask_region():
+    mask_dict = {}
+    with open("%s/mask_dict.pkl"%(outdir), 'rb') as f:
+        mask_dict = pickle.load(f) # gene: [mask_intervals]
+    return mask_dict
+
+def get_mask_reference():   
+    mask_dict = get_mask_region()
+    gene_mask_intervals = mask_dict[gene]
+    # return the sequence saved in fasta file
+    flag = False
+    seq=''
+    for line in open(hla_ref, 'r'):
+        line=line.strip()
+        if line[0] == '>':
+            if line[1:] == gene:
+                flag = True
+            else:
+                flag = False
+            continue
+        if flag:    
+            seq+=line
+    for mask in gene_mask_intervals:
+        start = mask[0]
+        end = mask[1]
+        mask_len = end - start
+        seq = seq[:start] + "N"*mask_len + seq[end:]
+    f = open(mask_hla_ref, "w")
+    print (">%s\n"%(gene)+seq, file = f)
+    f.close()
+    
+
+
+def skip_mask_region(mask_dict, gene, start, end): 
+    # not using
+    gene_mask_intervals = mask_dict[gene]
+    for mask in gene_mask_intervals:
+        if start > mask[0] and start < mask[1]:
+            start = mask[1]
+        if end > mask[0] and end < mask[1]:
+            end = mask[0]  
+    return start, end    
+
 def vcf2fasta(rephase_vcf):
     exon_bed = "%s/whole/exon_extent.bed"%(sys.path[0])
     exon_intervals = []
@@ -1502,13 +1543,13 @@ def vcf2fasta(rephase_vcf):
         start, end = interval[0], interval[1]
         for i in range(1, 3):
             if j == 0:
-                fastq2 = '%s/../bin/samtools faidx %s %s:%s-%s | %s/../bin/bcftools consensus -H %s %s\
-                    >%s/hla.allele.%s.%s.fasta'%(sys.path[0], hla_ref, gene, start, end, sys.path[0], i, \
+                fastq2 = '%s/../bin/samtools faidx %s %s:%s-%s | %s/../bin/bcftools consensus -H %s --mask %s %s\
+                    >%s/hla.allele.%s.%s.fasta'%(sys.path[0], hla_ref, gene, start, end, sys.path[0], i, mask_bed,\
                     rephase_vcf, outdir, i, gene)
             else:
-                fastq2 = '%s/../bin/samtools faidx %s %s:%s-%s | %s/../bin/bcftools consensus -H %s %s\
-                    >>%s/hla.allele.%s.%s.fasta'%(sys.path[0], hla_ref, gene, start, end, sys.path[0], i, \
-                    rephase_vcf, outdir, i, gene)                
+                fastq2 = '%s/../bin/samtools faidx %s %s:%s-%s | %s/../bin/bcftools consensus -H %s --mask %s %s\
+                    >>%s/hla.allele.%s.%s.fasta'%(sys.path[0], hla_ref, gene, start, end, sys.path[0], i, mask_bed, \
+                    rephase_vcf, outdir, i, gene)              
             os.system(fastq2)
         j += 1
 
@@ -1520,6 +1561,7 @@ if __name__ == "__main__":
         snp_qual,gene,fq1,fq2,vcffile,long_indel_file = args.snp_qual,args.gene,args.fq1,args.fq2,args.vcf,args.sv
         strainsNum = 2 # two hap for each sample
         hla_ref = '%s/../db/ref/hla.ref.extend.fa'%(sys.path[0])
+        mask_bed = "%s/low_depth.bed"%(outdir)
         gene_vcf = "%s/%s.vcf.gz"%(outdir, gene) # gene-specific variants 
         raw_spec_vcf = '%s/%s.specHap.phased.vcf'%(outdir,gene)
         spec_vcf = outdir + '/%s.spechap.vcf.gz'%(gene)

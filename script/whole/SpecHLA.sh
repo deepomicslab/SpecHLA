@@ -112,7 +112,7 @@ mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
 echo use ${num_threads:-5} threads.
 
-# :<<!
+:<<!
 # ################ remove the repeat read name #################
 python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
@@ -187,10 +187,15 @@ fi
 
 !
 
-# ###################### call long indel #############################################
+
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
+# ###################### mask low-depth region #############################################
+$bin/samtools depth -a $bam>$bam.depth
+python3 $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d 5
 
+
+# ###################### call long indel #############################################
 if [ ${long_indel:-False} == True ] && [ $focus_exon_flag != 1 ]; #don't call long indel for exon typing
   then
   port=$(date +%N|cut -c5-9)
