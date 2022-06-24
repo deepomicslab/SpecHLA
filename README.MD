@@ -225,11 +225,11 @@ Should you have any queries, please feel free to contact us, we will reply as so
 
 ## Testing functions
 ### TGS only alignment-based typing
-If you only have PacBio or Nanopore reads, you can perform haplotyping with
+If you only have PacBio or Nanopore reads, you can perform HLA typing with
 ```
-sh SpecHLA_single.sh -n <sample> -t <sample.pacbio.fq.gz> -p <Asian>
+python long_read_typing.py -h
 ```
-Please install Longshot 0.4.1 and add it to the system path to call small variants with TGS data. Please use "sh SpecHLA_single.sh -h" to see detailed usage information.
+Please install Longshot 0.4.1 and add it to the system path to call small variants with TGS data. 
 
 ### TGS only assembly-based typing 
 To assemble the TGS reads, and perform HLA typing based on the contigs, please use `/assembly/MHC.TGS.mapping.sh`. 
