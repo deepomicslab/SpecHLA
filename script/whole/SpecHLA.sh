@@ -23,7 +23,7 @@
 ###   -c        fwd hi-c fastq file.
 ###   -d        rev hi-c fastq file.
 ###   -w        The weight of using phase information of allele imbalance [0-1], default is 0.
-###   -p        The population of the sample [ Asian, Black, Caucasian, nonuse]. Use mean frequency
+###   -p        The population of the sample [Asian, Black, Caucasian, nonuse]. Use mean frequency
 ###             if not provided. nonuse indicates only adopting mapping score to annotate the allele. 
 ###   -j        Number of threads [5]
 ###   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
@@ -112,7 +112,7 @@ mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
 echo use ${num_threads:-5} threads.
 
-:<<!
+# :<<!
 # ################ remove the repeat read name #################
 python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
