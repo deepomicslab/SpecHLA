@@ -1337,45 +1337,43 @@ def run_SpecHap():
 
     # 10x genomics
     if args.tenx != 'NA':
-        tgs = """
+        command = """
             fq=%s
             ref=%s
             outdir=%s
             bin=%s/../bin
             sample=%s
             gene=%s
-            echo $gene
-            rm -rf ./77
+            
             if [ $gene == "HLA_A" ];
             then
-                longranger wgs --id=77 --fastqs=$fq --reference=%s/../db/ref/refdata-hla.ref.extend\
-                        --sample=$sample --sex m --localcores=8 --localmem=32 --vcmode freebayes
+                # rm -rf ./77
+                longranger align --id=77 --fastqs=$fq --reference=%s/../db/ref/refdata-hla.ref.extend\
+                    --sample=$sample --localcores=8 --localmem=32 
             fi
 
-            bam=./77/outs/phased_possorted_bam.bam
-            $bin/extractHAIRS --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam --VCF %s --out $outdir/fragment.tenx.file
+            bam=./77/outs/possorted_bam.bam
+            $bin/extractHAIRS --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam\
+                 --VCF %s --out $outdir/fragment.tenx.file
             $bin/BarcodeExtract $bam $outdir/barcode_spanning.bed
             bgzip -f -c $outdir/barcode_spanning.bed > $outdir/barcode_spanning.bed.gz
             tabix -f -p bed $outdir/barcode_spanning.bed.gz
         
         """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, sys.path[0], gene_vcf)
+        
+        os.system(command)
         print ('extract linkage info from 10 X data.')
-        print (tgs)
-        os.system(tgs)
-
-        os.system('cat %s/fragment.tenx.file > %s/fragment.all.file'%(outdir, outdir))
+        os.system('cat %s/fragment.tenx.file >> %s/fragment.all.file'%(outdir, outdir))
         order = '%s/../bin/SpecHap -T --frag_stat %s/barcode_spanning.bed.gz --new_format --window_size 15000 \
         --vcf %s --frag %s/fragment.sorted.file\
         --out %s/%s.specHap.phased.vcf'%(sys.path[0],outdir,gene_vcf, outdir, outdir,gene)
-        # print (order)
-    
+
+
     if new_formate:
         os.system('sort -n -k6 %s/fragment.all.file >%s/fragment.sorted.file'%(outdir, outdir))
     else:
         os.system('sort -n -k3 %s/fragment.all.file >%s/fragment.sorted.file'%(outdir, outdir))
 
-    # phase small variants with spechap and find the unphased points
-    # os.system('tabix -f %s'%(gene_vcf))
     os.system(order)
     
 def all_poss_block_link():

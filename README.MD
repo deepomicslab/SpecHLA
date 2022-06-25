@@ -42,7 +42,7 @@ Then we can perform HLA typing by
 cd SpecHLA/script/whole/
 bash SpecHLA.sh -h
 ```
-Perform HLA typing in whole genes with paired-end data. Also, PacBio, Nanopore, Hi-C, or 10X could be integrated. If can focus on exon region with the parameter `-u 1`, which is suitable for WES or RNA-seq.
+Perform HLA typing in entire genes or exons with paired-end data. Also, PacBio, Nanopore, Hi-C, or 10X could be integrated. We can focus on exon region with the parameter `-u 1`, which is suitable for WES or RNA-seq data.
 
 Adpot pedigree information to refine the typing results.
 ```

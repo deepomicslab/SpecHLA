@@ -112,7 +112,7 @@ mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
 echo use ${num_threads:-5} threads.
 
-# :<<!
+:<<!
 # ################ remove the repeat read name #################
 python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
@@ -231,7 +231,6 @@ else
 fi
 
 echo Minimum Minor Allele Frequency is $my_maf.
-# hlas=(DQB1)
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
