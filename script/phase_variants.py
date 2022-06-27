@@ -359,9 +359,9 @@ def link_reads(samfile,left,right,new_left,snp_index_dict,f):
                     left_geno = i
                     right_geno = j
                     if new_formate:
-                        print('2 %s 1 -1 -1 %s %s %s %s II 60'%(name, left_index, left_geno, right_index, right_geno), file=f)
+                        print('2 %s 1 -1 -1 %s %s %s %s ?? 60'%(name, left_index, left_geno, right_index, right_geno), file=f)
                     else:
-                        print('2 %s %s %s %s %s II 60'%(name, left_index, left_geno, right_index, right_geno), file=f)
+                        print('2 %s %s %s %s %s ?? 60'%(name, left_index, left_geno, right_index, right_geno), file=f)
             same_num=len(reads_name)
     return right_reads
 
@@ -1512,8 +1512,6 @@ def get_mask_reference():
     print (">%s\n"%(gene)+seq, file = f)
     f.close()
     
-
-
 def skip_mask_region(mask_dict, gene, start, end): 
     # not using
     gene_mask_intervals = mask_dict[gene]
