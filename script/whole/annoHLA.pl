@@ -75,6 +75,9 @@ while(<INL>){
                 foreach my $kk(@arrs){
                         my $hla = "$tag"."$kk";
                         next if($hla =~ /DQB1\*02:02/);
+                        next if($hla =~ /DQB1\*03/);
+                        next if($hla =~ /DQA1\*05/);
+                        next if($hla =~ /DQA1\*03/);
                         $hashg{$hla} = $value;
                 }
         }else{
@@ -96,6 +99,25 @@ while(<IN>){
         $hashc{$key} = $hla;
 }
 close IN;
+##average sequecing depth of exon regions
+#my %depths;
+#open IN, "$Bin/exon_extent.bed" or die "$!\t$db/exon_extent.bed\n";
+#while(<IN>){
+#     my ($gene,$s,$e) = (split);
+#     my $re = "$gene".":"."$s"."-"."$e";
+#     `$bin/samtools depth $dir/$sample.merge.bam -r $re >$workdir/depth.txt`;
+#     my ($sum,$c) = (0,0);
+#     open TE, "$workdir/depth.txt" or die "$!\n";
+#     while(<TE>){
+#         chomp;
+#         my $d = (split)[-1];
+#         $sum += $d;
+#         $c += 1;
+#     }
+#     my $depth = $sum / $c;
+#     if($depth >5){$depths{$gene} .= "$re\t";}
+#}
+#close IN;
 
 sub exon_blast{
     foreach my $class(@hlas){
@@ -103,7 +125,10 @@ sub exon_blast{
         my (%hashs, %idks);
         for(my $i=1;$i<=$k;$i++){
                 my $fa = "$dir/hla.allele.$i.$class.fasta";
-                `echo ">$class.$i" >$workdir/$class.$i.temp.fasta`;
+                #my $nregions =  $depths{$class};
+                #`$bin/samtools faidx $fa $nregions >$workdir/hla.allele.$i.$class.fasta`;
+                #$fa = "$workdir/hla.allele.$i.$class.fasta";               
+                 `echo ">$class.$i" >$workdir/$class.$i.temp.fasta`;
                 `less $fa |grep -v ">" >>$workdir/$class.$i.temp.fasta`;
                 my $seq = `less $fa|grep -v ">"`; chomp $seq; $seq=~s/\s+//g;
                 `$bin/blastn -query $workdir/$class.$i.temp.fasta -out $workdir/$class.$i.blast.out1 -db $ref -outfmt 6 -num_threads 4 -max_target_seqs 1000 `;
@@ -286,7 +311,7 @@ sub whole_blast{
                       $hash22{$hla} += $m + $d;
               }
               close IN2;
-              $score=50;
+              $score=90;
               my $ff=0;
               foreach my $key(sort keys %hash11){
                       next if(!exists $hash21{$key});
@@ -345,7 +370,8 @@ foreach my $hla(@hlas){
        for(my $i=1;$i<=$k;$i++){
              my $id = "$hla"."_"."$i";
              my @arrs = (split /\t/,$hash{$id});
-             my ($line1,$line2,$line3,%ggs);
+             my ($line1,$line2,$line3,%ggs,$pout);
+             my $pfre = 0;
              foreach my $oo(@arrs){
                  my ($allele,$score) = (split /;/,$oo)[0,1];
                  $score = sprintf "%.3f", $score;
@@ -355,19 +381,27 @@ foreach my $hla(@hlas){
                  $oo = "$kid".";"."$score";
                  if(exists $hashg{$allele}){$ggs{$hashg{$allele}} += 1}
                  else{$ggs{$kid} += 1}
-                 if(exists $hashpp{$kid}){$line3 .= "$oo;$hashpp{$kid}\t"}
+                 if(exists $hashpp{$kid}){$line3 .= "$oo;$hashpp{$kid}\t"; 
+                     if($pfre <= $hashp{$kid}){$pfre = $hashp{$kid};$pout = $allele;
+                     }
+                 }
                  else{$line3 .= "$oo;-;-;-\t";} 
              }
+             my @lines3 = (split /\t/,$line3); @lines3 = uniq(@lines3);
+             $line3 = join("\t",@lines3);
              my $max = 0; my $out="-";
-             foreach my $gg(sort {$ggs{$b} <=> $ggs{$a}} keys %ggs ){
+             if($pop eq "nonuse" || !$pout){
+               foreach my $gg(sort {$ggs{$b} <=> $ggs{$a}} keys %ggs ){
                   if($ggs{$gg} >= $max){
                        $max = $ggs{$gg};$line1 .= "$gg;";
                         if($out eq "-"){$out = $gg;}
                    }
+               }
+             }else{
+                   if(exists $hashg{$pout}){$pout = $hashg{$pout};}
+                   $out = $pout;   $line1 = $pout; 
              }
              $hout .= "\t$out";
-             my @lines3 = (split /\t/,$line3); @lines3 = uniq(@lines3);
-             $line3 = join("\t",@lines3);
              print OUT "$id\t$line1\t$line2\t$line3\n";
        }    
 }
