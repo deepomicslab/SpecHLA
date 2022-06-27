@@ -85,7 +85,7 @@ class Mask_low():
             # mask_region = self.get_low_region(depth_list)
             # self.mask_dict[gene] = mask_region
             for mask in mask_region:
-                print (gene, mask[0], mask[1], file = f)
+                print (gene, mask[0]-1, mask[1]-1, file = f)
         f.close()
         # print (self.mask_dict)
         # with open("%s/mask_dict.pkl"%(outdir), 'wb') as f:
@@ -107,7 +107,9 @@ if __name__ == "__main__":
     optional.add_argument("-h", "--help", action="help")
     args = vars(parser.parse_args()) 
 
-
+    if len(sys.argv)==1:
+        print ("Please use --help to see detail info")
+        sys.exit(0)
     # depth_file = "/mnt/d/HLAPro_backup/test_RNA/AMALA_20x/AMALA.realign.sort.depth"
     
     depth_file = args["c"]

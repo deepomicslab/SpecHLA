@@ -40,7 +40,7 @@ Note: `Novoalign` requires a license in `bin/`, if it is not detected, SpecHLA w
 Then we can perform HLA typing by
 ```
 cd SpecHLA/script/whole/
-bash SpecHLA.sh -h
+bash SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
 ```
 Perform HLA typing in entire genes or exons with paired-end data. Also, PacBio, Nanopore, Hi-C, or 10X could be integrated. We can focus on exon region with the parameter `-u 1`, which is suitable for WES or RNA-seq data.
 

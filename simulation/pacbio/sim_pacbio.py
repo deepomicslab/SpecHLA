@@ -78,8 +78,8 @@ class Sim_Pac():
             print (command)
             os.system(command)
 
-
-sim_pacbio = Sim_Pac()
-# sim_pacbio.get_benchmark()
-sim_pacbio.get_spechla()
+if __name__ == "__main__":  
+    sim_pacbio = Sim_Pac()
+    # sim_pacbio.get_benchmark()
+    sim_pacbio.get_spechla()
         

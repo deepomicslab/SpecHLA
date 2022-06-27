@@ -12,7 +12,8 @@ wangshuai  June 25, 2022
 import random
 import os
 
-gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
+# gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
+gene_list = ['A']
 
 def read_fasta(file):
     # return the sequence saved in fasta file
@@ -114,8 +115,8 @@ class Sim_Tenx():
             # self.get_sample_fastq(sample)
     
 
-
-sim = Sim_Tenx()
-sim.get_benchmark()
+if __name__ == "__main__":  
+    sim = Sim_Tenx()
+    sim.get_benchmark()
 
         
