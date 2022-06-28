@@ -78,6 +78,8 @@ while(<INL>){
                         next if($hla =~ /DQB1\*03/);
                         next if($hla =~ /DQA1\*05/);
                         next if($hla =~ /DQA1\*03/);
+                        next if($hla =~ /C\*07/);
+                        next if($hla =~ /DRB1\*14/);
                         $hashg{$hla} = $value;
                 }
         }else{
@@ -172,49 +174,49 @@ sub exon_blast{
                          if($scorel>=$mscorel){$mscorel = $scorel;$hh=$hla;$hash_max{$mscorel} .= "$hla;$ts\t"}
                  }
                  #exclude region HLA_B:670-730
-                 if(($hh =~ /^B/) && ($hash3{$hh} <99.26)){
-                         my $nseq1 = substr($seq,0,182);
-                         my $nseq2 = substr($seq,248,);
-                         my $nseq = "$nseq1"."$nseq2";
-                         open OTT, ">$workdir/B.tmp.fa";
-                         print OTT ">$hh\n$nseq\n";
-                         close OTT;
-                         `$bin/blastn -query $workdir/B.tmp.fa -out $workdir/B.blast.tmp -db $ref -outfmt 6 -num_threads 4 -max_target_seqs 500`;
-                         open BT, "$workdir/B.blast.tmp" or die "$!\n";
-                         my (%hashbt,%hashbf);
-                         while(<BT>){
-                                 chomp;
-                                 my ($b1,$b2) = (split)[1,11];
-                                 my $nhla = $hashc{$b1};
-                                 my @tt = (split /:/, $nhla);
-                                 my $kid = "$tt[0]".":"."$tt[1]";
-                                 my $fre=0;
-                                 if(exists $hashp{$kid}){$fre=$hashp{$kid}}
-                                 next if($fre<=0 && $pop ne "nonuse");
-                                 $hashbt{$b1} += $b2;
-                                 $hashbf{$b1} = $fre;
-                         }
-                         close BT;
-                         my ($shla,$btc) = ("",0);
-                         foreach my $b3(sort keys %hashbt){
-                                 my $ss = ($hashbt{$b3} /10 )* (2 ** ($hashbf{$b3}/7));
-                                 if($ss >= $btc){$btc=$ss;$shla=$b3}
-                         }
-                         $hh = $hashc{$shla};
-                         $hash_max{$mscorel} = "$hh;$mscorel";
-                 }
+                 #if(($hh =~ /^B/) && ($hash3{$hh} <99.26)){
+                 #        my $nseq1 = substr($seq,0,182);
+                 #        my $nseq2 = substr($seq,248,);
+                 #        my $nseq = "$nseq1"."$nseq2";
+                 #        open OTT, ">$workdir/B.tmp.fa";
+                 #        print OTT ">$hh\n$nseq\n";
+                 #        close OTT;
+                 #        `$bin/blastn -query $workdir/B.tmp.fa -out $workdir/B.blast.tmp -db $ref -outfmt 6 -num_threads 4 -max_target_seqs 500`;
+                 #        open BT, "$workdir/B.blast.tmp" or die "$!\n";
+                 #        my (%hashbt,%hashbf);
+                 #        while(<BT>){
+                 #                chomp;
+                 #                my ($b1,$b2) = (split)[1,11];
+                 #                my $nhla = $hashc{$b1};
+                 #                my @tt = (split /:/, $nhla);
+                 #                my $kid = "$tt[0]".":"."$tt[1]";
+                 #                my $fre=0;
+                 #                if(exists $hashp{$kid}){$fre=$hashp{$kid}}
+                 #                next if($fre<=0 && $pop ne "nonuse");
+                 #                $hashbt{$b1} += $b2;
+                 #                $hashbf{$b1} = $fre;
+                 #        }
+                 #       close BT;
+                 #        my ($shla,$btc) = ("",0);
+                 #        foreach my $b3(sort keys %hashbt){
+                 #                my $ss = ($hashbt{$b3} /10 )* (2 ** ($hashbf{$b3}/7));
+                 #                if($ss >= $btc){$btc=$ss;$shla=$b3}
+                 #        }
+                 #        $hh = $hashc{$shla};
+                 #        $hash_max{$mscorel} = "$hh;$mscorel";
+                 #}
                  #DRB1*14:01 and DRB1*14:54 differ in HLA_DRB1:9519
-                 if($hh =~ /DRB1\*14:01/){
-                          ` $bin/samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf`;
-                          open TE, "$workdir/snp.vcf" or die "$!\n";
-                          while(<TE>){
-                                 chomp;
-                                 next if(/^#/);
-                                 my $alt = (split)[4];
-                                 if($alt =~ /T/){} else{$hh = "DRB1*14:54";$hash_max{$mscorel} = "$hh;$mscorel"}      
-                          }
-                          close TE;            
-                }
+                 #if($hh =~ /DRB1\*14:01/){
+                 #         ` $bin/samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf`;
+                 #         open TE, "$workdir/snp.vcf" or die "$!\n";
+                 #         while(<TE>){
+                 #                chomp;
+                 #                next if(/^#/);
+                 #                my $alt = (split)[4];
+                 #                if($alt =~ /T/){print "$hh\n"} else{$hh = "DRB1*14:54";$hash_max{$mscorel} = "$hh;$mscorel"}      
+                 #         }
+                 #         close TE;            
+                #}
                 #if($hh =~ /DQB1\*02:01/){
                 #          ` $bin/samtools  mpileup -r HLA_DQB1:6352-6352 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf`;
                 #          open TE, "$workdir/snp.vcf" or die "$!\n";
@@ -238,7 +240,7 @@ sub exon_blast{
 sub whole_blast{
     foreach my $class(@hlas){
         my $ref="$db/whole/$class";
-        if($class eq "DRB1"){$ref="$db/whole/HLA_DRB1.exon";}
+        if($class =~ "DRB1"){$ref="$db/whole/HLA_DRB1.exon";}
         for(my $i=1;$i<=$k;$i++){
                my $fa="$fadir/hla.allele.$i.$class.fasta";
                #extract the diversity region for annotation
@@ -375,6 +377,19 @@ foreach my $hla(@hlas){
              foreach my $oo(@arrs){
                  my ($allele,$score) = (split /;/,$oo)[0,1];
                  $score = sprintf "%.3f", $score;
+                 #DRB1*14:01 and DRB1*14:54 differ in HLA_DRB1:9519
+                 if($allele =~ /DRB1\*14:01/){
+                          ` $bin/samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf`;
+                          open TE, "$workdir/snp.vcf" or die "$!\n";
+                          while(<TE>){
+                                 chomp;
+                                 next if(/^#/);
+                                 my $alt = (split)[4];
+                                 if($alt =~ /T/){print "$allele\n"} else{$allele = "DRB1*14:54";}
+                          }
+                          close TE;
+                }
+
                  my @tt = (split /:/, $allele);
                  my $kid = "$tt[0]".":"."$tt[1]";
                  $line2 .= "$allele;";
