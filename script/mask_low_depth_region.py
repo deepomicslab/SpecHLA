@@ -3,7 +3,16 @@ import numpy as np
 import pickle
 import sys
 import argparse
+from argparse import ArgumentTypeError
 
+
+def str2bool(v):
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise ArgumentTypeError('Please give right flag (True or False).')
 
 class Mask_low():
 
@@ -13,7 +22,7 @@ class Mask_low():
         self.window = args["w"]
         self.lowest_depth = args["d"]
         self.mask_dict = {}
-        self.focus_exon = args["f"]
+        self.focus_exon = str2bool(args["f"])
 
     def record_depth(self):
         f = open(self.depth_file)
@@ -103,7 +112,7 @@ if __name__ == "__main__":
     required.add_argument("-o", type=str, help="outdir", metavar="\b", default="./output")
     optional.add_argument("-w", type=int, help="Windows size while using sliding the ref", metavar="\b", default=20)
     optional.add_argument("-d", type=int, help="Minimum mean depth in a window.", metavar="\b", default=5)
-    optional.add_argument("-f", type=bool, help="Whether only mask exons.", metavar="\b", default=True)
+    optional.add_argument("-f", type=str, help="Whether only mask exons.", metavar="\b", default="True")
     optional.add_argument("-h", "--help", action="help")
     args = vars(parser.parse_args()) 
 

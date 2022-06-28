@@ -116,6 +116,7 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,\
     """
     snp_index = 1
     snp_index_dict = {}
+    record_read_quality ={}
     pysam.index(bamfile)
     samfile = pysam.AlignmentFile(bamfile, "rb")
     if not os.path.exists(outdir):
@@ -234,7 +235,7 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,\
             else:
                 snp=[record.chrom,record.pos,record.ref,record.alts[0],record.ref]
 
-            reads_list = reads_support(samfile, snp)
+            reads_list,record_read_quality = reads_support(samfile, snp, record_read_quality)
             allele_dp = [len(reads_list[0]), len(reads_list[1])]
             new_dp = sum(allele_dp)
             # print (record, allele_dp)
@@ -284,7 +285,7 @@ def freq_output(outdir, gene, fresh_alpha, hete_var_num):
     # print ("# Frequency inference is more reliable with more heterozygotes variants.",file=ra_file)
     ra_file.close()
         
-def reads_support(samfile,first):  
+def reads_support(samfile,first,record_read_quality):  
     """
     Input: Bam file, hete variant
     Output: the reads support each allele of the variant 
@@ -295,7 +296,7 @@ def reads_support(samfile,first):
         reads_list.append([])
     num=0
     for read in samfile.fetch(str(first[0]),int(first[1])-1,int(first[1])):
-        
+        record_read_quality[read.query_name] = read.mapping_quality
         if int(first[1])-1 in read.get_reference_positions(full_length=True) and read.mapping_quality >1:   
             
             reads_index=read.get_reference_positions(full_length=True).index(int(first[1])-1)
@@ -335,15 +336,15 @@ def reads_support(samfile,first):
                     reads_list[0].append(read.query_name)
                 elif allele_list == first[3]:
                     reads_list[1].append(read.query_name)
-    return reads_list
+    return reads_list, record_read_quality
 
-def link_reads(samfile,left,right,new_left,snp_index_dict,f):
+def link_reads(samfile,left,right,new_left,snp_index_dict,f,record_read_quality):
     """
     check the reads that support 1/2 indels
     print the reads in a formate same as ExtractHAIRs, which can be recognized by SpecHap
     """
     left_reads=new_left
-    right_reads=reads_support(samfile,right)
+    right_reads,record_read_quality=reads_support(samfile,right,record_read_quality)
     for i in range(2):
         for j in range(2):
             left_set=left_reads[i]
@@ -361,7 +362,7 @@ def link_reads(samfile,left,right,new_left,snp_index_dict,f):
                     if new_formate:
                         print('2 %s 1 -1 -1 %s %s %s %s ?? 60'%(name, left_index, left_geno, right_index, right_geno), file=f)
                     else:
-                        print('2 %s %s %s %s %s ?? 60'%(name, left_index, left_geno, right_index, right_geno), file=f)
+                        print('2 %s %s %s %s %s ?? %s'%(name, left_index, left_geno, right_index, right_geno,record_read_quality[name]), file=f)
             same_num=len(reads_name)
     return right_reads
 
@@ -374,12 +375,13 @@ def extract_linkage_for_indel(bamfile,snp_list,snp_index_dict,outdir):
     f = open(outdir + '/fragment.add.file', 'w')
     samfile = pysam.AlignmentFile(bamfile, "rb")
     new_left=''
+    record_read_quality = {}
     for i in range(len(snp_list)-1):  
         left=snp_list[i]
         right=snp_list[i+1]  
         if new_left=='':   
-            new_left=reads_support(samfile,left)
-        right_reads=link_reads(samfile,left,right,new_left,snp_index_dict,f)
+            new_left, record_read_quality=reads_support(samfile,left, record_read_quality)
+        right_reads=link_reads(samfile,left,right,new_left,snp_index_dict,f,record_read_quality)
         new_left=right_reads
     f.close()
 
