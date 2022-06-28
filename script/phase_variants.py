@@ -273,17 +273,6 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,\
     os.system('tabix -f %s'%(gene_vcf))
     print ("Num of small variant is %s in %s."%(len(snp_list), gene))
 
-
-    # command = """
-    # vcf=%s
-    # vcfallelicprimitives -kg $vcf >$vcf.norm.vcf
-    # # vcfbreakmulti $vcf >$vcf.norm.vcf
-    # bgzip -f $vcf.norm.vcf
-    # tabix -f $vcf.norm.vcf.gz
-    # """%(gene_vcf)
-    # os.system(command)
-    
-
     return snp_list, beta_set, snp_index_dict
 
 def freq_output(outdir, gene, fresh_alpha, hete_var_num):
@@ -371,13 +360,13 @@ def link_reads(samfile,left,right,new_left,snp_index_dict,f,record_read_quality)
                     right_index = snp_index_dict[int(right[1])]
                     left_geno = i
                     right_geno = j
-                    if left[2] != left[4]:
-                        left_geno += 1
-                    if right[2] != right[4]:
-                        right_geno += 1
+                    # if left[2] != left[4]: # to fit 1/2 
+                    #     left_geno += 1
+                    # if right[2] != right[4]:
+                    #     right_geno += 1
 
                     if new_formate:
-                        print('2 %s 1 -1 -1 %s %s %s %s ?? 60'%(name, left_index, left_geno, right_index, right_geno), file=f)
+                        print('2 %s 1 -1 -1 %s %s %s %s ?? %s'%(name, left_index, left_geno, right_index, right_geno,record_read_quality[name]), file=f)
                     else:
                         print('2 %s %s %s %s %s ?? %s'%(name, left_index, left_geno, right_index, right_geno,record_read_quality[name]), file=f)
             same_num=len(reads_name)
@@ -405,15 +394,16 @@ def extract_linkage_for_indel(bamfile,snp_list,snp_index_dict,outdir):
 class MNP_linkage():
 
     def __init__(self, bamfile,snp_list,snp_index_dict,outdir):
-        # f = open(outdir + '/fragment.add.file', 'w')
+        
         self.samfile = pysam.AlignmentFile(bamfile, "rb")   
         self.outdir = outdir
         self.snp_list = snp_list
         self.snp_index_dict = snp_index_dict
         self.read_quality_dict = {}
         self.locus_read_dict = {}
+        self.read_cover_geno = {}
     
-    def get_sup_reads(self, first):
+    def get_sup_reads(self, first, snp_index):
         """
         Input: Bam file, hete variant
         Output: the reads support each allele of the variant 
@@ -465,15 +455,49 @@ class MNP_linkage():
                         reads_list[0].append(read.query_name)
                     elif allele_list == first[3]:
                         reads_list[1].append(read.query_name)
-        return reads_list
+        for i in range(2):
+            geno = i
+            # if first[2] !=  first[4]:
+            #     geno += 1
+            for read_name in reads_list[i]:
+                if read_name not in self.read_cover_geno:
+                    self.read_cover_geno[read_name] = {}
+                self.read_cover_geno[read_name][snp_index] = geno
 
     def for_each_locus(self):
+        f = open(outdir + '/fragment.read.file', 'w')
         for snp in self.snp_list:
             pos = snp[1]
-            reads_list = self.get_sup_reads(snp)
-            self.locus_read_dict[pos] = reads_list
+            snp_index = self.snp_index_dict[pos]
+            self.get_sup_reads(snp, snp_index)
+        for read_name in self.read_cover_geno:
+            # print (self.read_cover_geno[read_name])
+            record = self.for_each_read(read_name)
+            print (record, file = f)
+        f.close()
 
-        
+    def for_each_read(self, read_name):
+        genotype = ''
+        previous_locus = -100
+        seg_num = 0
+        for locus in self.read_cover_geno[read_name]:
+            geno = self.read_cover_geno[read_name][locus]
+            if locus - previous_locus != 1:
+                genotype += ' ' + str(locus) + ' '
+                genotype += str(geno) 
+                seg_num += 1
+            else:
+                genotype += str(geno)     
+            previous_locus = locus 
+        support_loci_num = len(self.read_cover_geno[read_name])
+        signal = "?"*support_loci_num
+        if new_formate:
+            record = f"{str(seg_num)} {read_name} 1 -1 -1 {genotype} {signal} {self.read_quality_dict[read_name]}"
+        else:
+            record = f"{str(seg_num)} {read_name}{genotype} {signal} {self.read_quality_dict[read_name]}"
+        # print (genotype, seg_num)       
+        # print (record)   
+        return record
 
 def isin(x,seq):
     try:
@@ -1336,25 +1360,35 @@ def allele_imba(freqs):
                 same = max([ freqs[i][0] *  freqs[j][0], freqs[i][1] *  freqs[j][1] ])
                 reverse = max([ freqs[i][0] *  freqs[j][1], freqs[i][1] *  freqs[j][0] ])
                 linkage_name = "linkage:%s:%s"%(i, j)
-                print('2 %s:1 %s %s %s %s ?? %s'%(linkage_name, i+1, 0, j+1, 0, int(base_q*same)), file=f)
-                print('2 %s:2 %s %s %s %s ?? %s'%(linkage_name, i+1, 0, j+1, 1, int(base_q*reverse)), file=f)
+                if new_formate:
+                    print('2 %s:1 1 -1 -1 %s %s %s %s ?? %s'%(linkage_name, i+1, 0, j+1, 0, int(base_q*same)), file=f)
+                    print('2 %s:2 1 -1 -1 %s %s %s %s ?? %s'%(linkage_name, i+1, 0, j+1, 1, int(base_q*reverse)), file=f)
+                else:
+                    print('2 %s:1 %s %s %s %s ?? %s'%(linkage_name, i+1, 0, j+1, 0, int(base_q*same)), file=f)
+                    print('2 %s:2 %s %s %s %s ?? %s'%(linkage_name, i+1, 0, j+1, 1, int(base_q*reverse)), file=f)
                 z += 1
     f.close()
 
 def run_SpecHap():
     # get linkage info from NGS data
-    if new_formate:
-        order = '%s/../bin/ExtractHAIRs --new_format 1 --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s\
-            --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, gene_vcf, outdir)
-    else:
-        order = '%s/../bin/ExtractHAIRs --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s \
-        --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, gene_vcf, outdir)
-    os.system(order)
-    extract_linkage_for_indel(bamfile,snp_list,snp_index_dict,outdir) # linkage for indel
+    # if new_formate:
+    #     order = '%s/../bin/ExtractHAIRs --new_format 1 --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s\
+    #         --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, gene_vcf, outdir)
+    # else:
+    #     order = '%s/../bin/ExtractHAIRs --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s \
+    #     --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, gene_vcf, outdir)
+    # os.system(order)
+    # print (order)
+    # extract_linkage_for_indel(bamfile,snp_list,snp_index_dict,outdir) # linkage for indel
+    # os.system('cat %s/fragment.file %s/fragment.add.file >%s/fragment.read.file'%(outdir,\
+    #     outdir, outdir))
+
+    mmp = MNP_linkage(bamfile,snp_list,snp_index_dict,outdir)
+    mmp.for_each_locus() 
+
     allele_imba(beta_set) # linkage from allele imbalance
-    os.system('cat %s/fragment.file %s/fragment.add.file %s/fragment.imbalance.file>%s/fragment.all.file'%(outdir,\
-        outdir, outdir, outdir))
-    
+    os.system('cat %s/fragment.read.file %s/fragment.imbalance.file>%s/fragment.all.file'%(outdir, outdir, outdir))   
+
     # the order to phase with only ngs data.
     order='%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/fragment.sorted.file --out \
     %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)

@@ -311,7 +311,7 @@ sub whole_blast{
                       $hash22{$hla} += $m + $d;
               }
               close IN2;
-              $score=90;
+              $score=50;
               my $ff=0;
               foreach my $key(sort keys %hash11){
                       next if(!exists $hash21{$key});
