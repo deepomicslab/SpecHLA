@@ -192,7 +192,7 @@ bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
 # ###################### mask low-depth region #############################################
 $bin/samtools depth -a $bam>$bam.depth
-python3 $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d 5 -f False
+python3 $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d 5 -f True
 
 
 # ###################### call long indel #############################################
@@ -232,7 +232,7 @@ fi
 
 echo Minimum Minor Allele Frequency is $my_maf.
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
-# hlas=(DRB1)
+# hlas=(DQB1)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
 python3 $dir/../phase_variants.py \

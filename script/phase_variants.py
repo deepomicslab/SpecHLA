@@ -272,6 +272,18 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,\
     md_vcf.close()
     os.system('tabix -f %s'%(gene_vcf))
     print ("Num of small variant is %s in %s."%(len(snp_list), gene))
+
+
+    # command = """
+    # vcf=%s
+    # vcfallelicprimitives -kg $vcf >$vcf.norm.vcf
+    # # vcfbreakmulti $vcf >$vcf.norm.vcf
+    # bgzip -f $vcf.norm.vcf
+    # tabix -f $vcf.norm.vcf.gz
+    # """%(gene_vcf)
+    # os.system(command)
+    
+
     return snp_list, beta_set, snp_index_dict
 
 def freq_output(outdir, gene, fresh_alpha, hete_var_num):
@@ -352,13 +364,18 @@ def link_reads(samfile,left,right,new_left,snp_index_dict,f,record_read_quality)
             reads_name = set(left_set).intersection(set(right_set))
             for name in reads_name:
                 # if len(left[2]) > 1 or len(left[3]) > 1 or len(right[2]) > 1 or len(right[3]) > 1:
-                # check if these is one Indel wit 1/2 genotype.
+                # check if there is one Indel with 1/2 genotype.
                 if ((len(left[2]) > 1 or len(left[3]) > 1) and left[2] != left[4]) or\
                      ((len(right[2]) > 1 or len(right[3]) > 1) and right[2] != right[2]):
                     left_index = snp_index_dict[int(left[1])]
                     right_index = snp_index_dict[int(right[1])]
                     left_geno = i
                     right_geno = j
+                    if left[2] != left[4]:
+                        left_geno += 1
+                    if right[2] != right[4]:
+                        right_geno += 1
+
                     if new_formate:
                         print('2 %s 1 -1 -1 %s %s %s %s ?? 60'%(name, left_index, left_geno, right_index, right_geno), file=f)
                     else:
@@ -384,6 +401,79 @@ def extract_linkage_for_indel(bamfile,snp_list,snp_index_dict,outdir):
         right_reads=link_reads(samfile,left,right,new_left,snp_index_dict,f,record_read_quality)
         new_left=right_reads
     f.close()
+
+class MNP_linkage():
+
+    def __init__(self, bamfile,snp_list,snp_index_dict,outdir):
+        # f = open(outdir + '/fragment.add.file', 'w')
+        self.samfile = pysam.AlignmentFile(bamfile, "rb")   
+        self.outdir = outdir
+        self.snp_list = snp_list
+        self.snp_index_dict = snp_index_dict
+        self.read_quality_dict = {}
+        self.locus_read_dict = {}
+    
+    def get_sup_reads(self, first):
+        """
+        Input: Bam file, hete variant
+        Output: the reads support each allele of the variant 
+        """ 
+        reads_list=[]
+        allele_num=len(first[3])+1
+        for i in range(allele_num):
+            reads_list.append([])
+        num=0
+        for read in self.samfile.fetch(str(first[0]),int(first[1])-1,int(first[1])):
+            if read.query_name not in self.read_quality_dict:
+                self.read_quality_dict[read.query_name] = read.mapping_quality
+            if int(first[1])-1 in read.get_reference_positions(full_length=True) and read.mapping_quality >1:   
+                
+                reads_index=read.get_reference_positions(full_length=True).index(int(first[1])-1)
+                if first[2][0] != first[3][0]:
+                    #if the first allele is not same for indel alleles, we can just focus on the first locus 
+                    if read.query_sequence[reads_index] == first[2][0]:
+                        reads_list[0].append(read.query_name)
+                    elif read.query_sequence[reads_index] == first[3][0]:
+                        reads_list[1].append(read.query_name)
+                else:  
+                    index_list=[]
+                    true_ref=first[4]
+                    for i in range(len(true_ref)):
+                    #for i in range(len(first[3])):
+                        position=first[1]+i
+                        point_flag=isin(position-1,read.get_reference_positions(full_length=True))
+                        if point_flag:
+                            position_index=read.get_reference_positions(full_length=True).index(position-1)
+                            index_list.append(position_index)
+                    allele_list=read.query_sequence[index_list[0]:index_list[-1]+1].upper()
+                    ##########for the case that ref is short than alt.#########
+                    if index_list[-1]+1 < len(read.get_reference_positions(full_length=True)) and len(true_ref) < len(first[2])\
+                        and len(true_ref) < len(first[3]) and read.get_reference_positions(full_length=True)[index_list[-1]+1] == None:
+                        j = 0
+                        # print ('#####', first, allele_list)
+                        while index_list[-1]+1+j <  len(read.get_reference_positions(full_length=True)):
+                            tag = read.get_reference_positions(full_length=True)[index_list[-1]+1+j]
+                            # print (first, tag, type(tag))
+                            if read.get_reference_positions(full_length=True)[index_list[-1]+1+j] == None:
+                                allele_list+=read.query_sequence[index_list[-1]+1+j]
+                            else:
+                                break
+                            j += 1   
+                        # print (first, allele_list)
+                    ##########for the case that ref is short than alt.#########             
+                    if allele_list == first[2]:
+                        reads_list[0].append(read.query_name)
+                    elif allele_list == first[3]:
+                        reads_list[1].append(read.query_name)
+        return reads_list
+
+    def for_each_locus(self):
+        for snp in self.snp_list:
+            pos = snp[1]
+            reads_list = self.get_sup_reads(snp)
+            self.locus_read_dict[pos] = reads_list
+
+        
 
 def isin(x,seq):
     try:
@@ -1140,6 +1230,10 @@ def get_unphased_loci(outdir, gene, invcf, snp_list, spec_vcf):
     for record in m.fetch():
         if record.chrom != gene:
             continue
+        if record.samples[sample]['GT'] == (1,1) or record.samples[sample]['GT'] == (0,0) or record.samples[sample]['GT'] == (2,2):
+            record.samples[sample].phased = True
+            out.write(record)
+            continue
 
         if record.samples[sample].phased != True:
             record.samples[sample]['PS'] = add_block
@@ -1248,7 +1342,6 @@ def allele_imba(freqs):
     f.close()
 
 def run_SpecHap():
-         
     # get linkage info from NGS data
     if new_formate:
         order = '%s/../bin/ExtractHAIRs --new_format 1 --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s\
@@ -1576,7 +1669,8 @@ if __name__ == "__main__":
         deletion_region, ins_seq = get_deletion_region(long_indel_file, gene)       
         # read small variants
         snp_list,beta_set,snp_index_dict = read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,\
-            freq_bias,strainsNum,deletion_region,snp_qual,gene_vcf)   
+            freq_bias,strainsNum,deletion_region,snp_qual,gene_vcf)  
+
         
         if len(snp_list)==0:
             print ('No heterozygous locus, no need to phase.')
