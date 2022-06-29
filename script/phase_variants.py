@@ -1010,7 +1010,8 @@ def get_insertion_linkage(ins_seq):
         ins_seq = segment_mapping_pre(fq1, fq2, ins_seq, outdir, gene, hla_ref)
         segment_mapping(fq1, fq2, ins_seq, outdir, gene, hla_ref)
     else:
-        os.system('cp %s/%s.bam %s/newref_insertion.bam'%(outdir, gene.split('_')[-1], outdir))
+        # os.system('cp %s/%s.bam %s/newref_insertion.bam'%(outdir, gene.split('_')[-1], outdir))
+        os.system('cp %s %s/newref_insertion.bam'%(bamfile, outdir))
         os.system('%s/../bin/samtools index %s/newref_insertion.bam'%(sys.path[0], outdir))
         os.system('zcat %s > %s/newref_insertion.freebayes.vcf'%(gene_vcf, outdir))
     return ins_seq
