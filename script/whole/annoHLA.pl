@@ -134,10 +134,11 @@ sub exon_blast{
                  `echo ">$class.$i" >$workdir/$class.$i.temp.fasta`;
                 `less $fa |grep -v ">" >>$workdir/$class.$i.temp.fasta`;
                 my $seq = `less $fa|grep -v ">"`; chomp $seq; $seq=~s/\s+//g;
-                `$bin/blastn -query $workdir/$class.$i.temp.fasta -out $workdir/$class.$i.blast.out1 -db $ref -outfmt 6 -num_threads 4 -max_target_seqs 1000 `;
-                ## Read blast result
+                system("$bin/blastn -query $workdir/$class.$i.temp.fasta -out $workdir/$class.$i.blast.out1 -db $ref -outfmt 6 -num_threads 4 -max_target_seqs 1000") ;  
+              ## Read blast result
                 open BIN, "$workdir/$class.$i.blast.out1" or die "$!\n";
                 my (%hash1, %hash2,%hash3, %hashas, %hashhk, %hash4);
+                my $blastcount =0;
                 while(<BIN>){
                      chomp;
                      my ($id, $hla, $t, $m, $i, $si) = (split)[0,1,3,4,5,11];
@@ -146,7 +147,10 @@ sub exon_blast{
                      $hash1{$nhla} += $m + $i;
                      $hash2{$nhla} += $t - $i;
                      $hash4{$nhla} += $si;
+                     $blastcount += 0;
                  }
+                 close BIN;
+                 next if($blastcount == 0);
                  my $tag = "$class"."_"."$i";
                  my %hash_max;
                  my ($hh,$mscorel) = ("",0);
@@ -287,12 +291,13 @@ sub whole_blast{
                        $fa = "$fadir/$class.temp.fasta";
                }
                my $tag = "$class"."_"."$i";
-               `$bin/makeblastdb -in $fa -dbtype nucl -parse_seqids -out $fa`;
-               `$bin/blastn -query $fa -out $workdir/$tag.blast.out1 -db $ref -outfmt 7 -num_threads 4 -max_target_seqs 1000 `;
-               `$bin/blastn -query $ref.fasta -out $workdir/$tag.blast.out2 -db $fa -outfmt 7 -num_threads 4 -max_target_seqs 1000 `;
+               #system("$bin/makeblastdb -in $fa -dbtype nucl -parse_seqids -out $fa");
+               system("$bin/blastn -query $fa -out $workdir/$tag.blast.out1 -db $ref -outfmt 7 -num_threads 4 -max_target_seqs 1000 ");
+               #system("$bin/blastn -query $ref.fasta -out $workdir/$tag.blast.out2 -db $fa -outfmt 7 -num_threads 4 -max_target_seqs 1000 ");
                my (%hash_max,%hash11,%hash12, %hash21, %hash22,$gene,$score);
                ## read blast score
                open IN1, "$workdir/$tag.blast.out1" or die "$!\n";
+               my $blastcount = 0;
                while(<IN1>){
                        chomp;
                        next if(/^#/);
@@ -303,19 +308,21 @@ sub whole_blast{
                      #  next if($t <250);
                        $hash11{$hla} += $t;
                        $hash12{$hla} += $m + $d;
+                       $blastcount += 1;
               }
               close IN1;
-              open IN2, "$workdir/$tag.blast.out2" or die "$!\n";
-              while(<IN2>){
-                      chomp;
-                      next if(/^#/);
-                      my ($hla, $t, $m,$d) = (split)[0,3,4,5];
-                      #next if($hla =~ /[N|Q]$/);
-                      #next if($t <250);
-                      $hash21{$hla} += $t;
-                      $hash22{$hla} += $m + $d;
-              }
-              close IN2;
+              next if($blastcount == 0); ###no blast result
+              #open IN2, "$workdir/$tag.blast.out2" or die "$!\n";
+              #while(<IN2>){
+              #        chomp;
+              #        next if(/^#/);
+              #        my ($hla, $t, $m,$d) = (split)[0,3,4,5];
+              #        #next if($hla =~ /[N|Q]$/);
+              #        #next if($t <250);
+              #        $hash21{$hla} += $t;
+              #        $hash22{$hla} += $m + $d;
+              #}
+              #close IN2;
               $score=50;
               my $ff=0;
               foreach my $key(sort keys %hash11){
@@ -374,15 +381,17 @@ my $hout = $sample;
 foreach my $hla(@hlas){
        for(my $i=1;$i<=$k;$i++){
              my $id = "$hla"."_"."$i";
+             my ($line1,$line2,$line3,$pout,$out) = ("-","-","-","-","-");
+             my %ggs;
+             next if(!exists $hash{$id});
              my @arrs = (split /\t/,$hash{$id});
-             my ($line1,$line2,$line3,%ggs,$pout);
-             my $pfre = 0;
+             my ($max,$pfre) = (0,0);
              foreach my $oo(@arrs){
                  my ($allele,$score) = (split /;/,$oo)[0,1];
                  $score = sprintf "%.3f", $score;
                  #DRB1*14:01 and DRB1*14:54 differ in HLA_DRB1:9519
                  if($allele =~ /DRB1\*14:01/){
-                          ` $bin/samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf`;
+                          system("$bin/samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf");
                           open TE, "$workdir/snp.vcf" or die "$!\n";
                           while(<TE>){
                                  chomp;
@@ -407,7 +416,6 @@ foreach my $hla(@hlas){
              }
              my @lines3 = (split /\t/,$line3); @lines3 = uniq(@lines3);
              $line3 = join("\t",@lines3);
-             my $max = 0; my $out="-";
 #             print "$pop\t$pout\tline3\t$line3\n";
              if($pop eq "nonuse" || !$pout){
                foreach my $gg(sort {$ggs{$b} <=> $ggs{$a}} keys %ggs ){
