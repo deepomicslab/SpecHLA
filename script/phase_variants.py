@@ -202,7 +202,7 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,\
             else:
                 snp=[record.chrom,record.pos,record.ref,record.alts[0],record.ref]
 
-            reads_list = reads_support(samfile, snp)
+            reads_list = reads_support(samfile, snp,record_read_quality)
             allele_dp = [len(reads_list[0]), len(reads_list[1])]
             new_dp=sum(allele_dp)
             if new_dp == 0:
@@ -1299,6 +1299,7 @@ def get_unphased_loci(outdir, gene, invcf, snp_list, spec_vcf):
     out.close()
     bp.close()
     os.system('tabix -f %s'%(spec_vcf))
+    print ("%s blocks after phasing."%(len(block_boundaries)+1))
     return block_boundaries
 
 def phase_insertion(gene, outdir, hla_ref, shdir):

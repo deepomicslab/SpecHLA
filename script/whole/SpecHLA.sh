@@ -35,6 +35,7 @@
 ###   -a        Use this long InDel file if provided.
 ###   -r        The minimum Minor Allele Frequency (MAF), default is 0.05 for whole gene and
 ###             0.1 for exon typing.
+###   -g        Whether use G-translate in annotation [1|0], default is 0.
 ###   -h        Show this message.
 
 help() {
@@ -46,7 +47,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
     exit 1
 fi
 
-while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:" opt; do
+while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:" opt; do
   case $opt in
     n) sample="$OPTARG"
     ;;
@@ -86,6 +87,8 @@ while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:" opt; do
     ;;
     s) snp_dp="$OPTARG"
     ;;
+    g) trans="$OPTARG"
+    ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
   esac
@@ -112,7 +115,7 @@ mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
 echo use ${num_threads:-5} threads.
 
-# :<<!
+:<<!
 # ################ remove the repeat read name #################
 python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
@@ -264,9 +267,9 @@ done
 echo start annotation...
 # perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop
 if [ $focus_exon_flag == 1 ];then #exon
-    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -r exon
+    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -g ${trans:-0} -r exon 
 else
-    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -r whole
+    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -g ${trans:-0} -r whole 
 fi
 # #############################################################################
 

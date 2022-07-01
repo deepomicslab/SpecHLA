@@ -2,13 +2,14 @@
 use FindBin qw($Bin);
 use Getopt::Long;
 
-my ($sample, $dir, $pop, $wxs, $help);
-
+my ($sample, $dir, $pop, $wxs, $g_nom, $help);
+$g_nom=0;
 GetOptions(
            "s=s"     =>      \$sample,
            "i=s"     =>      \$dir,
            "p=s"     =>      \$pop,
            "r=s"     =>      \$wxs,
+           "g=s"     =>      \$g_nom,
            "h"       =>      \$help
 );
 my $usage = <<USE;
@@ -20,13 +21,13 @@ usage: perl $0 [options]
         -i       <tr>    the directory of phased sequence
         -p       <tr>    population information "Asian|Black|Caucasian|Unknown|nonuse"
         -r       <tr>    focus region "exon|whole" ("exon" is suitable for WES or RNAseq; "whole" is suitable for WGS )
+        -g       <tr>     G-translate 1|0"
         -help|?           print help information
 e.g.:
-        perl $0 -s samplename -i indir -p Unknown -r exon
+        perl $0 -s samplename -i indir -p Unknown -r exon -g 1
 USE
-die $usage unless ($sample && $dir && $pop && $wxs) ;
-
-print "parameter:\tsample:$sample\tdir:$dir\tpop:$pop\twxs:$wxs\n";
+die $usage unless ($sample && $dir && $pop && $wxs );
+print "parameter:\tsample:$sample\tdir:$dir\tpop:$pop\twxs:$wxs\tG_nom:$g_nom\n";
 
 my $k = 2;
 my (%hashp, %hashpp, %hashg, %hashc, %hash,%hashdd);
@@ -56,7 +57,7 @@ close FIN;
 
 my ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000);
 if($wxs eq "whole"){
-     ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (500,10000,10000,10000,10000,10000,10000,70);
+     #($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (500,10000,10000,10000,10000,10000,10000,70);
 }
 elsif($wxs eq "exon"){
      ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (20,8,200,100,100,100,100,50);
@@ -69,7 +70,7 @@ while(<INL>){
         chomp;
         next if(/^#/);
         my ($tag, $line, $hh) = (split /;/, $_)[0,1,2];
-        if($hh){
+        if($hh && $g_nom){
                 my $value = "$tag"."$hh";
                 my @arrs = (split /\//,$line);
                 foreach my $kk(@arrs){
@@ -296,8 +297,10 @@ sub whole_blast{
                        chomp;
                        next if(/^#/);
                        my ($hla, $t, $m,$d) = (split)[1,3,4,5];
-                       #next if($hla =~ /[N|Q]$/);
-                       next if($t <250);
+                       next if($hla eq "B*40:37" || $hla eq "B*51:23");  
+                       if($hla eq "B*41:07"){$t = $t - 20}
+                      #next if($hla =~ /[N|Q]$/);
+                     #  next if($t <250);
                        $hash11{$hla} += $t;
                        $hash12{$hla} += $m + $d;
               }
@@ -308,7 +311,7 @@ sub whole_blast{
                       next if(/^#/);
                       my ($hla, $t, $m,$d) = (split)[0,3,4,5];
                       #next if($hla =~ /[N|Q]$/);
-                      next if($t <250);
+                      #next if($t <250);
                       $hash21{$hla} += $t;
                       $hash22{$hla} += $m + $d;
               }
@@ -316,17 +319,17 @@ sub whole_blast{
               $score=50;
               my $ff=0;
               foreach my $key(sort keys %hash11){
-                      next if(!exists $hash21{$key});
+                      #next if(!exists $hash21{$key});
                       my @tt = (split /:/, $key);
                       my $kid = "$tt[0]".":"."$tt[1]";
                       my $fre=0;
                       if(exists $hashp{$kid}){$fre=$hashp{$kid}} ## population frequency of 4 digit hla allele
                       my $s1 = 100 * (1 - $hash12{$key}/$hash11{$key}); #blast score
-                      my $s2 = 100 * (1 - $hash22{$key}/$hash21{$key});
+                      #my $s2 = 100 * (1 - $hash22{$key}/$hash21{$key});
                       my $s  = $s1;
                       #my $s = ($s1 + $s2)/2;
-                      next if($hash11{$key} < 250);
-                      next if($hash21{$key} < 250);
+                      #next if($hash11{$key} < 250);
+                      #next if($hash21{$key} < 250);
                       my ($ts,$tf) = ($s,$fre);
                       my $ttf = $tf;
                       next if(($tf == 0) && ($ts < 95));
@@ -405,6 +408,7 @@ foreach my $hla(@hlas){
              my @lines3 = (split /\t/,$line3); @lines3 = uniq(@lines3);
              $line3 = join("\t",@lines3);
              my $max = 0; my $out="-";
+#             print "$pop\t$pout\tline3\t$line3\n";
              if($pop eq "nonuse" || !$pout){
                foreach my $gg(sort {$ggs{$b} <=> $ggs{$a}} keys %ggs ){
                   if($ggs{$gg} >= $max){
