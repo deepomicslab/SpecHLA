@@ -17,16 +17,18 @@ import pandas as pd
 from Bio import SeqIO
 
 gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
+# gene_list = ['DQB1']
 
 class Align(object):
 
-    def __init__(self, mapped_len,infer_hap_len,truth_hap_len,mismatch_num,gap_open_num):
-        self.mapped_len, self.infer_hap_len, self.truth_hap_len, self.mismatch_num, self.gap_open_num\
-            =mapped_len,infer_hap_len,truth_hap_len,mismatch_num,gap_open_num
+    def __init__(self, mapped_len,infer_hap_len,truth_hap_len,mismatch_num,gap_open_num,true_mapped_len):
+        self.mapped_len, self.infer_hap_len, self.truth_hap_len, self.mismatch_num, self.gap_open_num,\
+            self.true_mapped_len=mapped_len,infer_hap_len,truth_hap_len,mismatch_num,gap_open_num,true_mapped_len
 
         self.short_gap_error = self.gap_open_num/self.mapped_len
         self.base_error = self.mismatch_num/self.mapped_len
-        self.gap_recall = self.mapped_len/self.truth_hap_len
+        self.gap_recall = self.true_mapped_len/self.truth_hap_len
+        # self.gap_recall = self.mapped_len/self.truth_hap_len
         self.gap_precision = self.mapped_len/self.infer_hap_len
           
 
@@ -38,15 +40,18 @@ class Seq_error():
         self.blast_file = f"{self.infer_hap_file}.blast"
         self.infer_hap_len = None
         self.truth_hap_len = None
-        self.mapped_interval = []
+        self.mapped_interval = [] # for inferred hap
+        self.true_mapped_interval = [] # for true hap
         self.mapped_len = 0
+        self.true_mapped_len = 0
         self.mismatch_num = 0
         self.gap_open_num = 0
 
     def blast_map(self):
         command = f"""
         blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} \
-            -outfmt 7        
+            -outfmt 7 
+        # cat  {self.blast_file}
         """
         # print (command)
         os.system(command)
@@ -71,20 +76,24 @@ class Seq_error():
             mismatches = int(array[4])
             gap_opens = int(array[5])
             # print (map_s, map_e)
-            self.get_uniq_map(map_s, map_e, mismatches, gap_opens)
+            self.mapped_interval = self.get_uniq_map(map_s, map_e, 0, 0, self.mapped_interval)
+            true_map_s = int(array[8])
+            true_map_e = int(array[9])
+            self.true_mapped_interval = self.get_uniq_map(true_map_s, true_map_e, mismatches, gap_opens, self.true_mapped_interval)
             i += 1
             # if i > 5:
             #     break
-        print (self.mapped_interval)
+        # print (self.mapped_interval)
+        # print (self.true_mapped_interval)
 
-    def get_uniq_map(self, map_s, map_e, mismatches, gap_opens):
+    def get_uniq_map(self, map_s, map_e, mismatches, gap_opens, mapped_interval):
         if map_e < map_s:
             a = map_e
             map_e = map_s
             map_s = a
         flag = True
         origin_map_len = map_e - map_s + 1
-        for interval in self.mapped_interval:
+        for interval in mapped_interval:
             if map_s >= interval[0] and map_s <= interval[1]:
                 if map_e > interval[1]:
                     map_s = interval[1] + 1
@@ -99,15 +108,18 @@ class Seq_error():
             gap_opens = gap_opens * (uniq_map_len/origin_map_len)
             self.mismatch_num += mismatches
             self.gap_open_num += gap_opens
-            self.mapped_interval.append([map_s, map_e])
+            mapped_interval.append([map_s, map_e])
+        return mapped_interval
 
     def get_gap_per(self):
         for interval in self.mapped_interval:
             self.mapped_len = self.mapped_len + (interval[1] - interval[0] + 1)
+        for interval in self.true_mapped_interval:
+            self.true_mapped_len = self.true_mapped_len + (interval[1] - interval[0] + 1)
         # print (self.mapped_len, self.infer_hap_len, self.truth_hap_len)
         # print (self.mismatch_num, self.gap_open_num)
         align = Align(self.mapped_len, self.infer_hap_len, self.truth_hap_len, \
-            self.mismatch_num, self.gap_open_num)
+            self.mismatch_num, self.gap_open_num,self.true_mapped_len)
         return align
 
     def main(self):
@@ -115,6 +127,7 @@ class Seq_error():
         self.blast_map()
         self.read_blast()
         align = self.get_gap_per()
+        # print (self.mapped_interval, self.infer_hap_len, self.truth_hap_len, self.mapped_len, align.base_error)
         return align
 
 def eva_HG002():
@@ -158,6 +171,7 @@ def eva_simu(database, record_true_file, outdir):
         array = line.strip().split()
         if array[1] in gene_list:
             true_allele[array[1]] = [array[3], array[4]]
+    f.close()
     
     data = []
     for gene in gene_list:
@@ -191,7 +205,7 @@ def eva_simu(database, record_true_file, outdir):
         gap_recall = (choose_align1.gap_recall + choose_align2.gap_recall)/2
         gap_precision = (choose_align1.gap_precision + choose_align2.gap_precision)/2
         data.append([base_error, short_gap_error, gap_recall, gap_precision, gene])
-        print (base_error, short_gap_error, gap_recall, gap_precision)
+        print (gene, base_error, short_gap_error, gap_recall, gap_precision)
         # break
     df = pd.DataFrame(data, columns = ["base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
     df.to_csv('%s/haplotype_assessment.csv'%(outdir), sep=',')
