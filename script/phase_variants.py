@@ -956,8 +956,10 @@ def segment_mapping_pre(fq1, fq2, ins_seq, outdir, gene, gene_ref):
         $bindir/bwa index %s
         group='@RG\\tID:sample\\tSM:sample'  #only -B 1
         $bindir/bwa mem -B 1 -O 1,1 -L 1,1 -U 1 -R $group -Y %s %s %s | $bindir/samtools view -q 1 -F 4 -Sb | $bindir/samtools sort > $outdir/$sample.sort.bam
-        $bindir/samtools index $outdir/$sample.sort.bam 
-        $bindir/freebayes -f %s -p 2 $outdir/$sample.sort.bam > $outdir/$sample.freebayes.1.vcf 
+        java -jar  $bindir/picard.jar MarkDuplicates INPUT=$outdir/$sample.sort.bam OUTPUT=$outdir/$sample.bam METRICS_FILE=$outdir/metrics.txt
+        rm -rf $outdir/$sample.sort.bam 
+        $bindir/samtools index $outdir/$sample.bam 
+        $bindir/freebayes -f %s -p 2 $outdir/$sample.bam > $outdir/$sample.freebayes.1.vcf 
         cat $outdir/$sample.freebayes.1.vcf| sed -e 's/\//\|/g'>$outdir/$sample.freebayes.vcf 
         bgzip -f $outdir/$sample.freebayes.vcf 
         tabix -f $outdir/$sample.freebayes.vcf.gz
@@ -991,8 +993,10 @@ def segment_mapping(fq1, fq2, ins_seq, outdir, gene, gene_ref):
         $bindir/bwa index %s
         group='@RG\\tID:sample\\tSM:sample'  #only -B 1
         $bindir/bwa mem -B 1 -O 1,1 -L 1,1 -U 1 -R $group -Y %s %s %s | $bindir/samtools view -q 1 -F 4 -Sb | $bindir/samtools sort > $outdir/$sample.sort.bam
-        $bindir/samtools index $outdir/$sample.sort.bam
-        $bindir/freebayes -f %s -p 2 $outdir/$sample.sort.bam > $outdir/$sample.freebayes.vcf 
+        java -jar  $bindir/picard.jar MarkDuplicates INPUT=$outdir/$sample.sort.bam OUTPUT=$outdir/$sample.bam METRICS_FILE=$outdir/metrics.txt
+        rm -rf $outdir/$sample.sort.bam 
+        $bindir/samtools index $outdir/$sample.bam 
+        $bindir/freebayes -f %s -p 2 $outdir/$sample.bam > $outdir/$sample.freebayes.vcf 
         """%(sys.path[0], outdir, newref, newref, newref, fq1, fq2, newref)
     os.system(map_call)
 

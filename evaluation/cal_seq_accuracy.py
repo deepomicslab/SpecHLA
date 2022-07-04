@@ -164,13 +164,42 @@ def eva_HG002_spechla():
     df.to_csv('/mnt/d/HLAPro_backup/trio/hg002_haplo_assess.csv', sep=',')
 
 def eva_HG002_hisat():
-    outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
+    outdir = "/mnt/d/HLAPro_backup/trio/Trio/hisat/HG002/"
+    hisat_fasta = "/mnt/d/HLAPro_backup/trio/Trio/hisat/HG002/assembly_graph-hla.HG002_GRCh38_2x250_extract_1_fq_gz-hla-extracted-1_fq.fasta"
+    contig2gene = "HG002_hisat_contig2gene.txt"
     truth_file1 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H1-asm.fa"
     truth_file2 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H2-asm.fa"
+
+    true_allele = {}
+    f = open(contig2gene)
+    for line in f:
+        array = line.strip().split()
+        if array[1] in gene_list:
+            if array[1] not in true_allele:
+                true_allele[array[1]] = []
+            true_allele[array[1]].append(array[0])
+    f.close()    
+
     data = []
     for gene in gene_list:
-        infer_file1 = outdir + "hla.allele.1.HLA_%s.fasta"%(gene)
-        infer_file2 = outdir + "hla.allele.2.HLA_%s.fasta"%(gene)
+        infer_file1 = outdir + "hisat.hla.allele.1.HLA_%s.fasta"%(gene)
+        infer_file2 = outdir + "hisat.hla.allele.2.HLA_%s.fasta"%(gene)
+        alleles = true_allele[gene]
+
+        with open(hisat_fasta) as handle:
+            for record in SeqIO.parse(handle, "fasta"):
+                if record.id == alleles[0]:
+                    with open(infer_file1, "w") as output_handle:
+                        SeqIO.write(record, output_handle, "fasta")
+                    break
+
+        with open(hisat_fasta) as handle:
+            for record in SeqIO.parse(handle, "fasta"):
+                if record.id == alleles[1]:
+                    with open(infer_file2, "w") as output_handle:
+                        SeqIO.write(record, output_handle, "fasta")
+                    break
+
         seq = Seq_error(infer_file1, truth_file1)
         align_11 = seq.main()
         seq = Seq_error(infer_file2, truth_file2)
@@ -194,7 +223,7 @@ def eva_HG002_hisat():
         print (gene, base_error, short_gap_error, gap_recall, gap_precision)
         # break
     df = pd.DataFrame(data, columns = ["base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
-    df.to_csv('/mnt/d/HLAPro_backup/trio/hg002_haplo_assess.csv', sep=',')
+    df.to_csv('/mnt/d/HLAPro_backup/trio/hisat_hg002_haplo_assess.csv', sep=',')
 
 def eva_simu(database, record_true_file, outdir):
     outdir = outdir + "/"
@@ -246,6 +275,7 @@ def eva_simu(database, record_true_file, outdir):
 if __name__ == "__main__":
 
     eva_HG002_spechla()
+    # eva_HG002_hisat()
 
     # database = sys.argv[1]
     # record_true_file = sys.argv[2]
