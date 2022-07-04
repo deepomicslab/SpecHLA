@@ -76,10 +76,10 @@ class Seq_error():
             mismatches = int(array[4])
             gap_opens = int(array[5])
             # print (map_s, map_e)
-            self.mapped_interval = self.get_uniq_map(map_s, map_e, 0, 0, self.mapped_interval)
+            self.mapped_interval = self.get_uniq_map(map_s, map_e, mismatches, gap_opens, self.mapped_interval)
             true_map_s = int(array[8])
             true_map_e = int(array[9])
-            self.true_mapped_interval = self.get_uniq_map(true_map_s, true_map_e, mismatches, gap_opens, self.true_mapped_interval)
+            self.true_mapped_interval = self.get_uniq_map(true_map_s, true_map_e, 0, 0, self.true_mapped_interval)
             i += 1
             # if i > 5:
             #     break
@@ -130,7 +130,7 @@ class Seq_error():
         # print (self.mapped_interval, self.infer_hap_len, self.truth_hap_len, self.mapped_len, align.base_error)
         return align
 
-def eva_HG002():
+def eva_HG002_spechla():
     outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
     truth_file1 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H1-asm.fa"
     truth_file2 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H2-asm.fa"
@@ -152,13 +152,46 @@ def eva_HG002():
         else:
             choose_align1 = align_12
             choose_align2 = align_21
-        # print (align_11.base_error, align_22.base_error, align_12.base_error, align_21.base_error)
+        # print ("#", align_11.base_error, align_22.base_error, align_12.base_error, align_21.base_error)
         base_error = (choose_align1.base_error + choose_align2.base_error)/2
         short_gap_error = (choose_align1.short_gap_error + choose_align2.short_gap_error)/2
         gap_recall = (choose_align1.gap_recall + choose_align2.gap_recall)/2
         gap_precision = (choose_align1.gap_precision + choose_align2.gap_precision)/2
         data.append([base_error, short_gap_error, gap_recall, gap_precision, gene])
-        print (base_error, short_gap_error, gap_recall, gap_precision)
+        print (gene, base_error, short_gap_error, gap_recall, gap_precision)
+        # break
+    df = pd.DataFrame(data, columns = ["base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
+    df.to_csv('/mnt/d/HLAPro_backup/trio/hg002_haplo_assess.csv', sep=',')
+
+def eva_HG002_hisat():
+    outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
+    truth_file1 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H1-asm.fa"
+    truth_file2 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H2-asm.fa"
+    data = []
+    for gene in gene_list:
+        infer_file1 = outdir + "hla.allele.1.HLA_%s.fasta"%(gene)
+        infer_file2 = outdir + "hla.allele.2.HLA_%s.fasta"%(gene)
+        seq = Seq_error(infer_file1, truth_file1)
+        align_11 = seq.main()
+        seq = Seq_error(infer_file2, truth_file2)
+        align_22 = seq.main()
+        seq = Seq_error(infer_file1, truth_file2)
+        align_12 = seq.main()
+        seq = Seq_error(infer_file2, truth_file1)
+        align_21 = seq.main()
+        if align_11.base_error + align_22.base_error <= align_12.base_error + align_21.base_error:
+            choose_align1 = align_11
+            choose_align2 = align_22
+        else:
+            choose_align1 = align_12
+            choose_align2 = align_21
+        # print ("#", align_11.base_error, align_22.base_error, align_12.base_error, align_21.base_error)
+        base_error = (choose_align1.base_error + choose_align2.base_error)/2
+        short_gap_error = (choose_align1.short_gap_error + choose_align2.short_gap_error)/2
+        gap_recall = (choose_align1.gap_recall + choose_align2.gap_recall)/2
+        gap_precision = (choose_align1.gap_precision + choose_align2.gap_precision)/2
+        data.append([base_error, short_gap_error, gap_recall, gap_precision, gene])
+        print (gene, base_error, short_gap_error, gap_recall, gap_precision)
         # break
     df = pd.DataFrame(data, columns = ["base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
     df.to_csv('/mnt/d/HLAPro_backup/trio/hg002_haplo_assess.csv', sep=',')
@@ -211,16 +244,11 @@ def eva_simu(database, record_true_file, outdir):
     df.to_csv('%s/haplotype_assessment.csv'%(outdir), sep=',')
 
 if __name__ == "__main__":
-    # infer_hap_file = sys.argv[1]
-    # truth_hap_file = sys.argv[2]
-    # seq = Seq_error(infer_hap_file, truth_hap_file)
-    # seq.main()
-    # eva_HG002()
-    # database = "/mnt/d/HLAPro_backup/pacbio/hla_gen.format.filter.extend.DRB.no26789.v2.fasta"
-    # record_true_file = "/mnt/d/HLAPro_backup/test_true.txt"
-    # sample_dir = "/mnt/d/HLAPro_backup/trio/HG003/"
-    database = sys.argv[1]
-    record_true_file = sys.argv[2]
-    sample_dir = sys.argv[3]
-    eva_simu(database, record_true_file, sample_dir)
+
+    eva_HG002_spechla()
+
+    # database = sys.argv[1]
+    # record_true_file = sys.argv[2]
+    # sample_dir = sys.argv[3]
+    # eva_simu(database, record_true_file, sample_dir)
     
