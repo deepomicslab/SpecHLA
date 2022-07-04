@@ -4,7 +4,7 @@ step1: map the sequence to the truth with blastn
 step2: get mapped intervals
 step3: get unique intervals
 step4: calculate the mismatch rate in the unique mapped region
-step5: calculate gap percentage
+step5: calculate gap recall and gap precision
 
 dependency: Blastn 2.6.0+, samtools 1.14
 

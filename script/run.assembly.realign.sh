@@ -21,7 +21,7 @@ ref=$db/HLA/$hla/$hla
 $sdir/samtools view --threads $thread -f 64 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##1 "$2,$3}' > $outdir/extract.fa
 $sdir/samtools view --threads $thread -f 128 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##2 "$2,$3}' >> $outdir/extract.fa
 
-$sdir/fermikit/fermi.kit/fermi2.pl unitig -s3g -t $thread  -T 10 -2 -l $rlen -p $outdir/prefix2 $outdir/extract.fa > $outdir/prefix2.mak
+$sdir/fermikit/fermi.kit/fermi2.pl unitig -s1k -t $thread  -T 10 -2 -l $rlen -p $outdir/prefix2 $outdir/extract.fa > $outdir/prefix2.mak
 
 make -f $outdir/prefix2.mak
 
