@@ -165,7 +165,7 @@ $bin/samtools index $outdir/$sample.merge.bam
 
 
 # ################################### local assembly and realignment #################################
-echo start realignment.
+echo start realignment...
 if [ $focus_exon_flag == 1 ];then #exon
   assemble_region=$dir/select.region.exon.txt
 else # full length

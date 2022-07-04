@@ -10,6 +10,8 @@ sdir=$dir/../bin
 db=$dir/../db
 hla_fa=$db/ref/hla.ref.extend.fa
 
+exec >$outdir/$sample.local_assem.log 2>&1 #redirect log info to the outdir
+
 rm -rf $outdir/rematch.total.read.format.txt
 
 for pos in `cat $bedfile`
