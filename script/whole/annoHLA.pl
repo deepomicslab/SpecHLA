@@ -60,7 +60,7 @@ if($wxs eq "whole"){
      #($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (500,10000,10000,10000,10000,10000,10000,70);
 }
 elsif($wxs eq "exon"){
-     ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (20,8,200,100,100,100,100,50);
+#     ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (20,8,200,100,100,100,100,50);
 }
 my %hash_C = ('HLA_A'=>$C_a, 'HLA_B'=>$C_b, 'HLA_C'=>$C_c, 'HLA_DPA1'=>$C_dpa,'HLA_DPB1'=>$C_dpb,'HLA_DQA1'=>$C_dqa,'HLA_DQB1'=>$C_dqb,'HLA_DRB1'=>$C_drb);
 
@@ -147,11 +147,11 @@ sub exon_blast{
                      $hash1{$nhla} += $m + $i;
                      $hash2{$nhla} += $t - $i;
                      $hash4{$nhla} += $si;
-                     $blastcount += 0;
+                     $blastcount += 1;
                  }
                  close BIN;
-                 next if($blastcount == 0);
                  my $tag = "$class"."_"."$i";
+                 #print "$tag\t$blastcount\n";
                  my %hash_max;
                  my ($hh,$mscorel) = ("",0);
                  foreach my $hla (sort keys %hash1){
@@ -301,9 +301,10 @@ sub whole_blast{
                while(<IN1>){
                        chomp;
                        next if(/^#/);
-                       my ($hla, $t, $m,$d) = (split)[1,3,4,5];
+                       my ($hla, $t, $m,$d,$s) = (split)[1,3,4,5,8];
                        next if($hla eq "B*40:37" || $hla eq "B*51:23");  
                        if($hla eq "B*41:07"){$t = $t - 20}
+                       next if($hla =~ /DRB1/ && $s>10);
                       #next if($hla =~ /[N|Q]$/);
                      #  next if($t <250);
                        $hash11{$hla} += $t;
@@ -381,7 +382,7 @@ my $hout = $sample;
 foreach my $hla(@hlas){
        for(my $i=1;$i<=$k;$i++){
              my $id = "$hla"."_"."$i";
-             my ($line1,$line2,$line3,$pout,$out) = ("-","-","-","-","-");
+             my ($line1,$line2,$line3,$pout,$out) = ("","","","","-");
              my %ggs;
              next if(!exists $hash{$id});
              my @arrs = (split /\t/,$hash{$id});

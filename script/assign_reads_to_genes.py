@@ -13,14 +13,6 @@ import gzip
 B = ['A', 'C', 'G', 'T']
 BN = ['A', 'C', 'G', 'T', 'N']
 
-
-def extract_reads_name(options):
-    t0 = time.time()
-    order = '%s/samtools view %s | cut -f1 | sort | uniq > %s'%(options.bin_dir, options.bam, reads_file)
-    os.system(order)
-    t1 = time.time()
-    print ("Extracting read name cost %s"%(t1 - t0))
-
 def get_names():
     with open(reads_file, 'r') as infile:
         n = infile.read().splitlines()
@@ -48,56 +40,6 @@ def count_alignment(alignment):
 
     return mis_NM, soft_num, match_num, focus_len
 
-def extract_reads(options):
-    print ('start assigning reads...')
-    out = open(assign_file, 'w')
-    reads_assemble = get_names()
-    bamfile = pysam.AlignmentFile(options.bam, 'rb')
-    name_indexed = pysam.IndexedReads(bamfile)
-    name_indexed.build()
-    error, total, remove = 0, 0, 0
-    error_set = []
-    for name in reads_assemble:
-        try:
-            iterator = name_indexed.find(name)
-            dict = {}
-            pair_dict = {}
-            len_dict = {}
-            for alignment in iterator:   
-                if alignment.is_unmapped or alignment.reference_name != alignment.next_reference_name:
-                    continue
-                t_name = alignment.reference_name
-
-                mis_NM, soft_num, match_num, focus_len = count_alignment(alignment)
-                if soft_num > 0 or mis_NM > options.max_nm:
-                    continue
-                if t_name not in dict.keys():
-                    dict[t_name] = match_num#round(s,3)
-                    len_dict[t_name] = focus_len
-                    pair_dict[t_name] = 1
-                else:
-                    dict[t_name] += match_num#round(s,3)
-                    len_dict[t_name] += focus_len
-                    pair_dict[t_name] += 1
-            #evaluation
-            total += 1
-            if len(dict) == 0:
-                continue
-            for key in dict.keys():
-                # print (len_dict[key])
-                if len_dict[key] < 0:  #make sure the reads is paired mapped.
-                    dict[key] = 0
-                else:
-                    dict[key] = float(dict[key])/len_dict[key]
-            first_align = check_score(dict, options, name, pair_dict)
-            if first_align == 'REMOVE':
-                remove += 1
-                continue
-            print (name, first_align, file = out)
-        except KeyError:
-            pass
-    out.close()
-
 def check_score(dict, options, name, pair_dict):
     gene_dict = {}
     for align in dict.keys():
@@ -117,7 +59,7 @@ def check_score(dict, options, name, pair_dict):
         return 'REMOVE'
     elif len(new_l) == 1:
         return new_l[0][0]
-    elif new_l[0][1] - new_l[1][1] < 0.5:
+    elif new_l[0][1] - new_l[1][1] < options.diff_score:
         return 'REMOVE'
     else:
         return new_l[0][0]
@@ -262,12 +204,8 @@ if __name__ == "__main__":
     parser.add_argument('-2', '--fq2', help='bin dir', required=True)  
     parser.add_argument('-n', '--bin_dir', help='bin dir', required=True)  
     parser.add_argument('-nm', '--max_nm', help='MAX NM', required=False, default = 2, type=int)
+    parser.add_argument('-d', '--diff_score', help='The score for the best gene must be at least this higher\
+         than the second gene', required=False, default = 0.5, type=float)
     options = parser.parse_args()
-
-    # reads_file = '%s/read_names.txt'%(options.outdir)
-    # assign_file = '%s/assign_file.txt'%(options.outdir)
-    # extract_reads_name(options)
-    # extract_reads(options)
-
 
     main()

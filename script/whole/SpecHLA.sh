@@ -28,15 +28,19 @@
 ###   -j        Number of threads [5]
 ###   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
 ###             is 2. It should be set larger to infer novel alleles.
+###   -y        The minimum different mapping score between the best- and second-best aligned gene. 
+###             Discard the read if the score is lower than this value. Deault is 0.5. 
 ###   -v        True or False. Consider long InDels if True, else only consider short variants. 
 ###             Default is False. 
 ###   -q        Minimum variant quality. Default is 0.01. Set it larger in high quality samples.
 ###   -s        Minimum mapping depth of variant. Default is 5.
 ###   -a        Use this long InDel file if provided.
-###   -r        The minimum Minor Allele Frequency (MAF), default is 0.05 for whole gene and
+###   -r        The minimum Minor Allele Frequency (MAF), default is 0.05 for full length and
 ###             0.1 for exon typing.
 ###   -g        Whether use G-translate in annotation [1|0], default is 0.
 ###   -k        The mean depth in a window lower than this value will be masked by N, default is 5.
+###             Set 0 to avoid masking.
+###   -z        Whether only mask exon region, True or False, default is True.
 ###   -h        Show this message.
 
 help() {
@@ -48,7 +52,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
     exit 1
 fi
 
-while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:" opt; do
+while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:z:y:" opt; do
   case $opt in
     n) sample="$OPTARG"
     ;;
@@ -91,6 +95,10 @@ while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:" opt; do
     g) trans="$OPTARG"
     ;;
     k) mask_depth="$OPTARG"
+    ;;
+    z) mask_exon="$OPTARG"
+    ;;
+    y) mini_score="$OPTARG"
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
@@ -141,11 +149,11 @@ if [ -f "$license" ];then
     -o FullNW -r All 100000 --mCPU ${num_threads:-5} -c 10  -g 20 -x 3  | $bin/samtools view \
     -Sb - | $bin/samtools sort -  > $outdir/$sample.map_database.bam
 else
-    $bin/bowtie2/bowtie2 -p ${num_threads:-5} -k 10 -x $db/ref/$database_prefix.fasta -1 $fq1 -2 $fq2|\
+    $bin/bowtie2/bowtie2 --very-sensitive -p ${num_threads:-5} -k 30 -x $db/ref/$database_prefix.fasta -1 $fq1 -2 $fq2|\
     $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
 fi
 $bin/samtools index $outdir/$sample.map_database.bam
-python3 $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir \
+python3 $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir -d ${mini_score:-0.05} \
 -b ${outdir}/${sample}.map_database.bam -nm ${nm:-2}
 # #############################################################################################################
 
@@ -191,14 +199,14 @@ fi
 # #####################################################################################################
 
 
-!
+# !
 
 
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
 # ###################### mask low-depth region #############################################
 $bin/samtools depth -a $bam>$bam.depth  
-python3 $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d ${mask_depth:-5} -f True
+python3 $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d ${mask_depth:-5} -f ${mask_exon:-True}
 
 
 # ###################### call long indel #############################################
@@ -265,7 +273,7 @@ done
 # ##################################################################################################
 
 
-
+!
 # ############################ annotation ####################################
 echo start annotation...
 # perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop

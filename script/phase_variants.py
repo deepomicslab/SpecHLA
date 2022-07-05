@@ -625,7 +625,7 @@ class Share_reads():
 
     def __init__(self, deletion_region, outdir, strainsNum, gene, gene_profile, ins_seq):
         self.deletion_region = deletion_region
-        print ('initial', self.deletion_region)
+        # print ('initial', self.deletion_region)
         self.bamfile = outdir + '/newref_insertion.bam'
         self.vcf = outdir + '/%s.insertion.phased.vcf.gz'%(gene)
         self.strainsNum = strainsNum
