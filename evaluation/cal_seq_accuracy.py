@@ -16,8 +16,8 @@ import sys
 import pandas as pd
 from Bio import SeqIO
 
-gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
-# gene_list = ['DQB1']
+# gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
+gene_list = ['DQA1']
 
 class Align(object):
 
@@ -31,7 +31,6 @@ class Align(object):
         # self.gap_recall = self.mapped_len/self.truth_hap_len
         self.gap_precision = self.mapped_len/self.infer_hap_len
           
-
 class Seq_error():
 
     def __init__(self, infer_hap_file, truth_hap_file):
@@ -49,8 +48,8 @@ class Seq_error():
 
     def blast_map(self):
         command = f"""
-        blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 
-        blastn -query {self.infer_hap_file} -out {self.blast_file}.fmt1 -subject {self.truth_hap_file} -outfmt 1 
+        blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 #-penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
+        blastn -query {self.infer_hap_file} -out {self.blast_file}.fmt1 -subject {self.truth_hap_file} -outfmt 1  # -penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
         # cat  {self.blast_file}
         """
         # print (command)
@@ -131,7 +130,8 @@ class Seq_error():
         return align
 
 def eva_HG002_spechla():
-    outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
+    # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
+    outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/spechla/HG002/"
     truth_file1 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H1-asm.fa"
     truth_file2 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H2-asm.fa"
     data = []
@@ -147,9 +147,17 @@ def eva_HG002_spechla():
         seq = Seq_error(infer_file2, truth_file1)
         align_21 = seq.main()
         if align_11.base_error + align_22.base_error <= align_12.base_error + align_21.base_error:
+            seq = Seq_error(infer_file1, truth_file1)
+            align_11 = seq.main()
+            seq = Seq_error(infer_file2, truth_file2)
+            align_22 = seq.main()
             choose_align1 = align_11
             choose_align2 = align_22
         else:
+            seq = Seq_error(infer_file1, truth_file2)
+            align_12 = seq.main()
+            seq = Seq_error(infer_file2, truth_file1)
+            align_21 = seq.main()
             choose_align1 = align_12
             choose_align2 = align_21
         # print ("#", align_11.base_error, align_22.base_error, align_12.base_error, align_21.base_error)
@@ -163,7 +171,64 @@ def eva_HG002_spechla():
              round(choose_align1.base_error,6), round(choose_align2.base_error,6))
         # break
     df = pd.DataFrame(data, columns = ["base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
-    df.to_csv('/mnt/d/HLAPro_backup/trio/hg002_haplo_assess.csv', sep=',')
+    df.to_csv('/mnt/d/HLAPro_backup/trio/hg002_high_dp_haplo_assess.csv', sep=',')
+
+def eva_pedigree_spechla():
+    outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/spechla/"
+
+    data = []
+    pedigree_samples_list = [["NA12878", "NA12891", "NA12892"], ["NA19240", "NA19238", "NA19239"]]
+    # pedigree_samples = ["NA12878", "NA12891", "NA12892"]
+    for pedigree_samples in pedigree_samples_list:
+        for gene in gene_list:
+            for j in range(2):
+                infer_file1 = outdir + pedigree_samples[0] + "/hla.allele.1.HLA_%s.fasta"%(gene)
+                infer_file2 = outdir + pedigree_samples[0] + "/hla.allele.2.HLA_%s.fasta"%(gene)
+
+                parent_file1 = outdir + pedigree_samples[1+j] + "/hla.allele.1.HLA_%s.fasta"%(gene)
+                parent_file2 = outdir + pedigree_samples[1+j] + "/hla.allele.2.HLA_%s.fasta"%(gene)
+
+                record_base_error = []
+                seq = Seq_error(infer_file1, parent_file1)
+                align = seq.main()
+                record_base_error.append(align.base_error)
+                choose_align = align
+                choose_seq = seq
+                
+
+                seq = Seq_error(infer_file2, parent_file2)
+                align = seq.main()
+                record_base_error.append(align.base_error)
+                if align.base_error < choose_align.base_error:
+                    choose_align = align
+                    choose_seq = seq
+                    
+
+                seq = Seq_error(infer_file1, parent_file2)
+                align = seq.main()
+                record_base_error.append(align.base_error)
+                if align.base_error < choose_align.base_error:
+                    choose_align = align
+                    choose_seq = seq
+
+                seq = Seq_error(infer_file2, parent_file1)
+                align = seq.main()
+                record_base_error.append(align.base_error)
+                if align.base_error < choose_align.base_error:
+                    choose_align = align
+                    choose_seq = seq
+                print (record_base_error)
+                choose_seq.main()
+                base_error = choose_align.base_error 
+                short_gap_error = choose_align.short_gap_error 
+                gap_recall = choose_align.gap_recall 
+                gap_precision = choose_align.gap_precision
+                data.append([pedigree_samples[1+j], base_error, short_gap_error, gap_recall, gap_precision, gene])
+                # print (gene, base_error, short_gap_error, gap_recall, gap_precision)
+                print (pedigree_samples[1+j], gene, round(base_error,6), round(short_gap_error,6), round(gap_recall,6), round(gap_precision,6))
+        # break
+    df = pd.DataFrame(data, columns = ["parent","base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
+    df.to_csv('/mnt/d/HLAPro_backup/trio/pedigree_haplo_assess.csv', sep=',')
 
 def eva_HG002_hisat():
     outdir = "/mnt/d/HLAPro_backup/trio/Trio/hisat/HG002/"
@@ -349,8 +414,9 @@ def eva_simu(database, record_true_file, outdir):
 
 if __name__ == "__main__":
 
-    eva_HG002_kourami()
-    # eva_HG002_spechla()
+    # eva_HG002_kourami()
+    # eva_pedigree_spechla()
+    eva_HG002_spechla()
     # eva_HG002_hisat()
 
     # database = sys.argv[1]

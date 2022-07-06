@@ -55,15 +55,6 @@ while(<FIN>){
 }
 close FIN;
 
-my ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000);
-if($wxs eq "whole"){
-     #($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (500,10000,10000,10000,10000,10000,10000,70);
-}
-elsif($wxs eq "exon"){
-#     ($C_a,$C_b,$C_c,$C_dpa,$C_dpb,$C_dqa,$C_dqb,$C_drb) = (20,8,200,100,100,100,100,50);
-}
-my %hash_C = ('HLA_A'=>$C_a, 'HLA_B'=>$C_b, 'HLA_C'=>$C_c, 'HLA_DPA1'=>$C_dpa,'HLA_DPB1'=>$C_dpb,'HLA_DQA1'=>$C_dqa,'HLA_DQB1'=>$C_dqb,'HLA_DRB1'=>$C_drb);
-
 #Convert HLA nomenclature
 open INL, "$db/hla_nom_g.txt" or die "$!\n";
 while(<INL>){
@@ -98,29 +89,9 @@ while(<IN>){
         my ($id, $name) = (split /,/, $_)[0,1];
         my $key = "HLA:"."$id";
         my $hla=$name;
-   #     if(exists $hashg{$name}){$hla=$hashg{$name}}
         $hashc{$key} = $hla;
 }
 close IN;
-##average sequecing depth of exon regions
-#my %depths;
-#open IN, "$Bin/exon_extent.bed" or die "$!\t$db/exon_extent.bed\n";
-#while(<IN>){
-#     my ($gene,$s,$e) = (split);
-#     my $re = "$gene".":"."$s"."-"."$e";
-#     `$bin/samtools depth $dir/$sample.merge.bam -r $re >$workdir/depth.txt`;
-#     my ($sum,$c) = (0,0);
-#     open TE, "$workdir/depth.txt" or die "$!\n";
-#     while(<TE>){
-#         chomp;
-#         my $d = (split)[-1];
-#         $sum += $d;
-#         $c += 1;
-#     }
-#     my $depth = $sum / $c;
-#     if($depth >5){$depths{$gene} .= "$re\t";}
-#}
-#close IN;
 
 sub exon_blast{
     foreach my $class(@hlas){
@@ -128,10 +99,7 @@ sub exon_blast{
         my (%hashs, %idks);
         for(my $i=1;$i<=$k;$i++){
                 my $fa = "$dir/hla.allele.$i.$class.fasta";
-                #my $nregions =  $depths{$class};
-                #`$bin/samtools faidx $fa $nregions >$workdir/hla.allele.$i.$class.fasta`;
-                #$fa = "$workdir/hla.allele.$i.$class.fasta";               
-                 `echo ">$class.$i" >$workdir/$class.$i.temp.fasta`;
+                `echo ">$class.$i" >$workdir/$class.$i.temp.fasta`;
                 `less $fa |grep -v ">" >>$workdir/$class.$i.temp.fasta`;
                 my $seq = `less $fa|grep -v ">"`; chomp $seq; $seq=~s/\s+//g;
                 system("$bin/blastn -query $workdir/$class.$i.temp.fasta -out $workdir/$class.$i.blast.out1 -db $ref -outfmt 6 -num_threads 4 -max_target_seqs 1000") ;  
@@ -142,7 +110,6 @@ sub exon_blast{
                 while(<BIN>){
                      chomp;
                      my ($id, $hla, $t, $m, $i, $si) = (split)[0,1,3,4,5,11];
-                     next if($hla eq "HLA:HLA10778");
                      my $nhla = $hashc{$hla};
                      $hash1{$nhla} += $m + $i;
                      $hash2{$nhla} += $t - $i;
@@ -159,80 +126,15 @@ sub exon_blast{
                          my $len = $hash2{$hla};
                          my $score = 100 * (1 - $mis/$len);
                          if($class =~ /DRB1/){$score = $hash4{$hla} / 499}
-                        
+                #print "$hla\t$score\t$mis\t$len\t$hash4{$hla}\n";        
                          my @tt = (split /:/, $hla);
                          my $kid = "$tt[0]".":"."$tt[1]";
                          my $fre=0;
                          if(exists $hashp{$kid}){$fre=$hashp{$kid}} #fre:population frequency of 4 digit HLA allele
                          $hash3{$hla} = $score;
-                         my ($ts,$tf) = ($score,$fre);
-                         next if(($tf == 0) && ($ts < 99.5) && $pop ne "nonuse" && (!$class =~ /DRB1/));
-                         my $ttf = $tf;
-                         if(($tf > 0) && ($ts==100)){$ttf = 1}
-                         if($tf == 0 && $pop ne "nonuse"){$ttf = -1}
-                         if($pop eq "nonuse"){$ttf = 0}
-                         if($tf==0 && ($class eq "HLA_A" || $class eq "HLA_C")){$ttf = -10}
-                         my $scorel=0;
-                         $scorel = $ts * (2 ** ($ttf / $hash_C{$class})); ##adjust blast score with population frequency and hyper parameters.
-                         
-
-                         if($scorel>=$mscorel){$mscorel = $scorel;$hh=$hla;$hash_max{$mscorel} .= "$hla;$ts\t"}
+                         next if($pop ne "nonuse" && $fre == 0);
+                         if($score>=$mscorel){$mscorel = $score;$hh=$hla;$hash_max{$mscorel} .= "$hla;$score\t"}
                  }
-                 #exclude region HLA_B:670-730
-                 #if(($hh =~ /^B/) && ($hash3{$hh} <99.26)){
-                 #        my $nseq1 = substr($seq,0,182);
-                 #        my $nseq2 = substr($seq,248,);
-                 #        my $nseq = "$nseq1"."$nseq2";
-                 #        open OTT, ">$workdir/B.tmp.fa";
-                 #        print OTT ">$hh\n$nseq\n";
-                 #        close OTT;
-                 #        `$bin/blastn -query $workdir/B.tmp.fa -out $workdir/B.blast.tmp -db $ref -outfmt 6 -num_threads 4 -max_target_seqs 500`;
-                 #        open BT, "$workdir/B.blast.tmp" or die "$!\n";
-                 #        my (%hashbt,%hashbf);
-                 #        while(<BT>){
-                 #                chomp;
-                 #                my ($b1,$b2) = (split)[1,11];
-                 #                my $nhla = $hashc{$b1};
-                 #                my @tt = (split /:/, $nhla);
-                 #                my $kid = "$tt[0]".":"."$tt[1]";
-                 #                my $fre=0;
-                 #                if(exists $hashp{$kid}){$fre=$hashp{$kid}}
-                 #                next if($fre<=0 && $pop ne "nonuse");
-                 #                $hashbt{$b1} += $b2;
-                 #                $hashbf{$b1} = $fre;
-                 #        }
-                 #       close BT;
-                 #        my ($shla,$btc) = ("",0);
-                 #        foreach my $b3(sort keys %hashbt){
-                 #                my $ss = ($hashbt{$b3} /10 )* (2 ** ($hashbf{$b3}/7));
-                 #                if($ss >= $btc){$btc=$ss;$shla=$b3}
-                 #        }
-                 #        $hh = $hashc{$shla};
-                 #        $hash_max{$mscorel} = "$hh;$mscorel";
-                 #}
-                 #DRB1*14:01 and DRB1*14:54 differ in HLA_DRB1:9519
-                 #if($hh =~ /DRB1\*14:01/){
-                 #         ` $bin/samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf`;
-                 #         open TE, "$workdir/snp.vcf" or die "$!\n";
-                 #         while(<TE>){
-                 #                chomp;
-                 #                next if(/^#/);
-                 #                my $alt = (split)[4];
-                 #                if($alt =~ /T/){print "$hh\n"} else{$hh = "DRB1*14:54";$hash_max{$mscorel} = "$hh;$mscorel"}      
-                 #         }
-                 #         close TE;            
-                #}
-                #if($hh =~ /DQB1\*02:01/){
-                #          ` $bin/samtools  mpileup -r HLA_DQB1:6352-6352 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf`;
-                #          open TE, "$workdir/snp.vcf" or die "$!\n";
-                #          while(<TE>){
-                #                 chomp;
-                #                 next if(/^#/);
-                #                 my $alt = (split)[4];
-                #                 if($alt =~ /G/){} else{$hh = "DQB1*02:02:01";$hash_max{$mscorel} = "$hh;$mscorel"}      
-                #          }
-                #          close TE;            
-                #}
 
                 $hash{$tag} = $hash_max{$mscorel};
          }
@@ -291,9 +193,7 @@ sub whole_blast{
                        $fa = "$fadir/$class.temp.fasta";
                }
                my $tag = "$class"."_"."$i";
-               #system("$bin/makeblastdb -in $fa -dbtype nucl -parse_seqids -out $fa");
                system("$bin/blastn -query $fa -out $workdir/$tag.blast.out1 -db $ref -outfmt 7 -num_threads 4 -max_target_seqs 1000 ");
-               #system("$bin/blastn -query $ref.fasta -out $workdir/$tag.blast.out2 -db $fa -outfmt 7 -num_threads 4 -max_target_seqs 1000 ");
                my (%hash_max,%hash11,%hash12, %hash21, %hash22,$gene,$score);
                ## read blast score
                open IN1, "$workdir/$tag.blast.out1" or die "$!\n";
@@ -302,28 +202,12 @@ sub whole_blast{
                        chomp;
                        next if(/^#/);
                        my ($hla, $t, $m,$d,$s) = (split)[1,3,4,5,8];
-                       next if($hla eq "B*40:37" || $hla eq "B*51:23");  
-                       if($hla eq "B*41:07"){$t = $t - 20}
-                       next if($hla =~ /DRB1/ && $s>10);
-                      #next if($hla =~ /[N|Q]$/);
-                     #  next if($t <250);
                        $hash11{$hla} += $t;
                        $hash12{$hla} += $m + $d;
                        $blastcount += 1;
               }
               close IN1;
               next if($blastcount == 0); ###no blast result
-              #open IN2, "$workdir/$tag.blast.out2" or die "$!\n";
-              #while(<IN2>){
-              #        chomp;
-              #        next if(/^#/);
-              #        my ($hla, $t, $m,$d) = (split)[0,3,4,5];
-              #        #next if($hla =~ /[N|Q]$/);
-              #        #next if($t <250);
-              #        $hash21{$hla} += $t;
-              #        $hash22{$hla} += $m + $d;
-              #}
-              #close IN2;
               $score=50;
               my $ff=0;
               foreach my $key(sort keys %hash11){
@@ -332,28 +216,16 @@ sub whole_blast{
                       my $kid = "$tt[0]".":"."$tt[1]";
                       my $fre=0;
                       if(exists $hashp{$kid}){$fre=$hashp{$kid}} ## population frequency of 4 digit hla allele
-                      my $s1 = 100 * (1 - $hash12{$key}/$hash11{$key}); #blast score
-                      #my $s2 = 100 * (1 - $hash22{$key}/$hash21{$key});
-                      my $s  = $s1;
-                      #my $s = ($s1 + $s2)/2;
-                      #next if($hash11{$key} < 250);
-                      #next if($hash21{$key} < 250);
-                      my ($ts,$tf) = ($s,$fre);
-                      my $ttf = $tf;
-                      next if(($tf == 0) && ($ts < 95));
-                      if(($tf > 0) && ($ts==100)){$ttf = 1}
-                      if($tf == 0){$ttf = -1}
-                      if($tf==0 && ($class eq "HLA_A" || $class eq "HLA_C")){$ttf = -10}
-                      my $scorel=0;
-                      $scorel = $ts * (2 ** ($ttf / $hash_C{$class})); #adjust blast score with population frequency and hyper parameter
+                      my $s = 100 * (1 - $hash12{$key}/$hash11{$key}); #blast score
+                      next if($pop ne "nonuse" && $fre == 0);
+                      my $scorel=$s;
 
                       if($scorel >= $score){
                              $score = $scorel;
                              $gene = $key;
                              $ff=$fre;
-                             $hash_max{$scorel} .= "$gene;$ts\t";
+                             $hash_max{$scorel} .= "$gene;$s\t";
                       }
-                      #print "$tag\t$key\t$score\t$scorel\t$ts\t$ttf\n";
              }
              $hash{$tag} = $hash_max{$score};
              `rm -rf $fadir/$class.temp*`;
@@ -383,7 +255,8 @@ foreach my $hla(@hlas){
        for(my $i=1;$i<=$k;$i++){
              my $id = "$hla"."_"."$i";
              my ($line1,$line2,$line3,$pout,$out) = ("","","","","-");
-             my %ggs;
+             my (%ggs, %hashmm);
+             if(!exists $hash{$id}){ $hout .= "\t-"; print OUT "$id\t-\t-\t-\n"}
              next if(!exists $hash{$id});
              my @arrs = (split /\t/,$hash{$id});
              my ($max,$pfre) = (0,0);
@@ -405,30 +278,37 @@ foreach my $hla(@hlas){
 
                  my @tt = (split /:/, $allele);
                  my $kid = "$tt[0]".":"."$tt[1]";
+                 $hashmm{$kid} .= "$allele\t";
                  $line2 .= "$allele;";
                  $oo = "$kid".";"."$score";
-                 if(exists $hashg{$allele}){$ggs{$hashg{$allele}} += 1}
+                 if(exists $hashg{$allele}){
+                      my @ttt = (split /:/,$hashg{$allele});
+                      my $tid = "$ttt[0]".":"."$ttt[1]";
+                      $ggs{$tid} += 1}
                  else{$ggs{$kid} += 1}
                  if(exists $hashpp{$kid}){$line3 .= "$oo;$hashpp{$kid}\t"; 
-                     if($pfre <= $hashp{$kid}){$pfre = $hashp{$kid};$pout = $allele;
+                     if($pfre < $hashp{$kid}){$pfre = $hashp{$kid};$pout = $allele;
                      }
                  }
                  else{$line3 .= "$oo;-;-;-\t";} 
              }
              my @lines3 = (split /\t/,$line3); @lines3 = uniq(@lines3);
-             $line3 = join("\t",@lines3);
-#             print "$pop\t$pout\tline3\t$line3\n";
+             my @lines2 = (split /;/,$line2); $line3 = join("\t",@lines3);
              if($pop eq "nonuse" || !$pout){
                foreach my $gg(sort {$ggs{$b} <=> $ggs{$a}} keys %ggs ){
-                  if($ggs{$gg} >= $max){
-                       $max = $ggs{$gg};$line1 .= "$gg;";
-                        if($out eq "-"){$out = $gg;}
+                   
+                   my $agg = (split /\t/, $hashmm{$gg})[0];
+                   if($ggs{$gg} >= $max){
+                       $max = $ggs{$gg};$line1 .= "$agg;";
+                        if($out eq "-"){$out = $agg;}
                    }
                }
              }else{
                    if(exists $hashg{$pout}){$pout = $hashg{$pout};}
+             #      else{$pout = $lines2[0]}
                    $out = $pout;   $line1 = $pout; 
              }
+             if(!$out){$out="-"}
              $hout .= "\t$out";
              print OUT "$id\t$line1\t$line2\t$line3\n";
        }    
