@@ -48,10 +48,16 @@ class Seq_error():
 
     def blast_map(self):
         command = f"""
-        blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 
-        blastn -query {self.infer_hap_file} -out {self.blast_file}.fmt1 -subject {self.truth_hap_file} -outfmt 1  
-        # blastn -query {self.truth_hap_file} -out {self.blast_file}.fmt2 -subject {self.infer_hap_file} -outfmt 1  
-        # cat  {self.blast_file}
+        blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 -penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
+        blastn -query {self.infer_hap_file} -out {self.blast_file}.fmt3 -subject {self.truth_hap_file} -outfmt 3  
+        """
+        # print (command)
+        os.system(command)
+
+    def record_blast(self, index):
+        command = f"""
+        blastn -query {self.infer_hap_file} -out {self.blast_file}.{index}.fmt7.record -subject {self.truth_hap_file} -outfmt 7 -penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
+        blastn -query {self.infer_hap_file} -out {self.blast_file}.{index}.fmt3.record -subject {self.truth_hap_file} -outfmt 3  
         """
         # print (command)
         os.system(command)
@@ -179,7 +185,7 @@ def eva_pedigree_spechla():
 
     data = []
     pedigree_samples_list = [["NA12878", "NA12891", "NA12892"], ["NA19240", "NA19238", "NA19239"]]
-    # pedigree_samples = ["NA12878", "NA12891", "NA12892"]
+    # pedigree_samples_list = [["NA12878", "NA12891", "NA12892"]]
     for pedigree_samples in pedigree_samples_list:
         for gene in gene_list:
             for j in range(2):
@@ -218,8 +224,9 @@ def eva_pedigree_spechla():
                 if align.base_error < choose_align.base_error:
                     choose_align = align
                     choose_seq = seq
-                print (record_base_error)
-                choose_seq.main()
+                # print (record_base_error)
+
+                choose_seq.record_blast(j)
                 base_error = choose_align.base_error 
                 short_gap_error = choose_align.short_gap_error 
                 gap_recall = choose_align.gap_recall 
@@ -416,8 +423,8 @@ def eva_simu(database, record_true_file, outdir):
 if __name__ == "__main__":
 
     # eva_HG002_kourami()
-    # eva_pedigree_spechla()
-    eva_HG002_spechla()
+    eva_pedigree_spechla()
+    # eva_HG002_spechla()
     # eva_HG002_hisat()
 
     # database = sys.argv[1]

@@ -77,8 +77,8 @@ def constr_graph(score_file, block_phase_file):
             score2 = 0
         else:
             new_array = array[2].split(";")
-            score1 = float(new_array[0]) # 00 and 11
-            score2 = float(new_array[1]) # 01 and 10
+            score1 = float(new_array[1]) # 00 and 11
+            score2 = float(new_array[0]) # 01 and 10
         frag1_index = frag_index[frag1]
         frag2_index = frag_index[frag2]
 
