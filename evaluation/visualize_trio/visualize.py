@@ -1,5 +1,5 @@
 """
-python /mnt/d/HLAPro_backup/HLAPro/evaluation/visualize_trio/visualize.py --trio HG002:HG003:HG004 --workdir ./ --outfile test.file --inffile test.info
+python /mnt/d/HLAPro_backup/HLAPro/evaluation/visualize_trio/visualize.py --trio HG002:HG003:HG004 --workdir ./ --outfile test.file --outinf test.info
 """
 
 from argparse import ArgumentParser
@@ -18,7 +18,7 @@ required.add_argument("--trio",help="The trio infromation; give sample names in 
 required.add_argument("--workdir",help="The directory consists of all samples' results.\
  The workdir running previous scipts.",dest='workdir',metavar='')
 required.add_argument("--outfile",help="The outfile for making figure.",dest='outfile',metavar='')
-required.add_argument("--inffile",help="sampleinfo.",dest='sampleinfo',metavar='')
+required.add_argument("--outinf",help="output sampleinfo.",dest='outinf',metavar='')
 parser._action_groups.append(optional)
 args = parser.parse_args()
 
@@ -33,7 +33,7 @@ def main():
             command = "ls %s/%s/HLA_*.rephase.vcf.gz >>%s"%(args.workdir, sample, vcf_list)
         os.system(command)
         i += 1
-    command = "perl %s/convert.tro.pl %s %s %s"%(sys.path[0], vcf_list, args.outfile, args.sampleinfo)
+    command = "perl %s/convert.tro.pl %s %s %s"%(sys.path[0], vcf_list, args.outfile, args.outinf)
     os.system(command)
     os.system("rm %s"%(vcf_list))
 
