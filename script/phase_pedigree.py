@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
 from argparse import ArgumentTypeError
-from my_imports import *
+import sys
 import time
 import re
 from itertools import combinations, permutations
