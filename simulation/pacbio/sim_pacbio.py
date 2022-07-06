@@ -80,6 +80,6 @@ class Sim_Pac():
 
 if __name__ == "__main__":  
     sim_pacbio = Sim_Pac()
-    # sim_pacbio.get_benchmark()
-    sim_pacbio.get_spechla()
+    sim_pacbio.get_benchmark()
+    # sim_pacbio.get_spechla()
         

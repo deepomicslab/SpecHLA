@@ -1,3 +1,8 @@
+"""
+Function 1 : assign long reads to the gene
+Function 2 : typing with only long reads
+"""
+
 import sys
 import os
 import pysam
@@ -118,7 +123,7 @@ class Pacbio_Binning():
     def filter_fq(self, gene, dict):
         i = 0
         #gene = 'A'
-        outfile = parameter.outdir + '/%s.fq'%(gene)
+        outfile = parameter.outdir + '/%s.%s.fq'%(gene, args["a"])
         out = open(outfile, 'w')
         flag = False
         if parameter.raw_fq.split(".")[-1] == "gz":
@@ -143,25 +148,6 @@ class Pacbio_Binning():
         out.close()
         os.system('gzip -f %s'%(outfile))
 
-class VCF():
-
-    def call_snp(self, gene):
-        call_command = """
-        db=%s
-        hla=%s
-        sample=%s
-        bin=%s
-        outdir=%s
-        hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-        $bin/minimap2 -a $hla_ref $outdir/$hla.fq.gz | $bin/samtools view -bS -F 0x800 -| $bin/samtools sort - >$outdir/$hla.bam
-        $bin/samtools index $outdir/$hla.bam
-        longshot -F -S -A -Q 10 -E 0.3 -e 5 --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
-
-        bgzip -f $outdir/$sample.$hla.longshot.vcf
-        tabix -f $outdir/$sample.$hla.longshot.vcf.gz
-        """%(parameter.db, gene, parameter.sample, parameter.bin, parameter.outdir)
-        os.system(call_command)
-
 class Parameters():
 
     def __init__(self):
@@ -185,9 +171,6 @@ class Parameters():
 class Fasta():
 
     def vcf2fasta(self, gene):
-        # vcf = VCF()
-        # vcf.call_snp(gene)
-
         for index in range(2):
             order = """
             sample=%s
@@ -198,7 +181,7 @@ class Fasta():
             i=%s
             j=%s
             hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-            $bin/minimap2 -t %s -a $hla_ref $outdir/$hla.fq.gz | $bin/samtools view -bS -F 0x800 -| $bin/samtools sort - >$outdir/$hla.bam
+            $bin/minimap2 -t %s -a $hla_ref $outdir/$hla.%s.fq.gz | $bin/samtools view -bS -F 0x800 -| $bin/samtools sort - >$outdir/$hla.bam
             $bin/samtools index $outdir/$hla.bam
 
 
@@ -212,7 +195,7 @@ class Fasta():
             cat $outdir/hla.allele.$i.HLA_$hla.raw.fasta|grep -v ">" >>$outdir/hla.allele.$i.HLA_$hla.fasta
             
             $bin/samtools faidx $outdir/hla.allele.$i.HLA_$hla.fasta        
-            """%(parameter.sample, parameter.bin, parameter.db, parameter.outdir, gene, index+1, index,parameter.threads, interval_dict[gene], gene)
+            """%(parameter.sample, parameter.bin, parameter.db, parameter.outdir, gene, index+1, index,parameter.threads, args["a"], interval_dict[gene], gene)
             os.system(order)
             # -S -A -Q 10 -E 0.3 -e 5
 
@@ -249,6 +232,8 @@ if __name__ == "__main__":
     optional.add_argument("-p", type=str, help="Population information", metavar="\b", default="Unknown")
     optional.add_argument("-j", type=int, help="Number of threads.", metavar="\b", default=5)
     optional.add_argument("-d", type=float, help="Minimum score difference to assign a read to a gene.", metavar="\b", default=0.001)
+    optional.add_argument("-m", type=int, help="1 represents typing, 0 means only read assignment", metavar="\b", default=1)
+    optional.add_argument("-a", type=str, help="prefix of filtered fastq file.", metavar="\b", default="long_read")
     # optional.add_argument("-t", type=int, default=5, help="<int> number of threads", metavar="\b")
     optional.add_argument("-h", "--help", action="help")
     args = vars(parser.parse_args()) 
@@ -261,8 +246,9 @@ if __name__ == "__main__":
     pbin = Pacbio_Binning()
     pbin.read_bam()
 
-    fa = Fasta()
-    fa.get_fasta()
+    if args["m"] == 1:
+        fa = Fasta()
+        fa.get_fasta()
 
 
 

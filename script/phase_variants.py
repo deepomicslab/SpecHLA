@@ -1398,56 +1398,54 @@ def run_SpecHap():
 
     # integrate phase info from pacbio data if provided.
     if args.tgs != 'NA':
-        tgs = """
+        command = """
         fq=%s
         ref=%s
         outdir=%s
         bin=%s/../bin
-        sample=my
-        $bin/minimap2 -a $ref $fq > $outdir/$sample.tgs.sam
+        gene=%s
+        sample=pacbio
+        $bin/minimap2 -a $ref $outdir/%s/$gene.pacbio.fq.gz > $outdir/$sample.tgs.sam
         $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
         $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
-        $bin/ExtractHAIRs --triallelic 1 --pacbio 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.tgs.file
-        """%(args.tgs, hla_ref, outdir, sys.path[0], gene_vcf)
+        $bin/ExtractHAIRs --triallelic 1 --pacbio 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.$sample.file
+        cat $outdir/fragment.$sample.file >> $outdir/fragment.all.file
+        """%(args.tgs, hla_ref, outdir, sys.path[0], gene.split("_")[1], args.sample_id, gene_vcf)
         print ('extract linkage info from pacbio TGS data.')
-        os.system(tgs)
-        os.system('cat %s/fragment.tgs.file >> %s/fragment.all.file'%(outdir, outdir))
+        os.system(command)
         order = '%s/../bin/SpecHap -P --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
         --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
         # print (order)
 
     # nanopore
     if args.nanopore != 'NA':
-        tgs = """
+        command = """
         fq=%s
         ref=%s
         outdir=%s
         bin=%s/../bin
-        sample=my
-        $bin/minimap2 -a $ref $fq > $outdir/$sample.tgs.sam
+        gene=%s
+        sample=nanopore
+        $bin/minimap2 -a $ref $outdir/%s/$gene.nanopore.fq.gz > $outdir/$sample.tgs.sam
         $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
         $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
         $bin/ExtractHAIRs --triallelic 1 --ONT 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.nanopore.file
-        # python %s/whole/edit_linkage_value.py $outdir/fragment.raw.nanopore.file 0 $outdir/fragment.nanopore.file
-        # rm $outdir/fragment.nanopore.file
-        # touch $outdir/fragment.nanopore.file
-
-        """%(args.nanopore, hla_ref, outdir, sys.path[0], gene_vcf, sys.path[0])
+        cat $outdir/fragment.nanopore.file >> $outdir/fragment.all.file
+        """%(args.nanopore, hla_ref, outdir, sys.path[0], gene.split("_")[1], args.sample_id, gene_vcf)
         print ('extract linkage info from nanopore TGS data.')
-        os.system(tgs)
-        os.system('cat %s/fragment.nanopore.file >> %s/fragment.all.file'%(outdir, outdir))
+        os.system(command)
         order = '%s/../bin/SpecHap -N --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
         --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
 
     # hic 
     if args.hic_fwd != 'NA' and args.hic_rev != 'NA':
-        tgs = """
+        command = """
         fwd_hic=%s
         rev_hic=%s
         ref=%s
         outdir=%s
         bin=%s/../bin
-        sample=my
+        sample=HiC
         group='@RG\tID:'$sample'\tSM:'$sample
         $bin/bwa mem -5SP -Y -U 10000 -L 10000,10000 -O 7,7 -E 2,2 $ref $fwd_hic $rev_hic >$outdir/$sample.tgs.raw.sam
         cat $outdir/$sample.tgs.raw.sam|grep -v 'XA:'|grep -v 'SA:'>$outdir/$sample.tgs.sam
@@ -1459,9 +1457,8 @@ def run_SpecHap():
         # touch $outdir/fragment.hic.file
         """%(args.hic_fwd, args.hic_rev, hla_ref, outdir, sys.path[0], gene_vcf, sys.path[0])
         print ('extract linkage info from HiC data.')
-        os.system(tgs)
+        os.system(command)
         os.system('cat %s/fragment.hic.file >> %s/fragment.all.file'%(outdir, outdir))
-        # gene_vcf = '%s/%s.new.vcf.gz'%(outdir, gene)
         order = '%s/../bin/SpecHap -H --new_format --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
         --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
         print (order)

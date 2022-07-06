@@ -16,8 +16,8 @@ import sys
 import pandas as pd
 from Bio import SeqIO
 
-# gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
-gene_list = ['DQA1']
+gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
+# gene_list = ['DQA1']
 
 class Align(object):
 
@@ -48,8 +48,9 @@ class Seq_error():
 
     def blast_map(self):
         command = f"""
-        blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 #-penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
-        blastn -query {self.infer_hap_file} -out {self.blast_file}.fmt1 -subject {self.truth_hap_file} -outfmt 1  # -penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
+        blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 
+        blastn -query {self.infer_hap_file} -out {self.blast_file}.fmt1 -subject {self.truth_hap_file} -outfmt 1  
+        # blastn -query {self.truth_hap_file} -out {self.blast_file}.fmt2 -subject {self.infer_hap_file} -outfmt 1  
         # cat  {self.blast_file}
         """
         # print (command)
@@ -131,7 +132,7 @@ class Seq_error():
 
 def eva_HG002_spechla():
     # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
-    outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/spechla/HG002/"
+    outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/spechla/HG002_ont/"
     truth_file1 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H1-asm.fa"
     truth_file2 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H2-asm.fa"
     data = []
