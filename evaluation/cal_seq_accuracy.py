@@ -48,7 +48,7 @@ class Seq_error():
 
     def blast_map(self):
         command = f"""
-        blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 -penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
+        blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 #-penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
         blastn -query {self.infer_hap_file} -out {self.blast_file}.fmt3 -subject {self.truth_hap_file} -outfmt 3  
         """
         # print (command)
@@ -138,7 +138,7 @@ class Seq_error():
 
 def eva_HG002_spechla():
     # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
-    outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/spechla/HG002_ont/"
+    outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/spechla/HG002/"
     truth_file1 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H1-asm.fa"
     truth_file2 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H2-asm.fa"
     data = []
@@ -423,8 +423,8 @@ def eva_simu(database, record_true_file, outdir):
 if __name__ == "__main__":
 
     # eva_HG002_kourami()
-    eva_pedigree_spechla()
-    # eva_HG002_spechla()
+    # eva_pedigree_spechla()
+    eva_HG002_spechla()
     # eva_HG002_hisat()
 
     # database = sys.argv[1]

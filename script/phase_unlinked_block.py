@@ -72,7 +72,7 @@ def constr_graph(score_file, block_phase_file):
         array = line.split()
         frag1 = array[0]
         frag2 = array[1]
-        if len(array) <3:
+        if len(array) < 3:
             score1 = 0
             score2 = 0
         else:
