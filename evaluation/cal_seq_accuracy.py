@@ -6,6 +6,8 @@ step3: get unique intervals
 step4: calculate the mismatch rate in the unique mapped region
 step5: calculate gap recall and gap precision
 
+python cal_seq_accuracy.py hla_gen.format.filter.fasta simu_D100_L100_E0.truth.txt ./sample10 sample10
+
 dependency: Blastn 2.6.0+, samtools 1.14
 
 wangshuai July 1, 2022
@@ -373,12 +375,14 @@ def eva_HG002_kourami():
     df = pd.DataFrame(data, columns = ["base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
     df.to_csv('/mnt/d/HLAPro_backup/trio/kourami_hg002_haplo_assess.csv', sep=',')   
 
-def eva_simu(database, record_true_file, outdir):
+def eva_simu(database, record_true_file, outdir, sample_name):
     outdir = outdir + "/"
     true_allele = {}
     f = open(record_true_file)
     for line in f:
         array = line.strip().split()
+        if array[0] != sample_name:
+            continue
         if array[1] in gene_list:
             true_allele[array[1]] = [array[3], array[4]]
     f.close()
@@ -415,7 +419,7 @@ def eva_simu(database, record_true_file, outdir):
         gap_recall = (choose_align1.gap_recall + choose_align2.gap_recall)/2
         gap_precision = (choose_align1.gap_precision + choose_align2.gap_precision)/2
         data.append([base_error, short_gap_error, gap_recall, gap_precision, gene])
-        print (gene, base_error, short_gap_error, gap_recall, gap_precision)
+        print (gene, base_error, short_gap_error, gap_recall, gap_precision, choose_align1.gap_precision, choose_align2.gap_precision)
         # break
     df = pd.DataFrame(data, columns = ["base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
     df.to_csv('%s/haplotype_assessment.csv'%(outdir), sep=',')
@@ -424,11 +428,12 @@ if __name__ == "__main__":
 
     # eva_HG002_kourami()
     # eva_pedigree_spechla()
-    eva_HG002_spechla()
+    # eva_HG002_spechla()
     # eva_HG002_hisat()
 
-    # database = sys.argv[1]
-    # record_true_file = sys.argv[2]
-    # sample_dir = sys.argv[3]
-    # eva_simu(database, record_true_file, sample_dir)
+    database = sys.argv[1]
+    record_true_file = sys.argv[2]
+    sample_dir = sys.argv[3]
+    sample_name = sys.argv[4]
+    eva_simu(database, record_true_file, sample_dir, sample_name)
     
