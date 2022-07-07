@@ -640,6 +640,7 @@ class Share_reads():
         self.strainsNum = strainsNum
         self.gene = gene
         self.normal_sequence=gene_profile[self.gene]
+        self.before_dup_reads = [[], []] # record reads before the 3988 for DRB1, for finding dup type, not using
         self.reads_support = self.normal_reads()
         self.outdir = outdir
         self.ins_seq = ins_seq
@@ -671,9 +672,7 @@ class Share_reads():
 
     def normal_reads(self):
         normal_region, segs = self.generate_normal_region()
-        reads_support = []
-        for i in range(self.strainsNum):
-            reads_support.append([])
+        reads_support = [[], []]
         samfile = pysam.AlignmentFile(self.bamfile, "rb")
         for region in normal_region:
             if abs(region[0] - region[1]) < 10:
@@ -697,6 +696,8 @@ class Share_reads():
                     hap_belong=self.check_hap(support_alleles,support_loci)[0]
                     if hap_belong != 'NA':
                         reads_support[hap_belong].append(read.query_name)
+                        if self.gene == "HLA_DRB1" and region[0] < 3988: 
+                            self.before_dup_reads[hap_belong].append(read.query_name)
         return reads_support
 
     def check_hap(self,support_alleles,support_loci):
@@ -758,12 +759,13 @@ class Share_reads():
             for j in range(len(drb1_complex_seq)):
                 num = 0
                 for re in uniq_drb1_complex_reads[j]:
-                    if re in self.reads_support[i]:
+                    # if re in self.reads_support[i]:
+                    if re in self.before_dup_reads[i]:
                         num+=1
                 if num >= max_num:
                     max_num = num
                     max_seq = drb1_complex_seq[j]
-                print ('DRB1 assign dup seq', i, j, max_num, num, len(drb1_complex_seq))
+                print ('DRB1 assign dup seq', i, j, num, len(drb1_complex_seq))
             new_drb1_complex_seq.append(max_seq)
         return new_drb1_complex_seq
 

@@ -507,7 +507,6 @@ def split_hisat_fasta(outdir, sample_name):
             with open(infer_file, "w") as output_handle:
                 SeqIO.write(record, output_handle, "fasta")
 
-
 def split_kourami_fasta(outdir, sample_name):
     record_dict = {}
     files = os.listdir(outdir)
@@ -523,7 +522,6 @@ def split_kourami_fasta(outdir, sample_name):
                 infer_file = outdir + "/kourami.hla.allele.%s.HLA_%s.fasta"%(record_dict[gene_name], gene_name)
                 with open(infer_file, "w") as output_handle:
                     SeqIO.write(record, output_handle, "fasta")
-
 
 def eva_simu(database, record_true_file, outdir, sample_name):
     outdir = outdir + "/"
@@ -599,7 +597,7 @@ def eva_simu(database, record_true_file, outdir, sample_name):
         gap_recall = (choose_align1.gap_recall + choose_align2.gap_recall)/2
         gap_precision = (choose_align1.gap_precision + choose_align2.gap_precision)/2
         data.append([base_error, short_gap_error, gap_recall, gap_precision, gene])
-        print (gene, base_error, short_gap_error, gap_recall, gap_precision, choose_align1.base_error, choose_align2.base_error)
+        print (gene, base_error, short_gap_error, gap_recall, gap_precision, choose_align1.mismatch_num, choose_align2.mismatch_num)
         # break
     df = pd.DataFrame(data, columns = ["base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
     df.to_csv('%s/haplotype_assessment.csv'%(outdir), sep=',')
