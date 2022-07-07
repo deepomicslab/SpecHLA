@@ -8,7 +8,7 @@ step5: calculate gap recall and gap precision
 
 python cal_seq_accuracy.py hla_gen.format.filter.fasta simu_D100_L100_E0.truth.txt ./sample10 sample10
 
-dependency: Blastn 2.6.0+, samtools 1.14
+dependency: Blastn 2.6.0+, samtools 1.14, MUSCLE v3.8.1551
 
 wangshuai July 1, 2022
 """
@@ -17,9 +17,10 @@ import os
 import sys
 import pandas as pd
 from Bio import SeqIO
+from Bio.SeqRecord import SeqRecord
 
 gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
-# gene_list = ['DQA1']
+# gene_list = ['DRB1']
 
 class Align(object):
 
@@ -35,7 +36,7 @@ class Align(object):
           
 class Seq_error():
 
-    def __init__(self, infer_hap_file, truth_hap_file):
+    def __init__(self, infer_hap_file, truth_hap_file, gene):
         self.infer_hap_file = infer_hap_file
         self.truth_hap_file = truth_hap_file
         self.blast_file = f"{self.infer_hap_file}.blast"
@@ -47,14 +48,34 @@ class Seq_error():
         self.true_mapped_len = 0
         self.mismatch_num = 0
         self.gap_open_num = 0
+        self.gene = gene
 
     def blast_map(self):
-        command = f"""
-        blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 #-penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
-        blastn -query {self.infer_hap_file} -out {self.blast_file}.fmt3 -subject {self.truth_hap_file} -outfmt 3  
-        """
-        # print (command)
-        os.system(command)
+        #-penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
+        # if self.gene != "DRB1":
+        if True:
+            command = f"""
+            blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 
+            """
+            os.system(command)
+        else: 
+            interval_list = [[0,3000], [3001,5000], [5001, 20000]]
+            
+            with open(self.infer_hap_file) as handle:
+                for record in SeqIO.parse(handle, "fasta"):
+                    for i in range(3):
+                        output_handle = open(self.infer_hap_file+"_frag_%s.fasta"%(i + 1), "w")
+                        start = interval_list[i][0]
+                        end = interval_list[i][1]
+                        frag = record.seq[start:end]
+                        new_record = SeqRecord(frag, "fragment_%i" % (i + 1), "", "")
+                        SeqIO.write(new_record, output_handle, "fasta")
+                        output_handle.close()
+
+                        command = f"""
+                        blastn -query {self.infer_hap_file}_frag_{i+1}.fasta -out {self.blast_file}_frag_{i+1} -subject {self.truth_hap_file} -outfmt 7 
+                        """
+                        os.system(command)
 
     def record_blast(self, index):
         command = f"""
@@ -72,8 +93,8 @@ class Seq_error():
             for record in SeqIO.parse(handle, "fasta"):
                 self.truth_hap_len = len(record.seq)
 
-    def read_blast(self):
-        f = open(self.blast_file, 'r')
+    def read_blast(self, blast_file):
+        f = open(blast_file, 'r')
         i = 0
         for line in f:
             if line[0] == "#":
@@ -89,10 +110,6 @@ class Seq_error():
             true_map_e = int(array[9])
             self.true_mapped_interval = self.get_uniq_map(true_map_s, true_map_e, 0, 0, self.true_mapped_interval)
             i += 1
-            # if i > 5:
-            #     break
-        # print (self.mapped_interval)
-        # print (self.true_mapped_interval)
 
     def get_uniq_map(self, map_s, map_e, mismatches, gap_opens, mapped_interval):
         if map_e < map_s:
@@ -126,46 +143,133 @@ class Seq_error():
             self.true_mapped_len = self.true_mapped_len + (interval[1] - interval[0] + 1)
         # print (self.mapped_len, self.infer_hap_len, self.truth_hap_len)
         # print (self.mismatch_num, self.gap_open_num)
-        align = Align(self.mapped_len, self.infer_hap_len, self.truth_hap_len, \
-            self.mismatch_num, self.gap_open_num,self.true_mapped_len)
-        return align
+
 
     def main(self):
         self.get_fasta_len()
         self.blast_map()
-        self.read_blast()
-        align = self.get_gap_per()
+        # if self.gene != "DRB1":
+        if True:
+            self.read_blast(self.blast_file)
+            self.get_gap_per()
+        else:
+            for i in range(3):
+                self.read_blast(f"{self.blast_file}_frag_{i+1}" )
+                self.get_gap_per()
+                self.mapped_interval, self.true_mapped_interval = [], []
         # print (self.mapped_interval, self.infer_hap_len, self.truth_hap_len, self.mapped_len, align.base_error)
+        align = Align(self.mapped_len, self.infer_hap_len, self.truth_hap_len, \
+            self.mismatch_num, self.gap_open_num,self.true_mapped_len)
         return align
+
+class Seq_error_muscle():
+    def __init__(self, infer_hap_file, truth_hap_file, gene):
+        self.infer_hap_file = infer_hap_file
+        self.truth_hap_file = truth_hap_file
+        self.muscle_file = f"{self.infer_hap_file}.muscle"
+        self.merge_file = f"{self.infer_hap_file}.merge.fasta"
+
+        self.infer_hap_len = None
+        self.truth_hap_len = None
+        self.mapped_interval = [] # for inferred hap
+        self.true_mapped_interval = [] # for true hap
+        self.mapped_len = 0
+        self.true_mapped_len = 0
+        self.mismatch_num = 0
+        self.gap_open_num = 0
+        self.gene = gene
+
+        self.indel_cutoff = 150 #bp
+    
+    def run_muscle(self):
+        command = f"""
+        cat {self.infer_hap_file} {self.truth_hap_file} >{self.merge_file}
+        muscle -in {self.merge_file} -out {self.muscle_file} 
+        echo {self.muscle_file} 
+        """
+        os.system(command)
+    
+    def read_muscle(self):
+        record_seq = ['', '']
+        with open(self.muscle_file) as handle:
+            index = 0
+            for line in handle:
+                line = line.strip()
+                if line[0] == ">":
+                    index += 1
+                else:
+                    record_seq[index-1] += line
+        infer_small_variant_len, infer_long_indel_len = self.count_seq(record_seq[0])
+        true_small_variant_len, true_long_indel_len = self.count_seq(record_seq[1])
+        seq_len = len(record_seq[0])
+        base_error = true_small_variant_len/(seq_len-true_long_indel_len)
+        gap_recall = (seq_len-true_long_indel_len)/seq_len
+        gap_precision = (seq_len-infer_long_indel_len)/seq_len
+        print (base_error, gap_recall, gap_precision)
+    
+    def count_seq(self, seq):
+        unmapped_len = 0
+        total_unmapped_len = 0
+        small_variant_len = 0
+        long_indel_len = 0
+
+        seq = str(seq)
+        seq_len = len(seq)
+        mis_len = 0
+        for i in range(seq_len):
+            if seq[i] == "-":
+                unmapped_len += 1
+                mis_len += 1
+            else:
+                total_unmapped_len += mis_len
+                if mis_len < self.indel_cutoff:
+                    small_variant_len += mis_len
+                else:
+                    long_indel_len += mis_len
+                mis_len = 0
+
+        total_unmapped_len += mis_len
+      
+            # print (i, seq[i])
+            # break
+        
+        # small_variant_rate = small_variant_len/(seq_len - long_indel_len)
+        # print (unmapped_len, seq_len, total_unmapped_len, small_variant_len, long_indel_len, small_variant_rate)
+        return small_variant_len, long_indel_len
+
+    
+    def main(self):
+        self.run_muscle()
+        self.read_muscle()
 
 def eva_HG002_spechla():
     # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
-    outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/spechla/HG002/"
+    outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/spechla/HG002_merge/"
     truth_file1 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H1-asm.fa"
     truth_file2 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H2-asm.fa"
     data = []
     for gene in gene_list:
         infer_file1 = outdir + "hla.allele.1.HLA_%s.fasta"%(gene)
         infer_file2 = outdir + "hla.allele.2.HLA_%s.fasta"%(gene)
-        seq = Seq_error(infer_file1, truth_file1)
+        seq = Seq_error(infer_file1, truth_file1, gene)
         align_11 = seq.main()
-        seq = Seq_error(infer_file2, truth_file2)
+        seq = Seq_error(infer_file2, truth_file2, gene)
         align_22 = seq.main()
-        seq = Seq_error(infer_file1, truth_file2)
+        seq = Seq_error(infer_file1, truth_file2, gene)
         align_12 = seq.main()
-        seq = Seq_error(infer_file2, truth_file1)
+        seq = Seq_error(infer_file2, truth_file1, gene)
         align_21 = seq.main()
         if align_11.base_error + align_22.base_error <= align_12.base_error + align_21.base_error:
-            seq = Seq_error(infer_file1, truth_file1)
+            seq = Seq_error(infer_file1, truth_file1, gene)
             align_11 = seq.main()
-            seq = Seq_error(infer_file2, truth_file2)
+            seq = Seq_error(infer_file2, truth_file2, gene)
             align_22 = seq.main()
             choose_align1 = align_11
             choose_align2 = align_22
         else:
-            seq = Seq_error(infer_file1, truth_file2)
+            seq = Seq_error(infer_file1, truth_file2, gene)
             align_12 = seq.main()
-            seq = Seq_error(infer_file2, truth_file1)
+            seq = Seq_error(infer_file2, truth_file1, gene)
             align_21 = seq.main()
             choose_align1 = align_12
             choose_align2 = align_21
@@ -198,14 +302,14 @@ def eva_pedigree_spechla():
                 parent_file2 = outdir + pedigree_samples[1+j] + "/hla.allele.2.HLA_%s.fasta"%(gene)
 
                 record_base_error = []
-                seq = Seq_error(infer_file1, parent_file1)
+                seq = Seq_error(infer_file1, parent_file1, gene)
                 align = seq.main()
                 record_base_error.append(align.base_error)
                 choose_align = align
                 choose_seq = seq
                 
 
-                seq = Seq_error(infer_file2, parent_file2)
+                seq = Seq_error(infer_file2, parent_file2, gene)
                 align = seq.main()
                 record_base_error.append(align.base_error)
                 if align.base_error < choose_align.base_error:
@@ -213,14 +317,14 @@ def eva_pedigree_spechla():
                     choose_seq = seq
                     
 
-                seq = Seq_error(infer_file1, parent_file2)
+                seq = Seq_error(infer_file1, parent_file2, gene)
                 align = seq.main()
                 record_base_error.append(align.base_error)
                 if align.base_error < choose_align.base_error:
                     choose_align = align
                     choose_seq = seq
 
-                seq = Seq_error(infer_file2, parent_file1)
+                seq = Seq_error(infer_file2, parent_file1, gene)
                 align = seq.main()
                 record_base_error.append(align.base_error)
                 if align.base_error < choose_align.base_error:
@@ -277,25 +381,25 @@ def eva_HG002_hisat():
                         SeqIO.write(record, output_handle, "fasta")
                     break
 
-        seq = Seq_error(infer_file1, truth_file1)
+        seq = Seq_error(infer_file1, truth_file1, gene)
         align_11 = seq.main()
-        seq = Seq_error(infer_file2, truth_file2)
+        seq = Seq_error(infer_file2, truth_file2, gene)
         align_22 = seq.main()
-        seq = Seq_error(infer_file1, truth_file2)
+        seq = Seq_error(infer_file1, truth_file2, gene)
         align_12 = seq.main()
-        seq = Seq_error(infer_file2, truth_file1)
+        seq = Seq_error(infer_file2, truth_file1, gene)
         align_21 = seq.main()
         if align_11.base_error + align_22.base_error <= align_12.base_error + align_21.base_error:
-            seq = Seq_error(infer_file1, truth_file1)
+            seq = Seq_error(infer_file1, truth_file1, gene)
             choose_align1 = seq.main()
-            seq = Seq_error(infer_file2, truth_file2)
+            seq = Seq_error(infer_file2, truth_file2, gene)
             choose_align2 = seq.main()
             # choose_align1 = align_11
             # choose_align2 = align_22
         else:
-            seq = Seq_error(infer_file1, truth_file2)
+            seq = Seq_error(infer_file1, truth_file2, gene)
             choose_align1 = seq.main()
-            seq = Seq_error(infer_file2, truth_file1)
+            seq = Seq_error(infer_file2, truth_file1, gene)
             choose_align2 = seq.main()
             # choose_align1 = align_12
             # choose_align2 = align_21
@@ -341,25 +445,25 @@ def eva_HG002_kourami():
                         SeqIO.write(record, output_handle, "fasta")
                     break
 
-        seq = Seq_error(infer_file1, truth_file1)
+        seq = Seq_error(infer_file1, truth_file1, gene)
         align_11 = seq.main()
-        seq = Seq_error(infer_file2, truth_file2)
+        seq = Seq_error(infer_file2, truth_file2, gene)
         align_22 = seq.main()
-        seq = Seq_error(infer_file1, truth_file2)
+        seq = Seq_error(infer_file1, truth_file2, gene)
         align_12 = seq.main()
-        seq = Seq_error(infer_file2, truth_file1)
+        seq = Seq_error(infer_file2, truth_file1, gene)
         align_21 = seq.main()
         if align_11.base_error + align_22.base_error <= align_12.base_error + align_21.base_error:
-            seq = Seq_error(infer_file1, truth_file1)
+            seq = Seq_error(infer_file1, truth_file1, gene)
             choose_align1 = seq.main()
-            seq = Seq_error(infer_file2, truth_file2)
+            seq = Seq_error(infer_file2, truth_file2, gene)
             choose_align2 = seq.main()
             # choose_align1 = align_11
             # choose_align2 = align_22
         else:
-            seq = Seq_error(infer_file1, truth_file2)
+            seq = Seq_error(infer_file1, truth_file2, gene)
             choose_align1 = seq.main()
-            seq = Seq_error(infer_file2, truth_file1)
+            seq = Seq_error(infer_file2, truth_file1, gene)
             choose_align2 = seq.main()
             # choose_align1 = align_12
             # choose_align2 = align_21
@@ -375,8 +479,7 @@ def eva_HG002_kourami():
     df = pd.DataFrame(data, columns = ["base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
     df.to_csv('/mnt/d/HLAPro_backup/trio/kourami_hg002_haplo_assess.csv', sep=',')   
 
-def eva_simu(database, record_true_file, outdir, sample_name):
-    outdir = outdir + "/"
+def get_sim_true_allele(record_true_file):
     true_allele = {}
     f = open(record_true_file)
     for line in f:
@@ -386,40 +489,117 @@ def eva_simu(database, record_true_file, outdir, sample_name):
         if array[1] in gene_list:
             true_allele[array[1]] = [array[3], array[4]]
     f.close()
-    
+    return true_allele
+
+def split_hisat_fasta(outdir, sample_name):
+    # hisat_fasta = "%s/assembly_graph-hla.%s_read1_fastq_gz-hla-extracted-1_fq.fasta"%(outdir, sample_name)   
+    hisat_fasta = "%s/assembly_graph-hla.simu_read1_fastq_gz-hla-extracted-1_fq.fasta"%(outdir)  
+    record_dict = {}
+    with open(hisat_fasta) as handle:
+        for record in SeqIO.parse(handle, "fasta"):
+            gene_name = record.id.split("_")[0].split(")")[1]
+            if gene_name not in record_dict:
+                record_dict[gene_name] = 0
+            record_dict[gene_name] += 1
+            if record_dict[gene_name] > 2:
+                continue
+            infer_file = outdir + "/hisat.hla.allele.%s.HLA_%s.fasta"%(record_dict[gene_name], gene_name)
+            with open(infer_file, "w") as output_handle:
+                SeqIO.write(record, output_handle, "fasta")
+
+
+def split_kourami_fasta(outdir, sample_name):
+    record_dict = {}
+    files = os.listdir(outdir)
+    for file in files:
+        if file[-3:] != ".fa":
+            continue
+        with open(outdir + "/" + file) as handle:
+            for record in SeqIO.parse(handle, "fasta"):
+                gene_name = record.id.split("_")[0]
+                if gene_name not in record_dict:
+                    record_dict[gene_name] = 0
+                record_dict[gene_name] += 1
+                infer_file = outdir + "/kourami.hla.allele.%s.HLA_%s.fasta"%(record_dict[gene_name], gene_name)
+                with open(infer_file, "w") as output_handle:
+                    SeqIO.write(record, output_handle, "fasta")
+
+
+def eva_simu(database, record_true_file, outdir, sample_name):
+    outdir = outdir + "/"
+    true_allele = get_sim_true_allele(record_true_file)
+  
     data = []
     for gene in gene_list:
+        if method == "spechla":
+            infer_file1 = outdir + "hla.allele.1.HLA_%s.fasta"%(gene)
+            infer_file2 = outdir + "hla.allele.2.HLA_%s.fasta"%(gene)
+        elif method == "hisat":
+            infer_file1 = outdir + "hisat.hla.allele.1.HLA_%s.fasta"%(gene)
+            infer_file2 = outdir + "hisat.hla.allele.2.HLA_%s.fasta"%(gene)
+        elif method == "kourami":
+            infer_file1 = outdir + "kourami.hla.allele.1.HLA_%s.fasta"%(gene)
+            infer_file2 = outdir + "kourami.hla.allele.2.HLA_%s.fasta"%(gene)
+        else:
+            print ("pls provide method name, spechla, hisat, or kourami.")
+        if not os.path.isfile(infer_file1):
+            print ("there is no %s."%(infer_file1))
+            continue
+
         truth_file1 = outdir + ".true.%s.1.fasta"%(gene)
         truth_file2 = outdir + ".true.%s.2.fasta"%(gene)
+
         alleles = true_allele[gene]
         command = f"samtools faidx {database} {alleles[0]} >{truth_file1}"
         os.system(command)
         command = f"samtools faidx {database} {alleles[1]} >{truth_file2}"
         os.system(command)
 
-        infer_file1 = outdir + "hla.allele.1.HLA_%s.fasta"%(gene)
-        infer_file2 = outdir + "hla.allele.2.HLA_%s.fasta"%(gene)
-        seq = Seq_error(infer_file1, truth_file1)
+
+        seq = Seq_error(infer_file1, truth_file1, gene)
         align_11 = seq.main()
-        seq = Seq_error(infer_file2, truth_file2)
+        seq = Seq_error(infer_file2, truth_file2, gene)
         align_22 = seq.main()
-        seq = Seq_error(infer_file1, truth_file2)
+        seq = Seq_error(infer_file1, truth_file2, gene)
         align_12 = seq.main()
-        seq = Seq_error(infer_file2, truth_file1)
+        seq = Seq_error(infer_file2, truth_file1, gene)
         align_21 = seq.main()
+
+
+
         if align_11.base_error + align_22.base_error <= align_12.base_error + align_21.base_error:
             choose_align1 = align_11
             choose_align2 = align_22
+            seq = Seq_error(infer_file1, truth_file1, gene)
+            seq.record_blast(0)
+            seq = Seq_error(infer_file2, truth_file2, gene)
+            seq.record_blast(1)
+
+            # seq = Seq_error_muscle(infer_file1, truth_file1, gene)
+            # seq.main()
+            # seq = Seq_error_muscle(infer_file2, truth_file2, gene)
+            # seq.main()
+
         else:
             choose_align1 = align_12
             choose_align2 = align_21
+            seq = Seq_error(infer_file1, truth_file2, gene)
+            seq.record_blast(0)
+            seq = Seq_error(infer_file2, truth_file1, gene)
+            seq.record_blast(1)
+
+            # seq = Seq_error_muscle(infer_file1, truth_file2, gene)
+            # seq.main()
+            # seq = Seq_error_muscle(infer_file2, truth_file1, gene)
+            # seq.main()
+
         # print (align_11.base_error, align_22.base_error, align_12.base_error, align_21.base_error)
         base_error = (choose_align1.base_error + choose_align2.base_error)/2
         short_gap_error = (choose_align1.short_gap_error + choose_align2.short_gap_error)/2
         gap_recall = (choose_align1.gap_recall + choose_align2.gap_recall)/2
         gap_precision = (choose_align1.gap_precision + choose_align2.gap_precision)/2
         data.append([base_error, short_gap_error, gap_recall, gap_precision, gene])
-        print (gene, base_error, short_gap_error, gap_recall, gap_precision, choose_align1.gap_precision, choose_align2.gap_precision)
+        print (gene, base_error, short_gap_error, gap_recall, gap_precision, choose_align1.base_error, choose_align2.base_error)
         # break
     df = pd.DataFrame(data, columns = ["base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
     df.to_csv('%s/haplotype_assessment.csv'%(outdir), sep=',')
@@ -435,5 +615,11 @@ if __name__ == "__main__":
     record_true_file = sys.argv[2]
     sample_dir = sys.argv[3]
     sample_name = sys.argv[4]
+    method = sys.argv[5] # spechla, hisat, or kourami
+             
+    if method == "hisat":
+        split_hisat_fasta(sample_dir, sample_name)
+    elif method == "kourami":
+        split_kourami_fasta(sample_dir, sample_name)
     eva_simu(database, record_true_file, sample_dir, sample_name)
     

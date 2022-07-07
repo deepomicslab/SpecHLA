@@ -402,6 +402,8 @@ class MNP_linkage():
         self.read_quality_dict = {}
         self.locus_read_dict = {}
         self.read_cover_geno = {}
+        self.discard_reads = {} # discard the reads mapped to the repeat region
+        self.get_discard_reads()
     
     def get_sup_reads(self, first, snp_index):
         """
@@ -414,6 +416,8 @@ class MNP_linkage():
             reads_list.append([])
         num=0
         for read in self.samfile.fetch(str(first[0]),int(first[1])-1,int(first[1])):
+            if read.query_name in self.discard_reads:
+                continue
             if read.query_name not in self.read_quality_dict:
                 self.read_quality_dict[read.query_name] = read.mapping_quality
             if int(first[1])-1 in read.get_reference_positions(full_length=True) and read.mapping_quality >1:   
@@ -463,6 +467,11 @@ class MNP_linkage():
                 if read_name not in self.read_cover_geno:
                     self.read_cover_geno[read_name] = {}
                 self.read_cover_geno[read_name][snp_index] = geno
+    
+    def get_discard_reads(self):
+        if gene == "HLA_DRB1":
+            for read in self.samfile.fetch("HLA_DRB1", 3898, 4400 ): #3898, 4400  3955, 4251
+                self.discard_reads[read.query_name] = 1
 
     def for_each_locus(self):
         f = open(outdir + '/fragment.read.file', 'w')
@@ -742,7 +751,6 @@ class Share_reads():
         #uniq reads for each dup type
         drb1_complex_seq, uniq_drb1_complex_reads = DRB1_complex_region(self.dup_file)
         #the relation between dup type and snv-haplotype
-        share_num = []
         new_drb1_complex_seq = []
         for i in range(self.strainsNum):
             max_num = 0
@@ -755,7 +763,7 @@ class Share_reads():
                 if num >= max_num:
                     max_num = num
                     max_seq = drb1_complex_seq[j]
-                    print ('DRB1 assignment', i, j, max_num, len(drb1_complex_seq))
+                print ('DRB1 assign dup seq', i, j, max_num, num, len(drb1_complex_seq))
             new_drb1_complex_seq.append(max_seq)
         return new_drb1_complex_seq
 
@@ -1252,6 +1260,7 @@ def get_unphased_loci(outdir, gene, invcf, snp_list, spec_vcf):
     i = 0
     block_boundaries = []
     used_locus = []
+    single_point_in_dup = 0
     for record in m.fetch():
         if record.chrom != gene:
             continue
@@ -1272,8 +1281,12 @@ def get_unphased_loci(outdir, gene, invcf, snp_list, spec_vcf):
                     for alt in past_record.alts:
                         if len(alt) > max_allele_length:
                             max_allele_length = len(alt)
-                    print (past_record.chrom, past_record.pos, past_record.pos+max_allele_length, file = bp)
-                    block_boundaries.append(past_record.pos+max_allele_length)
+                    if record.chrom == "HLA_DRB1" and past_record.pos >= 3880 and  past_record.pos <= 4400:
+                        single_point_in_dup += 1
+
+                    if single_point_in_dup <= 1:
+                        print (past_record.chrom, past_record.pos, past_record.pos+max_allele_length, file = bp)
+                        block_boundaries.append(past_record.pos+max_allele_length)
             record.samples[sample].phased = True
 
         if record.samples[sample]['PS'] != add_block:
@@ -1286,8 +1299,12 @@ def get_unphased_loci(outdir, gene, invcf, snp_list, spec_vcf):
                 for alt in past_record.alts:
                     if len(alt) > max_allele_length:
                         max_allele_length = len(alt)
-                print (past_record.chrom, past_record.pos, past_record.pos+max_allele_length, file = bp)
-                block_boundaries.append(past_record.pos+max_allele_length)
+
+                if record.chrom == "HLA_DRB1" and past_record.pos >= 3880 and  past_record.pos <= 4400:
+                    single_point_in_dup += 1
+                if single_point_in_dup <= 1:
+                    print (past_record.chrom, past_record.pos, past_record.pos+max_allele_length, file = bp)
+                    block_boundaries.append(past_record.pos+max_allele_length)
             add_block = record.samples[sample]['PS']
 
         if record.samples[sample]['GT'] != (1,1) and record.samples[sample]['GT'] != (0,0)  and record.samples[sample]['GT'] != (2,2):
