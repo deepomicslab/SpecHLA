@@ -57,32 +57,20 @@ class Seq_error():
         self.gap_open_num = 0
         self.gene = gene
 
-    def blast_map(self):
+    def blast_map(self, flag):
         #-penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
         # if self.gene != "DRB1":
-        if True:
+        if flag == "strict":
             command = f"""
-            blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 
+            blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7
             """
-            os.system(command)
-        else: 
-            interval_list = [[0,3000], [3001,5000], [5001, 20000]]
-            
-            with open(self.infer_hap_file) as handle:
-                for record in SeqIO.parse(handle, "fasta"):
-                    for i in range(3):
-                        output_handle = open(self.infer_hap_file+"_frag_%s.fasta"%(i + 1), "w")
-                        start = interval_list[i][0]
-                        end = interval_list[i][1]
-                        frag = record.seq[start:end]
-                        new_record = SeqRecord(frag, "fragment_%i" % (i + 1), "", "")
-                        SeqIO.write(new_record, output_handle, "fasta")
-                        output_handle.close()
-
-                        command = f"""
-                        blastn -query {self.infer_hap_file}_frag_{i+1}.fasta -out {self.blast_file}_frag_{i+1} -subject {self.truth_hap_file} -outfmt 7 
-                        """
-                        os.system(command)
+        elif flag == "somewhat":
+            # Somewhat similar sequences (blastn) in https://blast.ncbi.nlm.nih.gov/Blast.cgi
+            command = f"""
+            blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 -evalue 0.05 \
+                -word_size 11 -reward 2 -penalty -3 -gapopen 5 -gapextend 2 
+            """
+        os.system(command)
 
     def record_blast(self, index):
         command = f"""
@@ -154,16 +142,14 @@ class Seq_error():
 
     def main(self):
         self.get_fasta_len()
-        self.blast_map()
-        # if self.gene != "DRB1":
-        if True:
+        self.blast_map("strict")
+        self.read_blast(self.blast_file)
+        self.get_gap_per()
+        if self.mapped_len == 0:
+            self.blast_map("somewhat")
             self.read_blast(self.blast_file)
-            self.get_gap_per()
-        else:
-            for i in range(3):
-                self.read_blast(f"{self.blast_file}_frag_{i+1}" )
-                self.get_gap_per()
-                self.mapped_interval, self.true_mapped_interval = [], []
+            self.get_gap_per()            
+
         # print (self.mapped_interval, self.infer_hap_len, self.truth_hap_len, self.mapped_len, align.base_error)
         align = Align(self.mapped_len, self.infer_hap_len, self.truth_hap_len, \
             self.mismatch_num, self.gap_open_num,self.true_mapped_len)
@@ -611,20 +597,22 @@ def eva_simu(database, record_true_file, outdir, sample_name):
 
 if __name__ == "__main__":
 
-    # eva_HG002_kourami()
-    # eva_pedigree_spechla()
-    eva_HG002_spechla()
-    # eva_HG002_hisat()
 
-    # database = sys.argv[1]
-    # record_true_file = sys.argv[2]
-    # sample_dir = sys.argv[3]
-    # sample_name = sys.argv[4]
-    # method = sys.argv[5] # spechla, hisat, or kourami
-             
-    # if method == "hisat":
-    #     split_hisat_fasta(sample_dir, sample_name)
-    # elif method == "kourami":
-    #     split_kourami_fasta(sample_dir, sample_name)
-    # eva_simu(database, record_true_file, sample_dir, sample_name)
-    
+    if len(sys.argv) == 1:
+        # eva_HG002_kourami()
+        # eva_pedigree_spechla()
+        eva_HG002_spechla()
+        # eva_HG002_hisat()
+    else:
+        database = sys.argv[1]
+        record_true_file = sys.argv[2]
+        sample_dir = sys.argv[3]
+        sample_name = sys.argv[4]
+        method = sys.argv[5] # spechla, hisat, or kourami
+                
+        if method == "hisat":
+            split_hisat_fasta(sample_dir, sample_name)
+        elif method == "kourami":
+            split_kourami_fasta(sample_dir, sample_name)
+        eva_simu(database, record_true_file, sample_dir, sample_name)
+        
