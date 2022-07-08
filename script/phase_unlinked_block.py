@@ -98,6 +98,7 @@ def constr_graph(score_file, block_phase_file):
     hapotype = get_hap(fiedler_vec)
     print ("fiedler_vec:\n", fiedler_vec, hapotype)
     output(frag_list, hapotype, block_phase_file)
+    print (frag_list)
 
 def output(frag_list, hapotype, block_phase_file):
     f = open(block_phase_file, 'w')

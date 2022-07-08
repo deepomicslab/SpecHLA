@@ -28,11 +28,18 @@ class Align(object):
         self.mapped_len, self.infer_hap_len, self.truth_hap_len, self.mismatch_num, self.gap_open_num,\
             self.true_mapped_len=mapped_len,infer_hap_len,truth_hap_len,mismatch_num,gap_open_num,true_mapped_len
 
-        self.short_gap_error = self.gap_open_num/self.mapped_len
-        self.base_error = self.mismatch_num/self.mapped_len
-        self.gap_recall = self.true_mapped_len/self.truth_hap_len
-        # self.gap_recall = self.mapped_len/self.truth_hap_len
-        self.gap_precision = self.mapped_len/self.infer_hap_len
+        if self.mapped_len > 0:
+            self.short_gap_error = self.gap_open_num/self.mapped_len
+            self.base_error = self.mismatch_num/self.mapped_len
+            self.gap_recall = self.true_mapped_len/self.truth_hap_len
+            # self.gap_recall = self.mapped_len/self.truth_hap_len
+            self.gap_precision = self.mapped_len/self.infer_hap_len
+        else:
+            self.short_gap_error = 1
+            self.base_error = 1
+            self.gap_recall = 0
+            # self.gap_recall = self.mapped_len/self.truth_hap_len
+            self.gap_precision = 0
           
 class Seq_error():
 

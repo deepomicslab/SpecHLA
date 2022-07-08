@@ -112,6 +112,7 @@ foreach my $region1(sort keys %hashrr){
                 if($wxs eq "wes"){$re1 = $hashrr{$region1};$re2 = $hashrr{$region2}}
                 else{$re1 = $region1; $re2 = $region2}
                 for(my $j=1; $j<=$k; $j++){
+		     my $gene = (split /:/,$re1)[0];
                      `echo ">allele$j.break1" > $outdir/allele$j.break1.fa`;
                      `echo ">allele$j.break2" > $outdir/allele$j.break2.fa`;
                      `$bin/samtools faidx $hla_ref $re1 | $bin/bcftools consensus -H $j $vcf.gz | grep -v ">" >> $outdir/allele$j.break1.fa`;
@@ -122,24 +123,26 @@ foreach my $region1(sort keys %hashrr){
                 
                  open TE, "$outdir/allele.break.merge.blast.$n" or die "blast\t$!\n";
                  my (%hash1,%hash2,%hash11,%hash12,%hash21,%hash22); my ($score1,$score2) = (0,0);
+		 my (%hashm11,%hashm12,%hashm21,%hashm22);
                  while(<TE>){
                       chomp;
                       next if(/^#/);
-                      my ($id,$hla,$score) = (split)[0,1,2];
-                      if($id eq "allele1.break1"){$hash11{$hla} = $score}
-                      if($id eq "allele1.break2"){$hash12{$hla} = $score}
-                      if($id eq "allele2.break1"){$hash21{$hla} = $score}
-                      if($id eq "allele2.break2"){$hash22{$hla} = $score}
+                      my ($id,$hla,$t,$m,$i) = (split)[0,1,3,4,5];
+		      next if($t < 250 && $gene eq "HLA_DRB1" && $wxs ne "wes");
+                      if($id eq "allele1.break1"){$hash11{$hla} += $t; $hashm11{$hla} += $m+$i}
+                      if($id eq "allele1.break2"){$hash12{$hla} += $t; $hashm12{$hla} += $m+$i}
+                      if($id eq "allele2.break1"){$hash21{$hla} += $t; $hashm21{$hla} += $m+$i}
+                      if($id eq "allele2.break2"){$hash22{$hla} += $t; $hashm22{$hla} += $m+$i}
                  }
                  close TE;
                  ##return the score of hap 00/01;
                  my $hhla; my $max = 0;
                  foreach my $hh(sort keys %hash11){
                       my ($s11,$s12,$s21,$s22) = (0,0,0,0);
-                      if(exists $hash11{$hh}){$s11 = $hash11{$hh};}
-                      if(exists $hash12{$hh}){$s12 = $hash12{$hh};}
-                      if(exists $hash21{$hh}){$s21 = $hash21{$hh};}
-                      if(exists $hash22{$hh}){$s22 = $hash22{$hh};}
+                      if(exists $hash11{$hh}){$s11 = 100*(1- $hashm11{$hh}/$hash11{$hh});}
+                      if(exists $hash12{$hh}){$s12 = 100*(1- $hashm12{$hh}/$hash12{$hh});}
+                      if(exists $hash21{$hh}){$s21 = 100*(1- $hashm21{$hh}/$hash21{$hh});}
+                      if(exists $hash22{$hh}){$s22 = 100*(1- $hashm22{$hh}/$hash22{$hh});}
                       my $ss1 = ($s11 + $s12)/2;
                       my $ss2 = ($s21 + $s22)/2;
                       my $rss1 = ($s11 + $s22)/2;

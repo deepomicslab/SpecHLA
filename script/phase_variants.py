@@ -696,8 +696,10 @@ class Share_reads():
                     hap_belong=self.check_hap(support_alleles,support_loci)[0]
                     if hap_belong != 'NA':
                         reads_support[hap_belong].append(read.query_name)
-                        if self.gene == "HLA_DRB1" and region[0] < 3988: 
+                        if self.gene == "HLA_DRB1" and read.reference_start < 3988: 
                             self.before_dup_reads[hap_belong].append(read.query_name)
+
+        print (len(reads_support[0]), len(self.before_dup_reads[0]))
         return reads_support
 
     def check_hap(self,support_alleles,support_loci):
@@ -1285,8 +1287,10 @@ def get_unphased_loci(outdir, gene, invcf, snp_list, spec_vcf):
                             max_allele_length = len(alt)
                     if record.chrom == "HLA_DRB1" and past_record.pos >= 3880 and  past_record.pos <= 4400:
                         single_point_in_dup += 1
-
-                    if single_point_in_dup <= 1:
+                        if single_point_in_dup == 1:
+                            print (past_record.chrom, past_record.pos, past_record.pos+max_allele_length, file = bp)
+                            block_boundaries.append(past_record.pos+max_allele_length)
+                    else:
                         print (past_record.chrom, past_record.pos, past_record.pos+max_allele_length, file = bp)
                         block_boundaries.append(past_record.pos+max_allele_length)
             record.samples[sample].phased = True
@@ -1304,9 +1308,14 @@ def get_unphased_loci(outdir, gene, invcf, snp_list, spec_vcf):
 
                 if record.chrom == "HLA_DRB1" and past_record.pos >= 3880 and  past_record.pos <= 4400:
                     single_point_in_dup += 1
-                if single_point_in_dup <= 1:
+                    if single_point_in_dup == 1:
+                        print (past_record.chrom, past_record.pos, past_record.pos+max_allele_length, file = bp)
+                        block_boundaries.append(past_record.pos+max_allele_length)
+                else:
                     print (past_record.chrom, past_record.pos, past_record.pos+max_allele_length, file = bp)
                     block_boundaries.append(past_record.pos+max_allele_length)
+
+            # print (past_record.pos, add_block, record.samples[sample]['PS'])
             add_block = record.samples[sample]['PS']
 
         if record.samples[sample]['GT'] != (1,1) and record.samples[sample]['GT'] != (0,0)  and record.samples[sample]['GT'] != (2,2):
