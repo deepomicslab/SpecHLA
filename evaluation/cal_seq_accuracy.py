@@ -18,6 +18,7 @@ import sys
 import pandas as pd
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
+import numpy as np
 
 gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
 # gene_list = ['DRB1']
@@ -284,6 +285,7 @@ def eva_pedigree_spechla():
 
     data = []
     pedigree_samples_list = [["NA12878", "NA12891", "NA12892"], ["NA19240", "NA19238", "NA19239"]]
+    base_error_list = []
     # pedigree_samples_list = [["NA12878", "NA12891", "NA12892"]]
     for pedigree_samples in pedigree_samples_list:
         for gene in gene_list:
@@ -333,9 +335,11 @@ def eva_pedigree_spechla():
                 data.append([pedigree_samples[1+j], base_error, short_gap_error, gap_recall, gap_precision, gene])
                 # print (gene, base_error, short_gap_error, gap_recall, gap_precision)
                 print (pedigree_samples[1+j], gene, round(base_error,6), round(short_gap_error,6), round(gap_recall,6), round(gap_precision,6))
+                base_error_list.append(base_error)
         # break
     df = pd.DataFrame(data, columns = ["parent","base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
     df.to_csv('/mnt/d/HLAPro_backup/trio/pedigree_haplo_assess.csv', sep=',')
+    print ("Mean base error:", np.mean(base_error_list))
 
 def eva_HG002_hisat():
     outdir = "/mnt/d/HLAPro_backup/trio/Trio/hisat/HG002/"
@@ -600,8 +604,8 @@ if __name__ == "__main__":
 
     if len(sys.argv) == 1:
         # eva_HG002_kourami()
-        # eva_pedigree_spechla()
-        eva_HG002_spechla()
+        eva_pedigree_spechla()
+        # eva_HG002_spechla()
         # eva_HG002_hisat()
     else:
         database = sys.argv[1]
