@@ -251,7 +251,7 @@ class Seq_error_muscle():
 
 def eva_HG002_spechla():
     # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
-    outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/spechla/HG002_merge/"
+    outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/spechla/HG002/"
     truth_file1 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H1-asm.fa"
     truth_file2 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H2-asm.fa"
     data = []
@@ -613,18 +613,18 @@ if __name__ == "__main__":
 
     # eva_HG002_kourami()
     # eva_pedigree_spechla()
-    # eva_HG002_spechla()
+    eva_HG002_spechla()
     # eva_HG002_hisat()
 
-    database = sys.argv[1]
-    record_true_file = sys.argv[2]
-    sample_dir = sys.argv[3]
-    sample_name = sys.argv[4]
-    method = sys.argv[5] # spechla, hisat, or kourami
+    # database = sys.argv[1]
+    # record_true_file = sys.argv[2]
+    # sample_dir = sys.argv[3]
+    # sample_name = sys.argv[4]
+    # method = sys.argv[5] # spechla, hisat, or kourami
              
-    if method == "hisat":
-        split_hisat_fasta(sample_dir, sample_name)
-    elif method == "kourami":
-        split_kourami_fasta(sample_dir, sample_name)
-    eva_simu(database, record_true_file, sample_dir, sample_name)
+    # if method == "hisat":
+    #     split_hisat_fasta(sample_dir, sample_name)
+    # elif method == "kourami":
+    #     split_kourami_fasta(sample_dir, sample_name)
+    # eva_simu(database, record_true_file, sample_dir, sample_name)
     

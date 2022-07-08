@@ -40,9 +40,8 @@ my ($ref,$region1,$region2,$break1,$break2,$vcf,$start1,$start2,$end1,$end2,$gen
 foreach my $ge(sort keys %hash){
         $gene = $ge;
         my @lines = (split /\n/, $hash{$gene});
-        $vcf = "$vdir/"."$gene".".vcf";
+        $vcf = "$vdir/"."$gene".".spechap.vcf.gz";  # bug
         $ref = "$db/whole/$gene";
-        `tabix -f $vcf.gz`;
         ($start1,$n) = (1001,0);
         while($n<=$#lines){               
                 my @oarrs = (split /\s/, $lines[$n]);

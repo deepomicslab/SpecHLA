@@ -48,6 +48,8 @@ def constr_graph(score_file, block_phase_file):
         line = line.strip()
         if line == '':
             continue
+        if line[0] == '#':
+            continue
         array = line.split()
         frag1 = array[0]
         frag2 = array[1]
@@ -69,6 +71,10 @@ def constr_graph(score_file, block_phase_file):
     f = open(score_file)
     for line in f:
         line = line.strip()
+        if line == '':
+            continue
+        if line[0] == '#':
+            continue
         array = line.split()
         frag1 = array[0]
         frag2 = array[1]
