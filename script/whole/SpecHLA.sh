@@ -22,14 +22,15 @@
 ###             this parameter to adopt barcode information to improve phasing.
 ###   -c        fwd hi-c fastq file.
 ###   -d        rev hi-c fastq file.
-###   -w        The weight of using phase information of allele imbalance [0-1], default is 0.
+###   -w        The weight of using phase information of allele imbalance [0-1], default is 0.  
+###             The weight of phase information from reads is 1-w.
 ###   -p        The population of the sample [Asian, Black, Caucasian, nonuse]. Use mean frequency
 ###             if not provided. nonuse indicates only adopting mapping score to annotate the allele. 
 ###   -j        Number of threads [5]
 ###   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
 ###             is 2. It should be set larger to infer novel alleles.
 ###   -y        The minimum different mapping score between the best- and second-best aligned gene. 
-###             Discard the read if the score is lower than this value. Deault is 0.5. 
+###             Discard the read if the score is lower than this value. Deault is 0.1. 
 ###   -v        True or False. Consider long InDels if True, else only consider short variants. 
 ###             Default is False. 
 ###   -q        Minimum variant quality. Default is 0.01. Set it larger in high quality samples.
@@ -153,7 +154,7 @@ else
     $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
 fi
 $bin/samtools index $outdir/$sample.map_database.bam
-python3 $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir -d ${mini_score:-0.5} \
+python3 $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir -d ${mini_score:-0.1} \
 -b ${outdir}/${sample}.map_database.bam -nm ${nm:-2}
 # #############################################################################################################
 
@@ -254,7 +255,7 @@ fi
 
 echo Minimum Minor Allele Frequency is $my_maf.
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
-# hlas=(DRB1)
+# hlas=(DPB1)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
 python3 $dir/../phase_variants.py \

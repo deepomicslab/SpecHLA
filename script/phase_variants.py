@@ -419,7 +419,7 @@ class MNP_linkage():
             if read.query_name in self.discard_reads:
                 continue
             if read.query_name not in self.read_quality_dict:
-                self.read_quality_dict[read.query_name] = read.mapping_quality
+                self.read_quality_dict[read.query_name] = int(read.mapping_quality * (1-args.weight_imb))
             if int(first[1])-1 in read.get_reference_positions(full_length=True) and read.mapping_quality >1:   
                 
                 reads_index=read.get_reference_positions(full_length=True).index(int(first[1])-1)
@@ -481,8 +481,9 @@ class MNP_linkage():
             self.get_sup_reads(snp, snp_index)
         for read_name in self.read_cover_geno:
             # print (self.read_cover_geno[read_name])
-            record = self.for_each_read(read_name)
-            print (record, file = f)
+            record, support_loci_num = self.for_each_read(read_name)
+            if support_loci_num > 1 and args.weight_imb != 1:
+                print (record, file = f)
         f.close()
 
     def for_each_read(self, read_name):
@@ -506,7 +507,7 @@ class MNP_linkage():
             record = f"{str(seg_num)} {read_name}{genotype} {signal} {self.read_quality_dict[read_name]}"
         # print (genotype, seg_num)       
         # print (record)   
-        return record
+        return record, support_loci_num
 
 def isin(x,seq):
     try:
@@ -1370,7 +1371,7 @@ def compute_allele_frequency(geno_set,beta_set):
     else:
         return [1, 0]
 
-def allele_imba(freqs):
+def allele_imba(beta_set):
     """
     Utilizing allelic imbalance information to phase
     get the linkage info from allele frequencies at each variant locus
@@ -1378,25 +1379,28 @@ def allele_imba(freqs):
     """
     
     f = open(outdir + '/fragment.imbalance.file', 'w')
-    base_q = 60 * args.weight_imb
+    base_q = 60 * float(args.weight_imb)
+    
     if base_q >= 1:
-        locus_num = len(freqs)
-        mat = np.zeros((2*locus_num, 2*locus_num))
-        for i in range(locus_num):
-            z = 0
-            for j in range(i+1, locus_num):
-                if z == 1:
-                    break
-                same = max([ freqs[i][0] *  freqs[j][0], freqs[i][1] *  freqs[j][1] ])
-                reverse = max([ freqs[i][0] *  freqs[j][1], freqs[i][1] *  freqs[j][0] ])
-                linkage_name = "linkage:%s:%s"%(i, j)
-                if new_formate:
-                    print('2 %s:1 1 -1 -1 %s %s %s %s ?? %s'%(linkage_name, i+1, 0, j+1, 0, int(base_q*same)), file=f)
-                    print('2 %s:2 1 -1 -1 %s %s %s %s ?? %s'%(linkage_name, i+1, 0, j+1, 1, int(base_q*reverse)), file=f)
+        locus_num = len(beta_set)
+        for i in range(locus_num - 1):
+            j = i + 1
+            first_locus = snp_index_dict[snp_list[i][1]]
+            second_locus = snp_index_dict[snp_list[j][1]]
+            same = max([ beta_set[i][0] *  beta_set[j][0], beta_set[i][1] *  beta_set[j][1] ])
+            reverse = max([ beta_set[i][0] *  beta_set[j][1], beta_set[i][1] *  beta_set[j][0] ])
+            linkage_name = "linkage_inferred_by_allele_imbalance:%s:%s"%(first_locus, second_locus)
+            if new_formate:
+                if same > reverse:
+                    print('2 %s:1 1 -1 -1 %s %s %s %s ?? %s'%(linkage_name, first_locus, 0, second_locus, 0, int(base_q*same)), file=f)
                 else:
-                    print('2 %s:1 %s %s %s %s ?? %s'%(linkage_name, i+1, 0, j+1, 0, int(base_q*same)), file=f)
-                    print('2 %s:2 %s %s %s %s ?? %s'%(linkage_name, i+1, 0, j+1, 1, int(base_q*reverse)), file=f)
-                z += 1
+                    print('2 %s:2 1 -1 -1 %s %s %s %s ?? %s'%(linkage_name, first_locus, 0, second_locus, 1, int(base_q*reverse)), file=f)
+            else:
+                if same > reverse:
+                    print('2 %s:1 %s %s %s %s ?? %s'%(linkage_name, first_locus, 0, second_locus, 0, int(base_q*same)), file=f)
+                else:
+                    print('2 %s:2 %s %s %s %s ?? %s'%(linkage_name, first_locus, 0, second_locus, 1, int(base_q*reverse)), file=f)
+
     f.close()
 
 def run_SpecHap():
@@ -1422,6 +1426,7 @@ def run_SpecHap():
     # the order to phase with only ngs data.
     order='%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/fragment.sorted.file --out \
     %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
+    print (order)
 
 
     # integrate phase info from pacbio data if provided.

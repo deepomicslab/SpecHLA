@@ -20,8 +20,8 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 import numpy as np
 
-gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
-# gene_list = ['DRB1']
+# gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
+gene_list = ['DQA1', 'DQB1', 'DRB1']
 
 class Align(object):
 
@@ -60,10 +60,14 @@ class Seq_error():
 
     def blast_map(self, flag):
         #-penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
-        # if self.gene != "DRB1":
         if flag == "strict":
+            # command = f"""
+            # blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7
+            # """
+            if not os.path.isfile(f"{self.truth_hap_file}.nhr"):
+                os.system(f"makeblastdb -in {self.truth_hap_file} -dbtype nucl -out {self.truth_hap_file}")
             command = f"""
-            blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7
+            blastn -query {self.infer_hap_file} -out {self.blast_file} -db {self.truth_hap_file} -outfmt 7 -num_threads 10
             """
         elif flag == "somewhat":
             # Somewhat similar sequences (blastn) in https://blast.ncbi.nlm.nih.gov/Blast.cgi
@@ -71,6 +75,7 @@ class Seq_error():
             blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 -evalue 0.05 \
                 -word_size 11 -reward 2 -penalty -3 -gapopen 5 -gapextend 2 
             """
+        # print (flag)
         os.system(command)
 
     def record_blast(self, index):
@@ -599,12 +604,83 @@ def eva_simu(database, record_true_file, outdir, sample_name):
     df = pd.DataFrame(data, columns = ["base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
     df.to_csv('%s/haplotype_assessment.csv'%(outdir), sep=',')
 
+def eva_hgsvc2_spechla():
+    # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
+    sample = "HG03009"
+    outdir = "/mnt/d/HLAPro_backup/haplotype/hgsvc2/HG03009/"
+    truth_file1 = "/mnt/d/HLAPro_backup/haplotype/my_HLA/v12_HG03009_hgsvc_pbsq2-clr_1000-flye.h1-un.arrow-p1.fasta"
+    truth_file2 = "/mnt/d/HLAPro_backup/haplotype/my_HLA/v12_HG03009_hgsvc_pbsq2-clr_1000-flye.h2-un.arrow-p1.fasta"
+    data = []
+    for gene in gene_list:
+        infer_file1 = outdir + "hla.allele.1.HLA_%s.fasta"%(gene)
+        infer_file2 = outdir + "hla.allele.2.HLA_%s.fasta"%(gene)
+        seq = Seq_error(infer_file1, truth_file1, gene)
+        align_11 = seq.main()
+        seq = Seq_error(infer_file2, truth_file2, gene)
+        align_22 = seq.main()
+        seq = Seq_error(infer_file1, truth_file2, gene)
+        align_12 = seq.main()
+        seq = Seq_error(infer_file2, truth_file1, gene)
+        align_21 = seq.main()
+        if align_11.base_error + align_22.base_error <= align_12.base_error + align_21.base_error:
+            choose_align1 = align_11
+            choose_align2 = align_22
+        else:
+            choose_align1 = align_12
+            choose_align2 = align_21
+        base_error = (choose_align1.base_error + choose_align2.base_error)/2
+        short_gap_error = (choose_align1.short_gap_error + choose_align2.short_gap_error)/2
+        gap_recall = (choose_align1.gap_recall + choose_align2.gap_recall)/2
+        gap_precision = (choose_align1.gap_precision + choose_align2.gap_precision)/2
+        data.append([sample, gene, base_error, short_gap_error, gap_recall, gap_precision])
+        print (gene, round(base_error,6), round(short_gap_error,6), round(gap_recall,6), round(gap_precision,6),\
+             round(choose_align1.base_error,6), round(choose_align2.base_error,6))
+    df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "gap_recall", "gap_precision"])
+    df.to_csv('/mnt/d/HLAPro_backup/haplotype/hgsvc_haplo_assess.csv', sep=',')
+
+def eva_data_types_spechla():
+    # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
+    sample = "test_0"
+    outdir = "/mnt/d/HLAPro_backup/pacbio/novel/" + sample + "/"
+
+    data = []
+    for gene in gene_list:
+        truth_file1 = "/mnt/d/HLAPro_backup/pacbio/simulation/truth/%s.HLA_%s_1.fasta"%(sample, gene)
+        truth_file2 = "/mnt/d/HLAPro_backup/pacbio/simulation/truth/%s.HLA_%s_2.fasta"%(sample, gene)
+        infer_file1 = outdir + "hla.allele.1.HLA_%s.fasta"%(gene)
+        infer_file2 = outdir + "hla.allele.2.HLA_%s.fasta"%(gene)
+        seq = Seq_error(infer_file1, truth_file1, gene)
+        align_11 = seq.main()
+        seq = Seq_error(infer_file2, truth_file2, gene)
+        align_22 = seq.main()
+        seq = Seq_error(infer_file1, truth_file2, gene)
+        align_12 = seq.main()
+        seq = Seq_error(infer_file2, truth_file1, gene)
+        align_21 = seq.main()
+        if align_11.base_error + align_22.base_error <= align_12.base_error + align_21.base_error:
+            choose_align1 = align_11
+            choose_align2 = align_22
+        else:
+            choose_align1 = align_12
+            choose_align2 = align_21
+        base_error = (choose_align1.base_error + choose_align2.base_error)/2
+        short_gap_error = (choose_align1.short_gap_error + choose_align2.short_gap_error)/2
+        gap_recall = (choose_align1.gap_recall + choose_align2.gap_recall)/2
+        gap_precision = (choose_align1.gap_precision + choose_align2.gap_precision)/2
+        data.append([sample, gene, base_error, short_gap_error, gap_recall, gap_precision])
+        print (gene, round(base_error,6), round(short_gap_error,6), round(gap_recall,6), round(gap_precision,6),\
+             round(choose_align1.base_error,6), round(choose_align2.base_error,6))
+    df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "gap_recall", "gap_precision"])
+    df.to_csv('/mnt/d/HLAPro_backup/pacbio/novel/haplo_assess.csv', sep=',')
+
 if __name__ == "__main__":
 
 
     if len(sys.argv) == 1:
+        eva_hgsvc2_spechla()
+        # eva_data_types_spechla()
         # eva_HG002_kourami()
-        eva_pedigree_spechla()
+        # eva_pedigree_spechla()
         # eva_HG002_spechla()
         # eva_HG002_hisat()
     else:
