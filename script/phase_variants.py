@@ -1426,8 +1426,6 @@ def run_SpecHap():
     # the order to phase with only ngs data.
     order='%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/fragment.sorted.file --out \
     %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
-    print (order)
-
 
     # integrate phase info from pacbio data if provided.
     if args.tgs != 'NA':
@@ -1558,6 +1556,7 @@ def all_poss_block_link():
         print ("-----------------------------------------------------------")
         sys.exit(1)
     record_all_block_haps = []
+    os.system("rm -f %s/%s.*.*.fasta"%(outdir, gene))
     for i in range(len(all_poss)):
         # print (all_poss[i], rephase_vcf)
         record_block_haps = []

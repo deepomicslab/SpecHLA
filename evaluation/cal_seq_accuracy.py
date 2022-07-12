@@ -20,8 +20,8 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 import numpy as np
 
-# gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
-gene_list = ['DQA1', 'DQB1', 'DRB1']
+gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
+# gene_list = ['DQA1', 'DQB1', 'DRB1']
 
 class Align(object):
 
@@ -61,14 +61,14 @@ class Seq_error():
     def blast_map(self, flag):
         #-penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
         if flag == "strict":
-            # command = f"""
-            # blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7
-            # """
-            if not os.path.isfile(f"{self.truth_hap_file}.nhr"):
-                os.system(f"makeblastdb -in {self.truth_hap_file} -dbtype nucl -out {self.truth_hap_file}")
             command = f"""
-            blastn -query {self.infer_hap_file} -out {self.blast_file} -db {self.truth_hap_file} -outfmt 7 -num_threads 10
+            blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7
             """
+            # if not os.path.isfile(f"{self.truth_hap_file}.nhr"):
+            #     os.system(f"makeblastdb -in {self.truth_hap_file} -dbtype nucl -out {self.truth_hap_file}")
+            # command = f"""
+            # blastn -query {self.infer_hap_file} -out {self.blast_file} -db {self.truth_hap_file} -outfmt 7 -num_threads 10
+            # """
         elif flag == "somewhat":
             # Somewhat similar sequences (blastn) in https://blast.ncbi.nlm.nih.gov/Blast.cgi
             command = f"""
@@ -640,8 +640,8 @@ def eva_hgsvc2_spechla():
 
 def eva_data_types_spechla():
     # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
-    sample = "test_0"
-    outdir = "/mnt/d/HLAPro_backup/pacbio/novel/" + sample + "/"
+    sample = "novel_0"
+    outdir = "/mnt/d/HLAPro_backup/pacbio/pacbio_illumina/" + sample + "/"
 
     data = []
     for gene in gene_list:
@@ -660,9 +660,19 @@ def eva_data_types_spechla():
         if align_11.base_error + align_22.base_error <= align_12.base_error + align_21.base_error:
             choose_align1 = align_11
             choose_align2 = align_22
+            seq = Seq_error(infer_file1, truth_file1, gene)
+            seq.record_blast(1)
+            seq = Seq_error(infer_file2, truth_file2, gene)
+            seq.record_blast(2)
+
         else:
             choose_align1 = align_12
             choose_align2 = align_21
+            seq = Seq_error(infer_file1, truth_file2, gene)
+            seq.record_blast(1)
+            seq = Seq_error(infer_file2, truth_file1, gene)
+            seq.record_blast(2)
+        # print (align_11.base_error, align_22.base_error,align_12.base_error,align_21.base_error)
         base_error = (choose_align1.base_error + choose_align2.base_error)/2
         short_gap_error = (choose_align1.short_gap_error + choose_align2.short_gap_error)/2
         gap_recall = (choose_align1.gap_recall + choose_align2.gap_recall)/2
@@ -677,8 +687,8 @@ if __name__ == "__main__":
 
 
     if len(sys.argv) == 1:
-        eva_hgsvc2_spechla()
-        # eva_data_types_spechla()
+        # eva_hgsvc2_spechla()
+        eva_data_types_spechla()
         # eva_HG002_kourami()
         # eva_pedigree_spechla()
         # eva_HG002_spechla()
