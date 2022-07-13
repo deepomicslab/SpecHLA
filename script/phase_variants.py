@@ -60,7 +60,7 @@ optional.add_argument("--indel_len",help="The maximum length for indel to be con
      step (default is 150).",dest='indel_len',metavar='',default=150, type=int)
 optional.add_argument("--weight_imb",help="The weight of using phase information of allele imbalance\
  [0-1], default is 0. (default is 0)",dest='weight_imb',metavar='',default=0, type=float)
-
+optional.add_argument("--thread_num",help="thread num.",dest='thread_num',metavar='',default=5, type=int)
 
 
 parser._action_groups.append(optional)
@@ -968,7 +968,7 @@ def segment_mapping_pre(fq1, fq2, ins_seq, outdir, gene, gene_ref):
         $bindir/samtools faidx %s 
         $bindir/bwa index %s
         group='@RG\\tID:sample\\tSM:sample'  #only -B 1
-        $bindir/bwa mem -B 1 -O 1,1 -L 1,1 -U 1 -R $group -Y %s %s %s | $bindir/samtools view -q 1 -F 4 -Sb | $bindir/samtools sort > $outdir/$sample.sort.bam
+        $bindir/bwa mem -t %s -B 1 -O 1,1 -L 1,1 -U 1 -R $group -Y %s %s %s | $bindir/samtools view -q 1 -F 4 -Sb | $bindir/samtools sort > $outdir/$sample.sort.bam
         java -jar  $bindir/picard.jar MarkDuplicates INPUT=$outdir/$sample.sort.bam OUTPUT=$outdir/$sample.bam METRICS_FILE=$outdir/metrics.txt
         rm -rf $outdir/$sample.sort.bam 
         $bindir/samtools index $outdir/$sample.bam 
@@ -976,7 +976,7 @@ def segment_mapping_pre(fq1, fq2, ins_seq, outdir, gene, gene_ref):
         cat $outdir/$sample.freebayes.1.vcf| sed -e 's/\//\|/g'>$outdir/$sample.freebayes.vcf 
         bgzip -f $outdir/$sample.freebayes.vcf 
         tabix -f $outdir/$sample.freebayes.vcf.gz
-        """%(sys.path[0], outdir, newref, newref, newref, fq1, fq2, newref)
+        """%(sys.path[0], outdir, newref, newref, args.thread_num, newref, fq1, fq2, newref)
     os.system(map_call)
     # print (ins_seq)
     for ins in ins_seq.keys():
@@ -1005,12 +1005,12 @@ def segment_mapping(fq1, fq2, ins_seq, outdir, gene, gene_ref):
         $bindir/samtools faidx %s 
         $bindir/bwa index %s
         group='@RG\\tID:sample\\tSM:sample'  #only -B 1
-        $bindir/bwa mem -B 1 -O 1,1 -L 1,1 -U 1 -R $group -Y %s %s %s | $bindir/samtools view -q 1 -F 4 -Sb | $bindir/samtools sort > $outdir/$sample.sort.bam
+        $bindir/bwa mem -t %s -B 1 -O 1,1 -L 1,1 -U 1 -R $group -Y %s %s %s | $bindir/samtools view -q 1 -F 4 -Sb | $bindir/samtools sort > $outdir/$sample.sort.bam
         java -jar  $bindir/picard.jar MarkDuplicates INPUT=$outdir/$sample.sort.bam OUTPUT=$outdir/$sample.bam METRICS_FILE=$outdir/metrics.txt
         rm -rf $outdir/$sample.sort.bam 
         $bindir/samtools index $outdir/$sample.bam 
         $bindir/freebayes -f %s -p 2 $outdir/$sample.bam > $outdir/$sample.freebayes.vcf 
-        """%(sys.path[0], outdir, newref, newref, newref, fq1, fq2, newref)
+        """%(sys.path[0], outdir, newref, newref, args.thread_num, newref, fq1, fq2, newref)
     os.system(map_call)
 
 def get_insertion_linkage(ins_seq):
@@ -1404,19 +1404,6 @@ def allele_imba(beta_set):
     f.close()
 
 def run_SpecHap():
-    # get linkage info from NGS data
-    # if new_formate:
-    #     order = '%s/../bin/ExtractHAIRs --new_format 1 --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s\
-    #         --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, gene_vcf, outdir)
-    # else:
-    #     order = '%s/../bin/ExtractHAIRs --triallelic 1 --indels 1 --ref %s --bam %s --VCF %s \
-    #     --out %s/fragment.file'%(sys.path[0], hla_ref, bamfile, gene_vcf, outdir)
-    # os.system(order)
-    # print (order)
-    # extract_linkage_for_indel(bamfile,snp_list,snp_index_dict,outdir) # linkage for indel
-    # os.system('cat %s/fragment.file %s/fragment.add.file >%s/fragment.read.file'%(outdir,\
-    #     outdir, outdir))
-
     mmp = MNP_linkage(bamfile,snp_list,snp_index_dict,outdir)
     mmp.for_each_locus() 
 
@@ -1436,12 +1423,12 @@ def run_SpecHap():
         bin=%s/../bin
         gene=%s
         sample=pacbio
-        $bin/minimap2 -a $ref $outdir/%s/$gene.pacbio.fq.gz > $outdir/$sample.tgs.sam
+        $bin/minimap2 -t %s -a $ref $outdir/%s/$gene.pacbio.fq.gz > $outdir/$sample.tgs.sam
         $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
         $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
         $bin/ExtractHAIRs --triallelic 1 --pacbio 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.$sample.file
         cat $outdir/fragment.$sample.file >> $outdir/fragment.all.file
-        """%(args.tgs, hla_ref, outdir, sys.path[0], gene.split("_")[1], args.sample_id, gene_vcf)
+        """%(args.tgs, hla_ref, outdir, sys.path[0], gene.split("_")[1], args.thread_num, args.sample_id, gene_vcf)
         print ('extract linkage info from pacbio TGS data.')
         os.system(command)
         order = '%s/../bin/SpecHap -P --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
@@ -1457,12 +1444,12 @@ def run_SpecHap():
         bin=%s/../bin
         gene=%s
         sample=nanopore
-        $bin/minimap2 -a $ref $outdir/%s/$gene.nanopore.fq.gz > $outdir/$sample.tgs.sam
+        $bin/minimap2 -t %s -a $ref $outdir/%s/$gene.nanopore.fq.gz > $outdir/$sample.tgs.sam
         $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
         $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
         $bin/ExtractHAIRs --triallelic 1 --ONT 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.nanopore.file
         cat $outdir/fragment.nanopore.file >> $outdir/fragment.all.file
-        """%(args.nanopore, hla_ref, outdir, sys.path[0], gene.split("_")[1], args.sample_id, gene_vcf)
+        """%(args.nanopore, hla_ref, outdir, sys.path[0], gene.split("_")[1], args.thread_num, args.sample_id, gene_vcf)
         print ('extract linkage info from nanopore TGS data.')
         os.system(command)
         order = '%s/../bin/SpecHap -N --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
@@ -1478,7 +1465,7 @@ def run_SpecHap():
         bin=%s/../bin
         sample=HiC
         group='@RG\tID:'$sample'\tSM:'$sample
-        $bin/bwa mem -5SP -Y -U 10000 -L 10000,10000 -O 7,7 -E 2,2 $ref $fwd_hic $rev_hic >$outdir/$sample.tgs.raw.sam
+        $bin/bwa mem -t %s -5SP -Y -U 10000 -L 10000,10000 -O 7,7 -E 2,2 $ref $fwd_hic $rev_hic >$outdir/$sample.tgs.raw.sam
         cat $outdir/$sample.tgs.raw.sam|grep -v 'XA:'|grep -v 'SA:'>$outdir/$sample.tgs.sam
         $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
         $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
@@ -1486,7 +1473,7 @@ def run_SpecHap():
         # python %s/whole/edit_linkage_value.py $outdir/fragment.raw.hic.file 10 $outdir/fragment.hic.file
         # rm $outdir/fragment.hic.file
         # touch $outdir/fragment.hic.file
-        """%(args.hic_fwd, args.hic_rev, hla_ref, outdir, sys.path[0], gene_vcf, sys.path[0])
+        """%(args.hic_fwd, args.hic_rev, hla_ref, outdir, sys.path[0], args.thread_num, gene_vcf, sys.path[0])
         print ('extract linkage info from HiC data.')
         os.system(command)
         os.system('cat %s/fragment.hic.file >> %s/fragment.all.file'%(outdir, outdir))
@@ -1503,30 +1490,32 @@ def run_SpecHap():
             bin=%s/../bin
             sample=%s
             gene=%s
+            vcf=%s
+            folder_name=tenx_bam_$sample
             
             if [ $gene == "HLA_A" ];
             then
-                # rm -rf ./77
-                longranger align --id=77 --fastqs=$fq --reference=%s/../db/ref/refdata-hla.ref.extend\
-                    --sample=$sample --localcores=8 --localmem=32 
+                rm -rf ./$folder_name
+                longranger align --id=$folder_name --fastqs=$fq --reference=%s/../db/ref/refdata-hla.ref.extend\
+                    --sample=$sample --localcores=%s --localmem=10 
             fi
-
-            bam=./77/outs/possorted_bam.bam
+            
+            bam=./$folder_name/outs/possorted_bam.bam
             $bin/extractHAIRS --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam\
-                 --VCF %s --out $outdir/fragment.tenx.file
-            $bin/BarcodeExtract $bam $outdir/barcode_spanning.bed
-            bgzip -f -c $outdir/barcode_spanning.bed > $outdir/barcode_spanning.bed.gz
-            tabix -f -p bed $outdir/barcode_spanning.bed.gz
+                 --VCF $vcf --out $outdir/fragment.raw.tenx.file
+            gzip -f -d -k $vcf
+            python3 %s/link_fragment.py -b $bam -f $outdir/fragment.raw.tenx.file\
+                 -v %s -o  $outdir/fragment.raw3.tenx.file
+            awk '$0=$0" 60"' $outdir/fragment.raw3.tenx.file >$outdir/fragment.tenx.file
+            cat $outdir/fragment.tenx.file >> $outdir/fragment.all.file
         
-        """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, sys.path[0], gene_vcf)
-        
+        """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, gene_vcf,sys.path[0], args.thread_num, sys.path[0], gene_vcf[:-3])
+        print ('align linked-reads with longranger and extract linkage info')
         os.system(command)
-        print ('extract linkage info from 10 X data.')
-        os.system('cat %s/fragment.tenx.file >> %s/fragment.all.file'%(outdir, outdir))
-        order = '%s/../bin/SpecHap -T --frag_stat %s/barcode_spanning.bed.gz --new_format --window_size 15000 \
+        
+        order = '%s/../bin/SpecHap -H  --new_format --window_size 15000 \
         --vcf %s --frag %s/fragment.sorted.file\
-        --out %s/%s.specHap.phased.vcf'%(sys.path[0],outdir,gene_vcf, outdir, outdir,gene)
-
+        --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
 
     if new_formate:
         os.system('sort -n -k6 %s/fragment.all.file >%s/fragment.sorted.file'%(outdir, outdir))

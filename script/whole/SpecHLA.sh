@@ -15,17 +15,16 @@
 ###   -o        The output folder to store the typing results.
 ###   -u        Choose full-length or exon typing. 0 indicates full-length, 1 means exon, 
 ###             default is to perform full-length typing.
-###   -t        Pacbio TGS fastq file.
-###   -e        Nanopore TGS fastq file.
-###   -x        Path of folder created by 10x demultiplexing. Prefix of the filenames of FASTQs
-###             should be the same as Sample ID. You can regard reads as normal NGS reads and use 
-###             this parameter to adopt barcode information to improve phasing.
-###   -c        fwd hi-c fastq file.
-###   -d        rev hi-c fastq file.
-###   -w        The weight of using phase information of allele imbalance [0-1], default is 0.  
-###             The weight of phase information from reads is 1-w.
 ###   -p        The population of the sample [Asian, Black, Caucasian, nonuse]. Use mean frequency
 ###             if not provided. nonuse indicates only adopting mapping score to annotate the allele. 
+###   -t        Pacbio fastq file.
+###   -e        Nanopore fastq file.
+###   -c        fwd hi-c fastq file.
+###   -d        rev hi-c fastq file.
+###   -x        Path of folder created by 10x demultiplexing. Prefix of the filenames of FASTQs
+###             should be the same as Sample ID. Please install Longranger in the system env.
+###   -w        The weight of using phase information of allele imbalance [0-1], default is 0.  
+###             The weight of phase information from reads is 1-w.
 ###   -j        Number of threads [5]
 ###   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
 ###             is 2. It should be set larger to infer novel alleles.
@@ -34,7 +33,7 @@
 ###   -v        True or False. Consider long InDels if True, else only consider short variants. 
 ###             Default is False. 
 ###   -q        Minimum variant quality. Default is 0.01. Set it larger in high quality samples.
-###   -s        Minimum mapping depth of variant. Default is 5.
+###   -s        Minimum variant depth. Default is 5.
 ###   -a        Use this long InDel file if provided.
 ###   -r        The minimum Minor Allele Frequency (MAF), default is 0.05 for full length and
 ###             0.1 for exon typing.
@@ -255,7 +254,7 @@ fi
 
 echo Minimum Minor Allele Frequency is $my_maf.
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
-# hlas=(DRB1)
+# hlas=(A)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
 python3 $dir/../phase_variants.py \
@@ -277,7 +276,8 @@ python3 $dir/../phase_variants.py \
   --tenx ${tenx_data:-NA} \
   --sa $sample \
   --weight_imb ${weight_imb:-0} \
-  --exon $focus_exon_flag 
+  --exon $focus_exon_flag \
+  --thread_num ${num_threads:-5}
 done
 # ##################################################################################################
 

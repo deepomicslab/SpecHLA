@@ -641,7 +641,11 @@ def eva_hgsvc2_spechla():
 def eva_data_types_spechla():
     # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
     sample = "novel_0"
-    outdir = "/mnt/d/HLAPro_backup/pacbio/pacbio_illumina/" + sample + "/"
+    # outdir = "/mnt/d/HLAPro_backup/pacbio/novel/" + sample + "/"
+    # outdir = "/mnt/d/HLAPro_backup/pacbio/pacbio_illumina/" + sample + "/"
+    # outdir = "/mnt/d/HLAPro_backup/pacbio/hic_illumina/" + sample + "/"
+    # outdir = "/mnt/d/HLAPro_backup/pacbio/ont_illumina/" + sample + "/"
+    outdir = "/mnt/d/HLAPro_backup/pacbio/10x_illumina/" + sample + "/"
 
     data = []
     for gene in gene_list:

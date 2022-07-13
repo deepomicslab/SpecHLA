@@ -66,7 +66,7 @@ class Fasta():
 class Novel():
 
     def __init__(self):
-        self.snp_rate = 0.002
+        self.snp_rate = 0.001
         self.origin = '/mnt/d/HLAPro_backup/HLAPro/db/ref/hla.ref.extend.fa'
         self.seq_dict = self.read_fasta(self.origin)
         self.dir = outdir # the dir to store simulated data
@@ -125,8 +125,6 @@ class Novel():
                 w.close()
 
         s.close()
-        # os.system('cat %s/fasta/* > %s'%(outdir, all_allele))
-
 
 class Fastq():
 
@@ -134,6 +132,7 @@ class Fastq():
         self.dir = outdir # the dir to store simulated data
         self.depth = round(int(depth)/2)
         self.replicate_times = sample_num
+        self.read_len = 150
 
     def get_pacbio(self, sample):
         command = f"""
@@ -147,12 +146,10 @@ class Fastq():
         os.system(command)
 
     def get_nanopore(self, sample):
-        command = """
+        command = f"""
             sample={sample}
-            /mnt/e/hla_tgs/nanopore/DeepSimulator/deep_simulator.sh\
-                -i {self.dir}/$sample.fasta\
-                -l 3000 -B 2 -c 6 -K 10 -P 0\
-                -o {self.dir}/nanopore/$sample
+            /mnt/e/hla_tgs/nanopore/DeepSimulator/deep_simulator.sh -i {self.dir}/$sample.fasta -o {self.dir}/nanopore/$sample\
+                 -S 1 -l 3000 -B 2 -c 12 -K {self.depth} -P 0        
         """
         os.system(command)
 
@@ -160,34 +157,38 @@ class Fastq():
         command = f"""
         sample={sample}
         mkdir {self.dir}/$sample
-        /mnt/d/HLAPro_backup/insert/dwgsim -r 0 -e 0 -E 0 -1 100 -2 100 -C {self.depth} {self.dir}/$sample.fasta {self.dir}/$sample/$sample.illumina
+        /mnt/d/HLAPro_backup/insert/dwgsim -r 0 -e 0 -E 0 -1 {self.read_len} -2 {self.read_len} -C {self.depth}\
+             {self.dir}/$sample.fasta {self.dir}/$sample/$sample.illumina
         # gzip -f {self.dir}/$sample/$sample.illumina.*fastq
         """
-        #-e 0.01 -E 0.01 -d 200 -r 0 -1 70 -2 70
         os.system(command)  
     
     def get_hic(self, sample):
         command = f"""
         sample={sample}
         outdir={self.dir}/hic/
-        sim3C --dist uniform -n 10000 -l 150 -e NlaIII -m hic {self.dir}/$sample.fasta $outdir/$sample.fastq --simple-reads --insert-mean 500 --anti-rate 0 --trans-rate 0 --spurious-rate 0 -r 88 
+        sim3C --dist uniform -n 10000 -l {self.read_len} -e NlaIII -m hic {self.dir}/$sample.fasta $outdir/$sample.fastq \
+            --simple-reads --insert-mean 500 --anti-rate 0 --trans-rate 0 --spurious-rate 0 -r 88 
         rm $outdir/profile.tsv
-        python3 {sys.path[0]}/../split_hic.py $outdir/$sample.fastq $sample hic
+        python3 {sys.path[0]}/../split_hic.py $outdir/$sample.fastq $sample $outdir
         """
         os.system(command)
 
 def simulate():
     print ("start simulation")
-    fa = Fasta()
+    # fa = Fasta()
+    # fa.get_all_allele()
     fq = Fastq()
     no = Novel()
-    fa.get_all_allele()
+    
     for i in range(sample_num):
         sample = f"{prefix}_{i}"
-        fa.get_sample_fasta(sample)
-        no.get_novel_fasta(sample)
-        fq.get_pacbio(sample)  
-        fq.get_illumina(sample)
+        # fa.get_sample_fasta(sample)
+        # no.get_novel_fasta(sample)
+        # fq.get_pacbio(sample)  
+        # fq.get_illumina(sample)
+        # fq.get_nanopore(sample)
+        # fq.get_hic(sample)
 
 if __name__ == "__main__":  
 
