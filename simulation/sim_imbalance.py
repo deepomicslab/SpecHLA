@@ -1,15 +1,12 @@
 """
-randomly select alleles from the database
-two alleles for each gene
-simulate sequencing reads with different platfors, like
-Pacbio, Nanopore, Hi-c, Illumina, 10x
+simulate samples with allele imbalance
+the two haplotypes have different frequency
 
-dependencies: pbsim, samtools, dwgsim Version: 0.1.13
+dependencies: samtools, dwgsim Version: 0.1.13
 
-python sim_pacbio.py /mnt/d/HLAPro_backup/haplotype/hla_gen.format.filter.fasta /mnt/d/HLAPro_backup/haplotype/pac_sim_test 10 2
-python sim_pacbio.py <allele database> <outdir> <depth> <number of sample>
+python sim_imbalance.py <allele database> <outdir> <number of sample>
 
-wangshuai  June 21, 2022
+wangshuai  June 13, 2022
 """
 
 import sys
@@ -66,8 +63,8 @@ class Fasta():
 class Novel():
 
     def __init__(self):
-        self.snp_rate = 0.001
-        self.origin = '/mnt/d/HLAPro_backup/HLAPro/db/ref/hla.ref.extend.fa'
+        self.snp_rate = mutation_rate
+        self.origin = origin
         self.seq_dict = self.read_fasta(self.origin)
         self.dir = outdir # the dir to store simulated data
 
@@ -105,10 +102,11 @@ class Novel():
     def get_novel_fasta(self, sample):  
         # add snp to the reference allele in each gene
         # to generate the novel allele
-        s = open(outdir + '/%s.fasta'%(sample), 'w')
-        for gene in self.seq_dict.keys():
-            gene_seq = self.seq_dict[gene]
-            for h in range(1,3):
+        
+        for h in range(1,3):
+            s = open(outdir + '/%s.%s.fasta'%(sample, h), 'w')
+            for gene in self.seq_dict.keys():
+                gene_seq = self.seq_dict[gene]
                 record_truth = f"{self.dir}/truth/{sample}.{gene}_{h}.fasta"
                 if gene != 'HLA_DRB1':
                     novel_seq = gene_seq[:1050] + self.add_snp(gene_seq[1050:-1050], self.snp_rate) + gene_seq[-1050:]
@@ -124,82 +122,56 @@ class Novel():
                 print(novel_seq, file = w)
                 w.close()
 
-        s.close()
+            s.close()
 
 class Fastq():
 
     def __init__(self):
         self.dir = outdir # the dir to store simulated data
-        self.depth = round(int(depth)/2)
+        self.depth_low = 20
+        self.depth_high = 80
         self.replicate_times = sample_num
-        self.read_len = 150
-
-    def get_pacbio(self, sample):
-        command = f"""
-        sample={sample}
-        mkdir {self.dir}/$sample
-        pbsim --data-type CLR --seed 88 --accuracy-mean 0.85 --accuracy-min 0.80 --prefix {self.dir}/$sample/$sample --depth {self.depth} --model_qc {sys.path[0]}/model_qc_clr {self.dir}/$sample.fasta
-        cat {self.dir}/$sample/{sample}_*fastq>{self.dir}/$sample/$sample.fastq
-        rm {self.dir}/$sample/{sample}_*fastq
-        gzip {self.dir}/$sample/$sample.fastq
-        """
-        os.system(command)
-
-    def get_nanopore(self, sample):
-        command = f"""
-            sample={sample}
-            /mnt/e/hla_tgs/nanopore/DeepSimulator/deep_simulator.sh -i {self.dir}/$sample.fasta -o {self.dir}/nanopore/$sample\
-                 -S 1 -l 3000 -B 2 -c 12 -K {self.depth} -P 0        
-        """
-        os.system(command)
+        self.read_len = read_length
 
     def get_illumina(self, sample):
         command = f"""
         sample={sample}
         mkdir {self.dir}/$sample
-        /mnt/d/HLAPro_backup/insert/dwgsim -r 0 -e 0 -E 0 -1 {self.read_len} -2 {self.read_len} -C {self.depth}\
-             {self.dir}/$sample.fasta {self.dir}/$sample/$sample.illumina
-        # gzip -f {self.dir}/$sample/$sample.illumina.*fastq
+        {dwgsim_script} -r 0 -e 0 -E 0 -1 {self.read_len} -2 {self.read_len} -C {self.depth_low}\
+             {self.dir}/$sample.1.fasta {self.dir}/$sample/$sample.1.illumina
+        {dwgsim_script} -r 0 -e 0 -E 0 -1 {self.read_len} -2 {self.read_len} -C {self.depth_high}\
+             {self.dir}/$sample.2.fasta {self.dir}/$sample/$sample.2.illumina
+        zcat {self.dir}/$sample/$sample.1.illumina.bwa.read1.fastq.gz {self.dir}/$sample/$sample.2.illumina.bwa.read1.fastq.gz >{self.dir}/$sample/$sample.illumina.bwa.read1.fastq
+        zcat {self.dir}/$sample/$sample.1.illumina.bwa.read2.fastq.gz {self.dir}/$sample/$sample.2.illumina.bwa.read2.fastq.gz >{self.dir}/$sample/$sample.illumina.bwa.read2.fastq
+        gzip -f {self.dir}/$sample/$sample.illumina.bwa.read*.fastq
         """
         os.system(command)  
-    
-    def get_hic(self, sample):
-        command = f"""
-        sample={sample}
-        outdir={self.dir}/hic/
-        sim3C --dist uniform -n 10000 -l {self.read_len} -e NlaIII -m hic {self.dir}/$sample.fasta $outdir/$sample.fastq \
-            --simple-reads --insert-mean 500 --anti-rate 0 --trans-rate 0 --spurious-rate 0 -r 88 
-        rm $outdir/profile.tsv
-        python3 {sys.path[0]}/../split_hic.py $outdir/$sample.fastq $sample $outdir
-        """
-        os.system(command)
 
 def simulate():
     print ("start simulation")
     # fa = Fasta()
     # fa.get_all_allele()
+    # fa.get_sample_fasta(sample)
     fq = Fastq()
     no = Novel()
     
     for i in range(sample_num):
         sample = f"{prefix}_{i}"
-        # fa.get_sample_fasta(sample)
-        # no.get_novel_fasta(sample)
-        # fq.get_pacbio(sample)  
-        # fq.get_illumina(sample)
-        # fq.get_nanopore(sample)
-        # fq.get_hic(sample)
+        print (sample)
+        no.get_novel_fasta(sample)
+        fq.get_illumina(sample)
 
 if __name__ == "__main__":  
+    dwgsim_script = "/mnt/d/HLAPro_backup/insert/dwgsim"
+    origin = '/mnt/d/HLAPro_backup/HLAPro/db/ref/hla.ref.extend.fa'
+
+    mutation_rate = 0.001
+    read_length = 75
 
     database = sys.argv[1]
     outdir = sys.argv[2]
-    depth = sys.argv[3]
-    sample_num = int(sys.argv[4])
+    sample_num = int(sys.argv[3])
 
-    prefix = "novel"
+    prefix = "imbalance"
     simulate()
-    # sim_pacbio = Sim_Pac()
-    # sim_pacbio.get_benchmark()
-    # sim_pacbio.get_illumina()
-    # sim_pacbio.get_spechla()
+

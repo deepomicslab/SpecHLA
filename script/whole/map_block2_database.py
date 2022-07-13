@@ -35,9 +35,11 @@ class Construct_Graph():
 
     def split_fragments(self):
         f = open(break_point_file)
+        record_breakpoint_num = 0
         for line in f:
             if line[0] == "#":
                 continue
+            record_breakpoint_num += 1
             array = line.strip().split()
             # break_point = int(array[1])
             break_point = round((int(array[1]) + int(array[2]))/2)
@@ -49,6 +51,9 @@ class Construct_Graph():
             self.break_point_list += [self.dup_start, self.dup_end]
         self.break_point_list = sorted(self.break_point_list)
         self.save_fragments()
+
+        if record_breakpoint_num == 0: # no breakpoint, thus no fragment splitted
+            self.fragments = []
     
     def save_fragments(self):
         for i in range(len(self.break_point_list) - 1):

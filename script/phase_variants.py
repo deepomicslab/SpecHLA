@@ -1492,6 +1492,7 @@ def run_SpecHap():
             gene=%s
             vcf=%s
             folder_name=tenx_bam_$sample
+            bam=./$folder_name/outs/possorted_bam.bam
             
             if [ $gene == "HLA_A" ];
             then
@@ -1499,8 +1500,7 @@ def run_SpecHap():
                 longranger align --id=$folder_name --fastqs=$fq --reference=%s/../db/ref/refdata-hla.ref.extend\
                     --sample=$sample --localcores=%s --localmem=10 
             fi
-            
-            bam=./$folder_name/outs/possorted_bam.bam
+ 
             $bin/extractHAIRS --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam\
                  --VCF $vcf --out $outdir/fragment.raw.tenx.file
             gzip -f -d -k $vcf

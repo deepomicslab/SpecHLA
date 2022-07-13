@@ -15,8 +15,9 @@
 ###   -o        The output folder to store the typing results.
 ###   -u        Choose full-length or exon typing. 0 indicates full-length, 1 means exon, 
 ###             default is to perform full-length typing.
-###   -p        The population of the sample [Asian, Black, Caucasian, nonuse]. Use mean frequency
-###             if not provided. nonuse indicates only adopting mapping score to annotate the allele. 
+###   -p        The population of the sample [Asian, Black, Caucasian, Unknown, nonuse]. 
+###             Default is Unknown, meaning use mean frequency. nonuse indicates only adopting 
+###             mapping score and considering alleles with frequency as zero. 
 ###   -t        Pacbio fastq file.
 ###   -e        Nanopore fastq file.
 ###   -c        fwd hi-c fastq file.

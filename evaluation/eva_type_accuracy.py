@@ -14,7 +14,8 @@ gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
 class Eva_typing():
 
     def __init__(self):
-        self.hla_la_result = "/mnt/d/HLAPro_backup/pacbio/HLA-LA.merge.result.txt"
+        self.hla_la_result = "/mnt/d/HLAPro_backup/pacbio/HLA-LA.illumina.merge.result.txt"
+        # self.hla_la_result = "/mnt/d/HLAPro_backup/pacbio/HLA-LA.merge.result.txt"
         # self.spechla_outdir = "/mnt/d/HLAPro_backup/pacbio/output/"
         self.spechla_outdir = "/mnt/d/HLAPro_backup/pacbio/hybrid/"
         self.spechla_result = "/mnt/d/HLAPro_backup/pacbio/spechla.merge.result.txt"

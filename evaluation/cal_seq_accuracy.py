@@ -638,61 +638,75 @@ def eva_hgsvc2_spechla():
     df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "gap_recall", "gap_precision"])
     df.to_csv('/mnt/d/HLAPro_backup/haplotype/hgsvc_haplo_assess.csv', sep=',')
 
+def each_simulated_sample(gene, outdir, sample, truth_dir):
+    truth_file1 = "%s/%s.HLA_%s_1.fasta"%(truth_dir, sample, gene)
+    truth_file2 = "%s/%s.HLA_%s_2.fasta"%(truth_dir, sample, gene)
+    infer_file1 = outdir + "hla.allele.1.HLA_%s.fasta"%(gene)
+    infer_file2 = outdir + "hla.allele.2.HLA_%s.fasta"%(gene)
+    seq = Seq_error(infer_file1, truth_file1, gene)
+    align_11 = seq.main()
+    seq = Seq_error(infer_file2, truth_file2, gene)
+    align_22 = seq.main()
+    seq = Seq_error(infer_file1, truth_file2, gene)
+    align_12 = seq.main()
+    seq = Seq_error(infer_file2, truth_file1, gene)
+    align_21 = seq.main()
+    if align_11.base_error + align_22.base_error <= align_12.base_error + align_21.base_error:
+        choose_align1 = align_11
+        choose_align2 = align_22
+        seq = Seq_error(infer_file1, truth_file1, gene)
+        seq.record_blast(1)
+        seq = Seq_error(infer_file2, truth_file2, gene)
+        seq.record_blast(2)
+
+    else:
+        choose_align1 = align_12
+        choose_align2 = align_21
+        seq = Seq_error(infer_file1, truth_file2, gene)
+        seq.record_blast(1)
+        seq = Seq_error(infer_file2, truth_file1, gene)
+        seq.record_blast(2)
+    # print (align_11.base_error, align_22.base_error,align_12.base_error,align_21.base_error)
+    base_error = (choose_align1.base_error + choose_align2.base_error)/2
+    short_gap_error = (choose_align1.short_gap_error + choose_align2.short_gap_error)/2
+    gap_recall = (choose_align1.gap_recall + choose_align2.gap_recall)/2
+    gap_precision = (choose_align1.gap_precision + choose_align2.gap_precision)/2
+    print (gene, round(base_error,6), round(short_gap_error,6), round(gap_recall,6), round(gap_precision,6),\
+            round(choose_align1.base_error,6), round(choose_align2.base_error,6))
+    return base_error, short_gap_error, gap_recall, gap_precision
+
 def eva_data_types_spechla():
-    # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
     sample = "novel_0"
     # outdir = "/mnt/d/HLAPro_backup/pacbio/novel/" + sample + "/"
     # outdir = "/mnt/d/HLAPro_backup/pacbio/pacbio_illumina/" + sample + "/"
     # outdir = "/mnt/d/HLAPro_backup/pacbio/hic_illumina/" + sample + "/"
     # outdir = "/mnt/d/HLAPro_backup/pacbio/ont_illumina/" + sample + "/"
     outdir = "/mnt/d/HLAPro_backup/pacbio/10x_illumina/" + sample + "/"
-
+    truth_dir = "/mnt/d/HLAPro_backup/pacbio/simulation/truth/"
     data = []
     for gene in gene_list:
-        truth_file1 = "/mnt/d/HLAPro_backup/pacbio/simulation/truth/%s.HLA_%s_1.fasta"%(sample, gene)
-        truth_file2 = "/mnt/d/HLAPro_backup/pacbio/simulation/truth/%s.HLA_%s_2.fasta"%(sample, gene)
-        infer_file1 = outdir + "hla.allele.1.HLA_%s.fasta"%(gene)
-        infer_file2 = outdir + "hla.allele.2.HLA_%s.fasta"%(gene)
-        seq = Seq_error(infer_file1, truth_file1, gene)
-        align_11 = seq.main()
-        seq = Seq_error(infer_file2, truth_file2, gene)
-        align_22 = seq.main()
-        seq = Seq_error(infer_file1, truth_file2, gene)
-        align_12 = seq.main()
-        seq = Seq_error(infer_file2, truth_file1, gene)
-        align_21 = seq.main()
-        if align_11.base_error + align_22.base_error <= align_12.base_error + align_21.base_error:
-            choose_align1 = align_11
-            choose_align2 = align_22
-            seq = Seq_error(infer_file1, truth_file1, gene)
-            seq.record_blast(1)
-            seq = Seq_error(infer_file2, truth_file2, gene)
-            seq.record_blast(2)
-
-        else:
-            choose_align1 = align_12
-            choose_align2 = align_21
-            seq = Seq_error(infer_file1, truth_file2, gene)
-            seq.record_blast(1)
-            seq = Seq_error(infer_file2, truth_file1, gene)
-            seq.record_blast(2)
-        # print (align_11.base_error, align_22.base_error,align_12.base_error,align_21.base_error)
-        base_error = (choose_align1.base_error + choose_align2.base_error)/2
-        short_gap_error = (choose_align1.short_gap_error + choose_align2.short_gap_error)/2
-        gap_recall = (choose_align1.gap_recall + choose_align2.gap_recall)/2
-        gap_precision = (choose_align1.gap_precision + choose_align2.gap_precision)/2
+        base_error, short_gap_error, gap_recall, gap_precision = each_simulated_sample(gene, outdir, sample, truth_dir)
         data.append([sample, gene, base_error, short_gap_error, gap_recall, gap_precision])
-        print (gene, round(base_error,6), round(short_gap_error,6), round(gap_recall,6), round(gap_precision,6),\
-             round(choose_align1.base_error,6), round(choose_align2.base_error,6))
     df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "gap_recall", "gap_precision"])
     df.to_csv('/mnt/d/HLAPro_backup/pacbio/novel/haplo_assess.csv', sep=',')
 
+def eva_allele_imblance():
+    sample = "imbalance_0"
+    outdir = "/mnt/d/HLAPro_backup/imbalance/output/" + sample + "/"
+    truth_dir = "/mnt/d/HLAPro_backup/imbalance/data/truth/"
+    data = []
+    for gene in gene_list:
+        base_error, short_gap_error, gap_recall, gap_precision = each_simulated_sample(gene, outdir, sample, truth_dir)
+        data.append([sample, gene, base_error, short_gap_error, gap_recall, gap_precision])
+
+    df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "gap_recall", "gap_precision"])
+    df.to_csv('/mnt/d/HLAPro_backup/imbalance/haplo_assess.csv', sep=',')
+
 if __name__ == "__main__":
-
-
     if len(sys.argv) == 1:
         # eva_hgsvc2_spechla()
-        eva_data_types_spechla()
+        # eva_data_types_spechla()
+        eva_allele_imblance()
         # eva_HG002_kourami()
         # eva_pedigree_spechla()
         # eva_HG002_spechla()
