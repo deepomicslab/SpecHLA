@@ -1379,8 +1379,7 @@ def allele_imba(beta_set):
     """
     
     f = open(outdir + '/fragment.imbalance.file', 'w')
-    base_q = 60 * float(args.weight_imb)
-    
+    base_q = round(60 * float(args.weight_imb))
     if base_q >= 1:
         locus_num = len(beta_set)
         for i in range(locus_num - 1):

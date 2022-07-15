@@ -126,10 +126,10 @@ class Novel():
 
 class Fastq():
 
-    def __init__(self):
+    def __init__(self, depth_low, depth_high):
         self.dir = outdir # the dir to store simulated data
-        self.depth_low = 20
-        self.depth_high = 80
+        self.depth_low = depth_low
+        self.depth_high = depth_high
         self.replicate_times = sample_num
         self.read_len = read_length
 
@@ -152,26 +152,30 @@ def simulate():
     # fa = Fasta()
     # fa.get_all_allele()
     # fa.get_sample_fasta(sample)
-    fq = Fastq()
+    
     no = Novel()
     
-    for i in range(sample_num):
-        sample = f"{prefix}_{i}"
-        print (sample)
-        no.get_novel_fasta(sample)
-        fq.get_illumina(sample)
+    for depth_set in [[20, 80], [30, 70], [40, 60], [48, 52], [50, 50]]:
+        depth_low, depth_high = depth_set[0], depth_set[1]
+        fq = Fastq(depth_low, depth_high)
+        for i in range(sample_num):
+            prefix = "imbalance_" + "%s_%s"%(depth_low, depth_high)
+            sample = f"{prefix}_{i}"
+            print (sample, depth_set)
+            no.get_novel_fasta(sample)
+            fq.get_illumina(sample)
 
 if __name__ == "__main__":  
     dwgsim_script = "/mnt/d/HLAPro_backup/insert/dwgsim"
     origin = '/mnt/d/HLAPro_backup/HLAPro/db/ref/hla.ref.extend.fa'
 
-    mutation_rate = 0.001
+    mutation_rate = 0.002
     read_length = 75
 
     database = sys.argv[1]
     outdir = sys.argv[2]
     sample_num = int(sys.argv[3])
 
-    prefix = "imbalance"
+    
     simulate()
 

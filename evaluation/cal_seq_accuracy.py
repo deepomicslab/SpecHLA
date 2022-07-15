@@ -111,6 +111,8 @@ class Seq_error():
             true_map_e = int(array[9])
             self.true_mapped_interval = self.get_uniq_map(true_map_s, true_map_e, 0, 0, self.true_mapped_interval)
             i += 1
+            if i > 20:
+                break
 
     def get_uniq_map(self, map_s, map_e, mismatches, gap_opens, mapped_interval):
         if map_e < map_s:
@@ -144,8 +146,6 @@ class Seq_error():
             self.true_mapped_len = self.true_mapped_len + (interval[1] - interval[0] + 1)
         # print (self.mapped_len, self.infer_hap_len, self.truth_hap_len)
         # print (self.mismatch_num, self.gap_open_num)
-
-
     def main(self):
         self.get_fasta_len()
         self.blast_map("strict")
@@ -160,6 +160,135 @@ class Seq_error():
         align = Align(self.mapped_len, self.infer_hap_len, self.truth_hap_len, \
             self.mismatch_num, self.gap_open_num,self.true_mapped_len)
         return align
+
+
+class Seq_error_accelerate():
+
+    def __init__(self, infer_hap_file, truth_hap_file, tag):
+        self.infer_hap_file = infer_hap_file
+        self.truth_hap_file = truth_hap_file
+        self.blast_file = f"{self.infer_hap_file}.{tag}.blast"
+        self.infer_hap_len_dict = {}
+        self.truth_hap_len_dict = {}
+        self.mapped_interval_dict = {} # for inferred hap
+        self.true_mapped_interval_dict = {} # for true hap
+        self.mapped_len_dict = {}
+        self.true_mapped_len_dict = {}
+        self.mismatch_num_dict = {}
+        self.gap_open_num_dict = {}
+
+    def blast_map(self, flag):
+        #-penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
+        if flag == "strict":
+            # command = f"""
+            # blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7
+            # """
+            if not os.path.isfile(f"{self.truth_hap_file}.nhr"):
+                os.system(f"makeblastdb -in {self.truth_hap_file} -dbtype nucl -out {self.truth_hap_file}")
+            command = f"""
+            blastn -query {self.infer_hap_file} -out {self.blast_file} -db {self.truth_hap_file} -outfmt 7 -num_threads 10
+            """
+        elif flag == "somewhat":
+            # Somewhat similar sequences (blastn) in https://blast.ncbi.nlm.nih.gov/Blast.cgi
+            command = f"""
+            blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 -evalue 0.05 \
+                -word_size 11 -reward 2 -penalty -3 -gapopen 5 -gapextend 2 
+            """
+        # print (flag)
+        os.system(command)
+
+    def get_fasta_len(self):
+        with open(self.infer_hap_file) as handle:
+            for record in SeqIO.parse(handle, "fasta"):
+                self.infer_hap_len_dict[record.id] = len(record.seq)
+        with open(self.truth_hap_file) as handle:
+            for record in SeqIO.parse(handle, "fasta"):
+                self.truth_hap_len_dict[record.id] = len(record.seq)
+
+    def read_blast(self, blast_file):
+        f = open(blast_file, 'r')
+        i = 0
+        line_count = {}
+        for line in f:
+            if line[0] == "#":
+                continue
+            array = line.strip().split()
+            seq_name = array[0]
+            map_s = int(array[6])
+            map_e = int(array[7])
+            mismatches = int(array[4])
+            gap_opens = int(array[5])
+            # print (map_s, map_e)
+            if seq_name not in self.mapped_interval_dict:
+                self.mapped_interval_dict[seq_name] = []
+                self.true_mapped_interval_dict[seq_name] = []
+                self.mismatch_num_dict[seq_name] = 0
+                self.gap_open_num_dict[seq_name] = 0
+                line_count[seq_name] = 0
+            line_count[seq_name] += 1
+            if line_count[seq_name] > 20:
+                continue
+
+            self.mapped_interval_dict[seq_name] = self.get_uniq_map(map_s, map_e, mismatches, gap_opens, self.mapped_interval_dict[seq_name],seq_name)
+            true_map_s = int(array[8])
+            true_map_e = int(array[9])
+            self.true_mapped_interval_dict[seq_name] = self.get_uniq_map(true_map_s, true_map_e, 0, 0, self.true_mapped_interval_dict[seq_name],seq_name)
+            i += 1
+
+    def get_uniq_map(self, map_s, map_e, mismatches, gap_opens, mapped_interval,seq_name):
+        if map_e < map_s:
+            a = map_e
+            map_e = map_s
+            map_s = a
+        flag = True
+        origin_map_len = map_e - map_s + 1
+        for interval in mapped_interval:
+            if map_s >= interval[0] and map_s <= interval[1]:
+                if map_e > interval[1]:
+                    map_s = interval[1] + 1
+            if map_e >= interval[0] and map_e <= interval[1]:
+                if map_s < interval[0]:
+                    map_e = interval[0] - 1
+            if map_s >= interval[0] and map_e <= interval[1]:
+                flag = False
+        if flag and map_e - map_s > 5:
+            uniq_map_len = map_e - map_s + 1
+            mismatches = mismatches * (uniq_map_len/origin_map_len)
+            gap_opens = gap_opens * (uniq_map_len/origin_map_len)
+            self.mismatch_num_dict[seq_name] += mismatches
+            self.gap_open_num_dict[seq_name] += gap_opens
+            mapped_interval.append([map_s, map_e])
+        return mapped_interval
+
+    def get_gap_per(self):
+        for geno_name in self.mapped_interval_dict.keys():
+            self.mapped_len_dict[geno_name] = 0
+            self.true_mapped_len_dict[geno_name] = 0
+            for interval in self.mapped_interval_dict[geno_name]:
+                self.mapped_len_dict[geno_name] += (interval[1] - interval[0] + 1)
+            for interval in self.true_mapped_interval_dict[geno_name]:
+                self.true_mapped_len_dict[geno_name] += (interval[1] - interval[0] + 1)
+
+    def main(self):
+        result_dict = {}
+        self.get_fasta_len()
+        # self.blast_map("strict")
+        print ("blast is done")
+        self.read_blast(self.blast_file)
+        self.get_gap_per()
+        # if self.mapped_len == 0:
+        #     self.blast_map("somewhat")
+        #     self.read_blast(self.blast_file)
+        #     self.get_gap_per()            
+        # print (self.mapped_interval, self.infer_hap_len, self.truth_hap_len, self.mapped_len, align.base_error)
+        for geno_name in self.mapped_interval_dict.keys():
+            align = Align(self.mapped_len_dict[geno_name], self.infer_hap_len_dict[geno_name], 1000000, \
+                self.mismatch_num_dict[geno_name], self.gap_open_num_dict[geno_name],self.true_mapped_len_dict[geno_name])
+            print (geno_name, align.base_error, align.short_gap_error, self.mapped_len_dict[geno_name])
+            result_dict[geno_name] = [align.base_error, align.short_gap_error, align.gap_precision, self.mapped_len_dict[geno_name]]
+        return result_dict
+
+
 
 class Seq_error_muscle():
     def __init__(self, infer_hap_file, truth_hap_file, gene):
@@ -243,7 +372,7 @@ class Seq_error_muscle():
 
 def eva_HG002_spechla():
     # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
-    outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/spechla/HG002/"
+    outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/spechla/HG002_0.1/"
     truth_file1 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H1-asm.fa"
     truth_file2 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H2-asm.fa"
     data = []
@@ -604,6 +733,41 @@ def eva_simu(database, record_true_file, outdir, sample_name):
     df = pd.DataFrame(data, columns = ["base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
     df.to_csv('%s/haplotype_assessment.csv'%(outdir), sep=',')
 
+def eva_hgsvc2_spechla_accelerate():
+    # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
+    sample = "HG03009"
+    outdir = "/mnt/d/HLAPro_backup/haplotype/hgsvc2/HG03009/"
+    truth_file1 = "/mnt/d/HLAPro_backup/haplotype/my_HLA/v12_HG03009_hgsvc_pbsq2-clr_1000-flye.h1-un.arrow-p1.fasta"
+    truth_file2 = "/mnt/d/HLAPro_backup/haplotype/my_HLA/v12_HG03009_hgsvc_pbsq2-clr_1000-flye.h2-un.arrow-p1.fasta"
+    infer_file = outdir + "/hla.allele.all.fasta"
+    os.system("cat %s/hla.allele.*.HLA_*.fasta>%s"%(outdir, infer_file))
+    data = []
+
+    seq = Seq_error_accelerate(infer_file, truth_file1, "hap1")
+    result_dict_1 = seq.main()
+    seq = Seq_error_accelerate(infer_file, truth_file2, "hap2")
+    result_dict_2 = seq.main()
+    for geno_name in result_dict_1.keys():
+        if result_dict_1[geno_name][0] > result_dict_2[geno_name][0]:
+            result_dict_1[geno_name] = result_dict_2[geno_name]
+    gene_dict = {}
+    for geno_name in result_dict_1.keys():
+        gene = geno_name[:-2]
+        if gene not in gene_dict:
+            gene_dict[gene] = []
+        gene_dict[gene].append(result_dict_1[geno_name])
+    for gene in gene_dict:
+        base_error = (gene_dict[gene][0][0] + gene_dict[gene][1][0])/2
+        short_gap_error = (gene_dict[gene][0][1] + gene_dict[gene][1][1])/2
+        gap_precision = (gene_dict[gene][0][2] + gene_dict[gene][1][2])/2
+        map_len = (gene_dict[gene][0][3] + gene_dict[gene][1][3])/2
+        print (sample, gene, base_error, short_gap_error, map_len, gap_precision)
+        data.append([sample, gene, base_error, short_gap_error, map_len, gap_precision])
+
+
+    df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "map_len", "gap_precision"])
+    df.to_csv('/mnt/d/HLAPro_backup/haplotype/hgsvc_haplo_assess.csv', sep=',')
+
 def eva_hgsvc2_spechla():
     # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
     sample = "HG03009"
@@ -691,25 +855,37 @@ def eva_data_types_spechla():
     df.to_csv('/mnt/d/HLAPro_backup/pacbio/novel/haplo_assess.csv', sep=',')
 
 def eva_allele_imblance():
-    sample = "imbalance_0"
-    outdir = "/mnt/d/HLAPro_backup/imbalance/output/" + sample + "/"
+    # sample = "imbalance_48_52_0"
+    # sample = "imbalance_40_60_0"
+    # outdir = "/mnt/d/HLAPro_backup/imbalance/output/" + sample + "/"
     truth_dir = "/mnt/d/HLAPro_backup/imbalance/data/truth/"
     data = []
-    for gene in gene_list:
-        base_error, short_gap_error, gap_recall, gap_precision = each_simulated_sample(gene, outdir, sample, truth_dir)
-        data.append([sample, gene, base_error, short_gap_error, gap_recall, gap_precision])
+    for i in range(20):
+        for group in ["50_50", "48_52", "40_60", "30_70", "20_80"]:
+            sample = "imbalance_%s_%s"%(group, i)
+            outdir = "/mnt/d/HLAPro_backup/imbalance/output/" + sample + "/"
+            for weight in [0, 0.5, 1]:
+                os.system("sh /mnt/d/HLAPro_backup//HLAPro/script/whole/test_SpecHLA.sh -n %s -1 x -2 x -w %s -o /mnt/d/HLAPro_backup/imbalance/output"%(sample,weight))
+                weight_base_error = []
+                for gene in gene_list:
+                    base_error, short_gap_error, gap_recall, gap_precision = each_simulated_sample(gene, outdir, sample, truth_dir)
+                    data.append([sample, gene, base_error, short_gap_error, weight, group])
+                    weight_base_error.append(base_error)
+                print ("################", weight, np.mean(weight_base_error))
 
-    df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "gap_recall", "gap_precision"])
+    df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "weight", "group"])
     df.to_csv('/mnt/d/HLAPro_backup/imbalance/haplo_assess.csv', sep=',')
 
 if __name__ == "__main__":
+
     if len(sys.argv) == 1:
-        # eva_hgsvc2_spechla()
         # eva_data_types_spechla()
         eva_allele_imblance()
         # eva_HG002_kourami()
         # eva_pedigree_spechla()
         # eva_HG002_spechla()
+        # eva_hgsvc2_spechla()
+        # eva_hgsvc2_spechla_accelerate()
         # eva_HG002_hisat()
     else:
         database = sys.argv[1]

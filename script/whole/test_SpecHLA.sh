@@ -24,8 +24,8 @@
 ###   -d        rev hi-c fastq file.
 ###   -x        Path of folder created by 10x demultiplexing. Prefix of the filenames of FASTQs
 ###             should be the same as Sample ID. Please install Longranger in the system env.
-###   -w        How to use linkage info from allele imbalance [0, 0.5, 1], default is 0 that means 
-###             not use, 0.5 means use both reads and imbalance info, 1 means only use imbalance info.
+###   -w        The weight of using phase information of allele imbalance [0-1], default is 0.  
+###             The weight of phase information from reads is 1-w.
 ###   -j        Number of threads [5]
 ###   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
 ###             is 2. It should be set larger to infer novel alleles.
@@ -127,7 +127,7 @@ mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
 echo use ${num_threads:-5} threads.
 
-# :<<!
+:<<!
 # ################ remove the repeat read name #################
 python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz

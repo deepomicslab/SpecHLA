@@ -92,55 +92,38 @@ Please apply Novoalign, and put the novoalign.lic (license file) in the `bin/` f
 
 ## Basic Usage  
 ### Extract HLA-related reads
-We should first extract HLA reads with enrichment-free data before profiling the HLA. Please first map the fastq reads to `hg19` or `hg38`, then use the `ExtractHLAread.sh` in `script/` folder to extract HLA-related reads. We use the script of Kourami with minor revision for this step. 
+We should first extract HLA reads with enrichment-free data. Please map the reads to `hg19` or `hg38`, then use the `ExtractHLAread.sh` in `script/` folder to extract HLA-related reads. We use the script of Kourami with minor revision for this step. 
+Extract HLA-related reads by
 ```
-HLA-related reads extractor for HLA Typing
-USAGE: <PATH-TO>/ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome>
-
- -s          : desired sample name (ex: NA12878) [required]
-
- -b          : sorted and indexed bam (ex: NA12878.bam) [required]
-
- -r          : hg38 or hg19
+sh ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome>
 ```
 
 ### Typing 
-Full-length HLA typing and exon typing. 
+Full-resolution and exon HLA typing with paired-end reads. SpecHLA can use PacBio, Nanopore, Hi-C, and 10X data to improve the phasing performance if provided. 
+
+Perform full-resolution HLA typing with paired-end reads by
 ```
-HLA typing with paired-end reads. This script can use PacBio, Nanopore,
-Hi-C, and 10X sequencing data to improve the phasing performance if provided.
-
-Usage:
-  sh SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
-
-Options:
-  -n        Sample ID. <required>
-  -1        The first fastq file. <required>
-  -2        The second fastq file. <required>
-  -o        The output folder to store the typing results.
-  -u        Choose full-length or exon typing. 0 indicates full-length, 1 means exon,
-            default is to perform full-length typing.
-  -t        Pacbio TGS fastq file.
-  -e        Nanopore TGS fastq file.
-  -x        Path of folder created by 10x demultiplexing. Prefix of the filenames of FASTQs
-            should be the same as Sample ID. You can regard reads as normal NGS reads and use
-            this parameter to adopt barcode information to improve phasing.
-  -c        fwd hi-c fastq file.
-  -d        rev hi-c fastq file.
-  -w        The weight of using phase information of allele imbalance [0-1], default is 0.
-  -p        The population of the sample: Asian, Black, or Caucasian. Use mean frequency
-            if not provided.
-  -j        Number of threads [5]
-  -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
-            is 2. It should be set larger to infer novel alleles.
-  -v        True or False. Consider long InDels if True, else only consider short variants.
-            Default is False.
-  -q        Minimum variant quality. Default is 0.01. Set it larger in high quality samples.
-  -s        Minimum mapping depth of variant. Default is 5.
-  -a        Use this long InDel file if provided.
-  -r        The minimum Minor Allele Frequency (MAF), default is 0.05 for whole gene and
-            0.1 for exon typing.
-  -h        Show this message.
+sh SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/
+```
+Perform exon HLA typing with paired-end reads by
+```
+sh SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ -u 1
+```
+Perform full-resolution HLA typing with paired-end reads and PacBio reads by
+```
+sh SpecHLA.sh -n <sample> -t <sample.pacbio.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
+```
+Perform full-resolution HLA typing with paired-end reads and Nanopore reads by
+```
+sh SpecHLA.sh -n <sample> -e <sample.nanopore.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
+```
+Perform full-resolution HLA typing with paired-end reads and Hi-C reads by
+```
+sh SpecHLA.sh -n <sample> -c <sample.hic.fwd.fq.gz> -d <sample.hic.rev.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
+```
+Perform full-resolution HLA typing with paired-end reads and 10X linked reads by
+```
+sh SpecHLA.sh -n <sample> -x <sample.10x.read.folder> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
 
 ### Pedigree phasing
@@ -161,7 +144,7 @@ The fresh reconstructed sequences can be found in the trio/ folder at each origi
 If the purity of cancer sample and the ploidy of HLA region are known, we can infer HLA LOH event.
 ```
 Usage:
-       perl cal.hla.copy.pl [Options] -purity <Purity> -ploidy <Ploidy> -F <filelist> -O <outdir>
+       perl cal.hla.copy.pl -purity <Purity> -ploidy <Ploidy> -F <filelist> -O <outdir>
 
 OPTIONS:
         -purity  [f]  the purity of tumor sample. <required>
@@ -224,15 +207,15 @@ Should you have any queries, please feel free to contact us, we will reply as so
 
 
 ## Testing functions
-### TGS only alignment-based typing
+### Long-read only alignment-based typing
 If you only have PacBio or Nanopore reads, you can perform HLA typing with
 ```
 python long_read_typing.py -h
 ```
-Please install Longshot 0.4.1 and add it to the system path to call small variants with TGS data. 
+Please install Longshot 0.4.1 and add it to the system path to call small variants with long-read data. 
 
-### TGS only assembly-based typing 
-To assemble the TGS reads, and perform HLA typing based on the contigs, please use `/assembly/MHC.TGS.mapping.sh`. 
+### Long-read only assembly-based typing 
+To assemble the long reads, and perform HLA typing based on the contigs, please use `/assembly/MHC.TGS.mapping.sh`. 
 ```
 USAGE: <PATH-TO>/MHC.TGS.mapping.sh -s <sample_id> -f <mhc.read> -v <mhc.vcf> -r <refGenomedir> -t <Sequencer>
 
