@@ -1,25 +1,5 @@
 # SpecHLA: a comprehensive package for HLA haplotyping and LOH inference
 
-- [SpecHLA: a comprehensive package for HLA haplotyping and LOH inference](#spechla--a-comprehensive-package-for-hla-haplotyping-and-loh-inference)
-  * [Install](#install)
-  * [Run](#run)
-  * [Test](#test)
-  * [Dependencies](#dependencies)
-    + [Programming](#programming)
-    + [Third party packages](#third-party-packages)
-  * [Basic Usage](#basic-usage)
-    + [Extract HLA-related reads](#extract-hla-related-reads)
-    + [Typing](#typing)
-    + [Pedigree phasing](#pedigree-phasing)
-    + [Detect HLA LOH in cancer samples](#detect-hla-loh-in-cancer-samples)
-  * [Interpret output](#interpret-output)
-  * [Simulation](#simulation)
-  * [Getting help](#getting-help)
-  * [Testing functions](#testing-functions)
-    + [TGS only alignment-based typing](#tgs-only-alignment-based-typing)
-    + [TGS only assembly-based typing](#tgs-only-assembly-based-typing)
-
-
 ## Install  
 First, create the env with conda, and activate the env.
 ```
@@ -36,59 +16,11 @@ Third, index the database.
 bash index.sh
 ```
 Note: `Novoalign` requires a license in `bin/`, if it is not detected, SpecHLA will use `bowtie2`. 
-## Run
-Then we can perform HLA typing by
-```
-cd SpecHLA/script/whole/
-bash SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
-```
-Perform HLA typing in entire genes or exons with paired-end data. Also, PacBio, Nanopore, Hi-C, or 10X could be integrated. We can focus on exon region with the parameter `-u 1`, which is suitable for WES or RNA-seq data.
 
-Adpot pedigree information to refine the typing results.
-```
-python3 phase_pedigree.py --trio child:mother:father --workdir output/
-```
-Detect LOH events
-```
-ls output/*/*_freq.txt >freq.list
-perl SpecHLA/script/cal.hla.copy.pl  -purity <Purity> -ploidy <Ploidy> -F freq.list -O <Outdir>
-```
+
 ## Test
 Please go to the `example/` folder, and run SpecHLA with different data types. 
 If we install successfully, we will find results in the `output/`.
-
-
-## Dependencies 
-### Programming 
-* python=3.8.12 or above  
-* Python libraries: numpy=1.22.3, pulp=2.6.0, pysam=0.19.0, scipy=1.8.0, and biopython=1.79. 
-* Perl 5 or above
-
-### Third party packages
-The softwares in the `/bin` folder can also be installed by yourself, please remind link the executable file to the `bin/` folder.
-Please apply Novoalign, and put the novoalign.lic (license file) in the `bin/` folder.
-
-* Third party packages:
-    * conda 4.12.0 
-    * SamTools-1.3.1
-    * bamutil Version: 1.0.14
-    * picard-tools-2.1.0 (java 11.0.1)
-    * BWA-0.7.17-r1188
-    * blast 2.3.0
-    * BLAT v. 36x2
-    * bedtools-v2.26.0
-    * bcftools-Version: 1.9
-    * Freebayes-v1.2.0-2-g29c4002
-    * Novoalign V4.02.01
-    * Tabix-Version: 1.9
-    * ScanIndel v1.3
-    * Fermikit-0.13
-    * SpecHap v1.0.1 and ExtractHAIRs
-    * Minimap 2.17-r941
-    * pbmm2-1.4.0
-    * pbsv Version 2.6.2
-    * Bowtie 2 version 2.3.4.1
-
 
 ## Basic Usage  
 ### Extract HLA-related reads
@@ -178,7 +110,39 @@ hla.allele.1.HLA_A.fasta 0.532
 hla.allele.2.HLA_A.fasta 0.468
 # The number of heterozygote variant is 30
 ```
- 
+
+
+## Dependencies 
+### Programming 
+* python=3.8.12 or above  
+* Python libraries: numpy=1.22.3, pulp=2.6.0, pysam=0.19.0, scipy=1.8.0, and biopython=1.79. 
+* Perl 5 or above
+
+### Third party packages
+The softwares in the `/bin` folder can also be installed by yourself, please remind link the executable file to the `bin/` folder.
+Please apply Novoalign, and put the novoalign.lic (license file) in the `bin/` folder.
+
+* Third party packages:
+    * conda 4.12.0 
+    * SamTools-1.3.1
+    * bamutil Version: 1.0.14
+    * picard-tools-2.1.0 (java 11.0.1)
+    * BWA-0.7.17-r1188
+    * blast 2.3.0
+    * BLAT v. 36x2
+    * bedtools-v2.26.0
+    * bcftools-Version: 1.9
+    * Freebayes-v1.2.0-2-g29c4002
+    * Novoalign V4.02.01
+    * Tabix-Version: 1.9
+    * ScanIndel v1.3
+    * Fermikit-0.13
+    * SpecHap v1.0.1 and ExtractHAIRs
+    * Minimap 2.17-r941
+    * pbmm2-1.4.0
+    * pbsv Version 2.6.2
+    * Bowtie 2 version 2.3.4.1
+
 
 ## Simulation
 Please go to the `simulation/` folder, and run `simu.hla.sh` like:
@@ -201,7 +165,6 @@ Should you have any queries, please feel free to contact us, we will reply as so
 
 
 ## Testing functions
-
 
 ### Long-read only assembly-based typing 
 To assemble the long reads, and perform HLA typing based on the contigs, please use `/assembly/MHC.TGS.mapping.sh`. 
