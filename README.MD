@@ -125,34 +125,28 @@ Perform full-resolution HLA typing with paired-end reads and 10X linked reads by
 ```
 sh SpecHLA.sh -n <sample> -x <sample.10x.read.folder> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
+Consider long Indels and use population information for annotation by
+```
+sh SpecHLA.sh -n <sample> -v True -p <Asia> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
+```
+Perform full-resolution HLA typing only with long reads by (Longshot 0.4.1 should be installed in system env)
+```
+python3 long_read_typing.py -n <sample> -r <Pacbio or Nanopore reads> -o outdir/ 
+```
 
 ### Pedigree phasing
-After performing haplotyping, User can afford pedigree information to update the results.
+After performing haplotyping, User can afford pedigree information to update the results by
 ```
-Example: python3 phase_pedigree.py --trio NA12878:NA12891:NA12892 --workdir output/
-
-required arguments:
-  --trio           The trio infromation; give sample names in the order of
-                   child:mother:father. Example: NA12878:NA12891:NA12892. 
-                   The order of mother and father can be ambiguous.
-  -o , --workdir   The directory consists of all samples' results. The workdir
-                   running previous scipts.
+python3 phase_pedigree.py --trio NA12878:NA12891:NA12892 --workdir <specHLA output folder>
 ```
 The fresh reconstructed sequences can be found in the trio/ folder at each original sample's output folder.
 
 ### Detect HLA LOH in cancer samples
-If the purity of cancer sample and the ploidy of HLA region are known, we can infer HLA LOH event.
+If the purity of cancer sample and the ploidy of HLA region are known, we can infer HLA LOH event by
 ```
-Usage:
-       perl cal.hla.copy.pl -purity <Purity> -ploidy <Ploidy> -F <filelist> -O <outdir>
-
-OPTIONS:
-        -purity  [f]  the purity of tumor sample. <required>
-        -ploidy  [f]  the ploidy of tumor sample in HLA gene region. <required>
-        -F       [s]  the filelist. <required>
-                     Format, separated by table:  Sample/HLA_A_freq.txt
-        -O       [s]  the output dir. <required>
+perl cal.hla.copy.pl -purity <Purity> -ploidy <Ploidy> -F <freq.file.list> -O <outdir>
 ```
+Use `ls output/*/*_freq.txt >freq.list` to generate `freq.file.list`.
 
 ## Interpret output
 SpecHLA will automaticly build a folder named `output/` in the current path. In the `output/` folder, the results of each sample are saved in a folder named as the sample ID.  
@@ -207,12 +201,7 @@ Should you have any queries, please feel free to contact us, we will reply as so
 
 
 ## Testing functions
-### Long-read only alignment-based typing
-If you only have PacBio or Nanopore reads, you can perform HLA typing with
-```
-python long_read_typing.py -h
-```
-Please install Longshot 0.4.1 and add it to the system path to call small variants with long-read data. 
+
 
 ### Long-read only assembly-based typing 
 To assemble the long reads, and perform HLA typing based on the contigs, please use `/assembly/MHC.TGS.mapping.sh`. 
