@@ -196,7 +196,7 @@ if __name__ == "__main__":
     dwgsim_script = "/mnt/d/HLAPro_backup/insert/dwgsim"
     origin = '/mnt/d/HLAPro_backup/HLAPro/db/ref/hla.ref.extend.fa'
     #pbsim and Sim3C are in the system path
-
+    
     mutation_rate = 0.001
     read_length = 150
 

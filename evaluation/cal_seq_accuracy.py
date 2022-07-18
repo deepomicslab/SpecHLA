@@ -79,8 +79,9 @@ class Seq_error():
         os.system(command)
 
     def record_blast(self, index):
+        # -penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
         command = f"""
-        blastn -query {self.infer_hap_file} -out {self.blast_file}.{index}.fmt7.record -subject {self.truth_hap_file} -outfmt 7 -penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
+        blastn -query {self.infer_hap_file} -out {self.blast_file}.{index}.fmt7.record -subject {self.truth_hap_file} -outfmt 7 
         blastn -query {self.infer_hap_file} -out {self.blast_file}.{index}.fmt3.record -subject {self.truth_hap_file} -outfmt 3  
         """
         # print (command)
@@ -372,7 +373,8 @@ class Seq_error_muscle():
 
 def eva_HG002_spechla():
     # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
-    outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/spechla/HG002_0.1/"
+    outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/output/HG002_single_ont/"
+    # outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/spechla/HG002/"
     truth_file1 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H1-asm.fa"
     truth_file2 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H2-asm.fa"
     data = []
@@ -389,16 +391,20 @@ def eva_HG002_spechla():
         align_21 = seq.main()
         if align_11.base_error + align_22.base_error <= align_12.base_error + align_21.base_error:
             seq = Seq_error(infer_file1, truth_file1, gene)
-            align_11 = seq.main()
+            # align_11 = seq.main()
+            seq.record_blast(1)
             seq = Seq_error(infer_file2, truth_file2, gene)
-            align_22 = seq.main()
+            # align_22 = seq.main()
+            seq.record_blast(2)
             choose_align1 = align_11
             choose_align2 = align_22
         else:
             seq = Seq_error(infer_file1, truth_file2, gene)
-            align_12 = seq.main()
+            # align_12 = seq.main()
+            seq.record_blast(1)
             seq = Seq_error(infer_file2, truth_file1, gene)
-            align_21 = seq.main()
+            # align_21 = seq.main()
+            seq.record_blast(2)
             choose_align1 = align_12
             choose_align2 = align_21
         # print ("#", align_11.base_error, align_22.base_error, align_12.base_error, align_21.base_error)
@@ -406,10 +412,11 @@ def eva_HG002_spechla():
         short_gap_error = (choose_align1.short_gap_error + choose_align2.short_gap_error)/2
         gap_recall = (choose_align1.gap_recall + choose_align2.gap_recall)/2
         gap_precision = (choose_align1.gap_precision + choose_align2.gap_precision)/2
+        mapped_len = (choose_align1.mapped_len + choose_align2.mapped_len)/2
         data.append([base_error, short_gap_error, gap_recall, gap_precision, gene])
         # print (gene, base_error, short_gap_error, gap_recall, gap_precision)
         print (gene, round(base_error,6), round(short_gap_error,6), round(gap_recall,6), round(gap_precision,6),\
-             round(choose_align1.base_error,6), round(choose_align2.base_error,6))
+             round(choose_align1.base_error,6), round(choose_align2.base_error,6), mapped_len, choose_align1.mismatch_num, choose_align2.mismatch_num)
         # break
     df = pd.DataFrame(data, columns = ["base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
     df.to_csv('/mnt/d/HLAPro_backup/trio/hg002_high_dp_haplo_assess.csv', sep=',')
@@ -880,10 +887,10 @@ if __name__ == "__main__":
 
     if len(sys.argv) == 1:
         # eva_data_types_spechla()
-        eva_allele_imblance()
+        # eva_allele_imblance()
         # eva_HG002_kourami()
         # eva_pedigree_spechla()
-        # eva_HG002_spechla()
+        eva_HG002_spechla()
         # eva_hgsvc2_spechla()
         # eva_hgsvc2_spechla_accelerate()
         # eva_HG002_hisat()

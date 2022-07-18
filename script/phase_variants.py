@@ -1613,8 +1613,6 @@ def link_blocks():
     if args.focus_exon_flag == 1:
         # Ergodic method for exon phasing
         update_seqlist = all_poss_block_link()
-        # reph='perl %s/whole/read_unphased_block.pl %s/%s_break_points_spechap.txt\
-        #     %s 2 %s/%s_break_points_score.txt wes'%(sys.path[0],outdir,gene,outdir,outdir,gene)
     else:
         # reph='perl %s/whole/read_unphased_block.pl %s/%s_break_points_spechap.txt\
         #     %s 2 %s/%s_break_points_score.txt wgs'%(sys.path[0],outdir,gene,outdir,outdir,gene)   
