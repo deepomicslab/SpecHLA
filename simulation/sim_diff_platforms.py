@@ -4,7 +4,7 @@ two alleles for each gene
 simulate sequencing reads with different platfors, like
 Pacbio, Nanopore, Hi-c, Illumina, 10x
 
-dependencies: pbsim, sim3C, samtools, DeepSimulator, dwgsim Version: 0.1.13
+dependencies: pbsim, sim3C, samtools, DeepSimulator, dwgsim Version: 0.1.13, Nanosim
 
 python sim_diff_platforms.py <allele database> <outdir> <depth> <number of sample>
 
@@ -144,12 +144,22 @@ class Fastq():
         """
         os.system(command)
 
-    def get_nanopore(self, sample):
+    def get_nanopore_old(self, sample):
         command = f"""
             sample={sample}
             {deep_simulator_script} -i {self.dir}/$sample.fasta -o {self.dir}/nanopore/$sample\
-                 -S 1 -l 3000 -B 2 -c 12 -K {self.depth} -P 0        
+                 -S 1 -l 3000 -B 1 -c 12 -K {self.depth} -P 0 -M 0      
         """
+        os.system(command)
+
+    def get_nanopore(self, sample):
+        command = f"""
+            sample={sample}
+            simulator.py genome -rg {self.dir}/$sample.fasta -o {self.dir}/nanopore/$sample \
+                -c /mnt/d/HLAPro_backup/pacbio/simulation/human_NA12878_DNA_FAB49712_guppy/training -max 5000 -n 4000  --seed 66
+            python {sys.path[0]}/fasta2fastq.py  {self.dir}/nanopore/{sample}_aligned_reads.fasta > {self.dir}/nanopore/{sample}_aligned_reads.fastq   
+        """# Nanosim
+        print (command)
         os.system(command)
 
     def get_illumina(self, sample):
@@ -184,11 +194,11 @@ def simulate():
     for i in range(sample_num):
         sample = f"{prefix}_{i}"
         print (sample)
-        no.get_novel_fasta(sample)
-        fq.get_pacbio(sample)  
-        fq.get_illumina(sample)
+        # no.get_novel_fasta(sample)
+        # fq.get_pacbio(sample)  
+        # fq.get_illumina(sample)
         fq.get_nanopore(sample)
-        fq.get_hic(sample)
+        # fq.get_hic(sample)
 
 if __name__ == "__main__":  
 

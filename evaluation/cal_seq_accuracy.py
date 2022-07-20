@@ -425,6 +425,7 @@ def eva_pedigree_spechla():
     outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/spechla/"
 
     data = []
+    # pedigree_samples_list = [["NA12878", "NA12891", "NA12892"], ["NA19240", "NA19238", "NA19239"],["HG002","HG003","HG004"],["HG005","HG006","HG007"]]
     pedigree_samples_list = [["NA12878", "NA12891", "NA12892"], ["NA19240", "NA19238", "NA19239"]]
     base_error_list = []
     # pedigree_samples_list = [["NA12878", "NA12891", "NA12892"]]
@@ -473,12 +474,14 @@ def eva_pedigree_spechla():
                 short_gap_error = choose_align.short_gap_error 
                 gap_recall = choose_align.gap_recall 
                 gap_precision = choose_align.gap_precision
-                data.append([pedigree_samples[1+j], base_error, short_gap_error, gap_recall, gap_precision, gene])
+                data.append([pedigree_samples[1+j], base_error, gene, "Mismatch"])
+                data.append([pedigree_samples[1+j], short_gap_error,gene, "InDel"])
                 # print (gene, base_error, short_gap_error, gap_recall, gap_precision)
-                print (pedigree_samples[1+j], gene, round(base_error,6), round(short_gap_error,6), round(gap_recall,6), round(gap_precision,6))
+                print (pedigree_samples[1+j], gene, round(base_error,6), round(short_gap_error,6), round(gap_recall,6), round(gap_precision,6),\
+                    choose_align.mismatch_num)
                 base_error_list.append(base_error)
         # break
-    df = pd.DataFrame(data, columns = ["parent","base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
+    df = pd.DataFrame(data, columns = ["parent","value", "Gene", "group"])
     df.to_csv('/mnt/d/HLAPro_backup/trio/pedigree_haplo_assess.csv', sep=',')
     print ("Mean base error:", np.mean(base_error_list))
 
@@ -847,18 +850,20 @@ def each_simulated_sample(gene, outdir, sample, truth_dir):
     return base_error, short_gap_error, gap_recall, gap_precision
 
 def eva_data_types_spechla():
-    sample = "novel_0"
-    # outdir = "/mnt/d/HLAPro_backup/pacbio/novel/" + sample + "/"
-    # outdir = "/mnt/d/HLAPro_backup/pacbio/pacbio_illumina/" + sample + "/"
-    # outdir = "/mnt/d/HLAPro_backup/pacbio/hic_illumina/" + sample + "/"
-    # outdir = "/mnt/d/HLAPro_backup/pacbio/ont_illumina/" + sample + "/"
-    outdir = "/mnt/d/HLAPro_backup/pacbio/10x_illumina/" + sample + "/"
-    truth_dir = "/mnt/d/HLAPro_backup/pacbio/simulation/truth/"
+    # dict = {"PE":"novel", "+PacBio":"pacbio_illumina","+Hi-C":"hic_illumina","+ONT":"ont_illumina","PacBio":"pac_alone","+10X":"10x_illumina" }
+    dict = {"PE":"novel", "+PacBio":"pacbio_illumina","+Hi-C":"hic_illumina","+ONT":"ont_illumina","PacBio":"pac_alone","ONT":"ont_alone","+10X":"10x_illumina" }
     data = []
-    for gene in gene_list:
-        base_error, short_gap_error, gap_recall, gap_precision = each_simulated_sample(gene, outdir, sample, truth_dir)
-        data.append([sample, gene, base_error, short_gap_error, gap_recall, gap_precision])
-    df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "gap_recall", "gap_precision"])
+    for i in range(1):
+        sample = "novel_%s"%(i)
+        for plat in dict.keys():
+            outdir = "/mnt/d/HLAPro_backup/pacbio/" + dict[plat]+ "/" + sample + "/"
+            truth_dir = "/mnt/d/HLAPro_backup/pacbio/simulation/truth/"
+            
+            for gene in gene_list:
+                base_error, short_gap_error, gap_recall, gap_precision = each_simulated_sample(gene, outdir, sample, truth_dir)
+                data.append([sample, gene, base_error, short_gap_error, plat])
+                print (sample, gene, base_error, short_gap_error, plat)
+    df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "Data"])
     df.to_csv('/mnt/d/HLAPro_backup/pacbio/novel/haplo_assess.csv', sep=',')
 
 def eva_allele_imblance():
@@ -890,10 +895,11 @@ if __name__ == "__main__":
         # eva_allele_imblance()
         # eva_HG002_kourami()
         # eva_pedigree_spechla()
-        eva_HG002_spechla()
+        # eva_HG002_spechla()
         # eva_hgsvc2_spechla()
         # eva_hgsvc2_spechla_accelerate()
         # eva_HG002_hisat()
+        eva_data_types_spechla()
     else:
         database = sys.argv[1]
         record_true_file = sys.argv[2]

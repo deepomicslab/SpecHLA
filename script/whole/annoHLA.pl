@@ -102,14 +102,17 @@ sub exon_blast{
                 `echo ">$class.$i" >$workdir/$class.$i.temp.fasta`;
                 `less $fa |grep -v ">" >>$workdir/$class.$i.temp.fasta`;
                 my $seq = `less $fa|grep -v ">"`; chomp $seq; $seq=~s/\s+//g;
-                system("$bin/blastn -query $workdir/$class.$i.temp.fasta -out $workdir/$class.$i.blast.out1 -db $ref -outfmt 6 -num_threads 4 -max_target_seqs 1000") ;  
-              ## Read blast result
+                system("$bin/blastn -query $workdir/$class.$i.temp.fasta -out $workdir/$class.$i.blast.out1 -db $ref -outfmt 6 -num_threads 4 -max_target_seqs 6000") ;           
+     ## Read blast result
                 open BIN, "$workdir/$class.$i.blast.out1" or die "$!\n";
                 my (%hash1, %hash2,%hash3, %hashas, %hashhk, %hash4);
                 my $blastcount =0;
                 while(<BIN>){
                      chomp;
                      my ($id, $hla, $t, $m, $i, $si) = (split)[0,1,3,4,5,11];
+                     next if($hla eq "HLA:HLA17631");
+                     next if($hla eq "HLA:HLA08917");
+                     next if($t<50);
                      my $nhla = $hashc{$hla};
                      $hash1{$nhla} += $m + $i;
                      $hash2{$nhla} += $t - $i;
@@ -124,8 +127,10 @@ sub exon_blast{
                  foreach my $hla (sort keys %hash1){
                          my $mis = $hash1{$hla};
                          my $len = $hash2{$hla};
-                         my $score = 100 * (1 - $mis/$len);
-                         if($class =~ /DRB1/){$score = $hash4{$hla} / 499}
+                         my $l = 1; 
+                         if($class =~ /DQB/){$l = int($hash4{$hla}/500 + 0.5) + 1;}
+                         my $score = 100 * (1 - $mis/$len) * $l;
+                         if($class =~ /DRB1/){$score = $hash4{$hla} }
                 #print "$hla\t$score\t$mis\t$len\t$hash4{$hla}\n";        
                          my @tt = (split /:/, $hla);
                          my $kid = "$tt[0]".":"."$tt[1]";
@@ -193,7 +198,7 @@ sub whole_blast{
                        $fa = "$fadir/$class.temp.fasta";
                }
                my $tag = "$class"."_"."$i";
-               system("$bin/blastn -query $fa -out $workdir/$tag.blast.out1 -db $ref -outfmt 7 -num_threads 4 -max_target_seqs 1000 ");
+               system("$bin/blastn -query $fa -out $workdir/$tag.blast.out1 -db $ref -outfmt 7 -num_threads 4 -max_target_seqs 6000 ");
                my (%hash_max,%hash11,%hash12, %hash21, %hash22,$gene,$score);
                ## read blast score
                open IN1, "$workdir/$tag.blast.out1" or die "$!\n";
@@ -278,14 +283,16 @@ foreach my $hla(@hlas){
 
                  my @tt = (split /:/, $allele);
                  my $kid = "$tt[0]".":"."$tt[1]";
-                 $hashmm{$kid} .= "$allele\t";
+                 #$hashmm{$kid} .= "$allele\t";
                  $line2 .= "$allele;";
                  $oo = "$kid".";"."$score";
                  if(exists $hashg{$allele}){
                       my @ttt = (split /:/,$hashg{$allele});
                       my $tid = "$ttt[0]".":"."$ttt[1]";
-                      $ggs{$tid} += 1}
-                 else{$ggs{$kid} += 1}
+                      $ggs{$tid} += 1;
+                      $hashmm{$tid} .= "$allele\t";
+                 }
+                 else{$ggs{$kid} += 1; $hashmm{$kid} .= "$allele\t"}
                  if(exists $hashpp{$kid}){$line3 .= "$oo;$hashpp{$kid}\t"; 
                      if($pfre < $hashp{$kid}){$pfre = $hashp{$kid};$pout = $allele;
                      }
@@ -296,14 +303,14 @@ foreach my $hla(@hlas){
              my @lines2 = (split /;/,$line2); $line3 = join("\t",@lines3);
              if($pop eq "nonuse" || !$pout){
                foreach my $gg(sort {$ggs{$b} <=> $ggs{$a}} keys %ggs ){
-                   
                    my $agg = (split /\t/, $hashmm{$gg})[0];
                    if($ggs{$gg} >= $max){
                        $max = $ggs{$gg};$line1 .= "$agg;";
                         if($out eq "-"){$out = $agg;}
                    }
-               }
-             }else{
+                   if($g_nom == 1 && exists $hashg{$out}){$out = $hashg{$out}}
+                }
+             }else{ 
                    if(exists $hashg{$pout}){$pout = $hashg{$pout};}
              #      else{$pout = $lines2[0]}
                    $out = $pout;   $line1 = $pout; 
