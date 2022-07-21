@@ -1493,19 +1493,19 @@ def run_SpecHap():
             folder_name=tenx_bam_$sample
             bam=./$folder_name/outs/possorted_bam.bam
             
-            if [ $gene == "HLA_A" ];
-            then
-                rm -rf ./$folder_name
-                longranger align --id=$folder_name --fastqs=$fq --reference=%s/../db/ref/refdata-hla.ref.extend\
-                    --sample=$sample --localcores=%s --localmem=10 
-            fi
+            # if [ $gene == "HLA_A" ];
+            # then
+            #     rm -rf ./$folder_name
+            #     longranger align --id=$folder_name --fastqs=$fq --reference=%s/../db/ref/refdata-hla.ref.extend\
+            #         --sample=$sample --localcores=%s --localmem=10 
+            # fi
  
             $bin/extractHAIRS --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam\
                  --VCF $vcf --out $outdir/fragment.raw.tenx.file
             gzip -f -d -k $vcf
             python3 %s/link_fragment.py -b $bam -f $outdir/fragment.raw.tenx.file\
                  -v %s -o  $outdir/fragment.raw3.tenx.file
-            awk '$0=$0" 60"' $outdir/fragment.raw3.tenx.file >$outdir/fragment.tenx.file
+            awk '$0=$0" 1"' $outdir/fragment.raw3.tenx.file >$outdir/fragment.tenx.file
             cat $outdir/fragment.tenx.file >> $outdir/fragment.all.file
         
         """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, gene_vcf,sys.path[0], args.thread_num, sys.path[0], gene_vcf[:-3])

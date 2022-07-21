@@ -23,6 +23,20 @@ import numpy as np
 gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
 # gene_list = ['DQA1', 'DQB1', 'DRB1']
 
+def merge_exon(infer_file):
+    used_exon = ["HLA_A:1504-1773","HLA_A:2015-2290","HLA_B:1486-1755","HLA_B:2001-2276","HLA_C:1699-1968","HLA_C:2215-2490",\
+        "HLA_DQA1:5600-5848","HLA_DQB1:3073-3342","HLA_DRB1:6972-7241"]
+    merge_exon_file = infer_file + ".merged.exon.fasta"
+    exon_seq = ''
+    with open(infer_file) as handle:
+        for record in SeqIO.parse(handle, "fasta"):
+            if record.id in used_exon or record.id.split(":")[0] in ["HLA_DPA1","HLA_DPB1"]:
+                exon_seq += str(record.seq)
+    with open(merge_exon_file, "w") as output_handle:
+        print (">merged_exon", file = output_handle)  
+        print (exon_seq, file = output_handle) 
+    return  merge_exon_file
+
 class Align(object):
 
     def __init__(self, mapped_len,infer_hap_len,truth_hap_len,mismatch_num,gap_open_num,true_mapped_len):
@@ -145,8 +159,7 @@ class Seq_error():
             self.mapped_len = self.mapped_len + (interval[1] - interval[0] + 1)
         for interval in self.true_mapped_interval:
             self.true_mapped_len = self.true_mapped_len + (interval[1] - interval[0] + 1)
-        # print (self.mapped_len, self.infer_hap_len, self.truth_hap_len)
-        # print (self.mismatch_num, self.gap_open_num)
+
     def main(self):
         self.get_fasta_len()
         self.blast_map("strict")
@@ -161,7 +174,6 @@ class Seq_error():
         align = Align(self.mapped_len, self.infer_hap_len, self.truth_hap_len, \
             self.mismatch_num, self.gap_open_num,self.true_mapped_len)
         return align
-
 
 class Seq_error_accelerate():
 
@@ -289,8 +301,6 @@ class Seq_error_accelerate():
             result_dict[geno_name] = [align.base_error, align.short_gap_error, align.gap_precision, self.mapped_len_dict[geno_name]]
         return result_dict
 
-
-
 class Seq_error_muscle():
     def __init__(self, infer_hap_file, truth_hap_file, gene):
         self.infer_hap_file = infer_hap_file
@@ -373,14 +383,17 @@ class Seq_error_muscle():
 
 def eva_HG002_spechla():
     # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
-    outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/output/HG002_single_ont/"
+    # outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/output/HG002_single_pac/"
     # outdir = "/mnt/d/HLAPro_backup/trio/trio_1000/spechla/HG002/"
+    outdir = "/mnt/d/HLAPro_backup/trio/HG002_exon/"
     truth_file1 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H1-asm.fa"
     truth_file2 = "/mnt/d/HLAPro_backup/trio/truth_MHC/H2-asm.fa"
     data = []
     for gene in gene_list:
         infer_file1 = outdir + "hla.allele.1.HLA_%s.fasta"%(gene)
+        infer_file1 = merge_exon(infer_file1)
         infer_file2 = outdir + "hla.allele.2.HLA_%s.fasta"%(gene)
+        infer_file2 = merge_exon(infer_file2)
         seq = Seq_error(infer_file1, truth_file1, gene)
         align_11 = seq.main()
         seq = Seq_error(infer_file2, truth_file2, gene)
@@ -416,7 +429,7 @@ def eva_HG002_spechla():
         data.append([base_error, short_gap_error, gap_recall, gap_precision, gene])
         # print (gene, base_error, short_gap_error, gap_recall, gap_precision)
         print (gene, round(base_error,6), round(short_gap_error,6), round(gap_recall,6), round(gap_precision,6),\
-             round(choose_align1.base_error,6), round(choose_align2.base_error,6), mapped_len, choose_align1.mismatch_num, choose_align2.mismatch_num)
+             round(choose_align1.base_error,6), round(choose_align2.base_error,6), mapped_len)
         # break
     df = pd.DataFrame(data, columns = ["base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
     df.to_csv('/mnt/d/HLAPro_backup/trio/hg002_high_dp_haplo_assess.csv', sep=',')
@@ -427,7 +440,7 @@ def eva_pedigree_spechla():
     data = []
     # pedigree_samples_list = [["NA12878", "NA12891", "NA12892"], ["NA19240", "NA19238", "NA19239"],["HG002","HG003","HG004"],["HG005","HG006","HG007"]]
     pedigree_samples_list = [["NA12878", "NA12891", "NA12892"], ["NA19240", "NA19238", "NA19239"]]
-    base_error_list = []
+    mismatch_list, gap_list = [], []
     # pedigree_samples_list = [["NA12878", "NA12891", "NA12892"]]
     for pedigree_samples in pedigree_samples_list:
         for gene in gene_list:
@@ -474,16 +487,17 @@ def eva_pedigree_spechla():
                 short_gap_error = choose_align.short_gap_error 
                 gap_recall = choose_align.gap_recall 
                 gap_precision = choose_align.gap_precision
-                data.append([pedigree_samples[1+j], base_error, gene, "Mismatch"])
-                data.append([pedigree_samples[1+j], short_gap_error,gene, "InDel"])
+                data.append([pedigree_samples[1+j], base_error, gene, "Mismatch_Rate"])
+                data.append([pedigree_samples[1+j], short_gap_error,gene, "Gap_Rate"])
                 # print (gene, base_error, short_gap_error, gap_recall, gap_precision)
                 print (pedigree_samples[1+j], gene, round(base_error,6), round(short_gap_error,6), round(gap_recall,6), round(gap_precision,6),\
                     choose_align.mismatch_num)
-                base_error_list.append(base_error)
+                mismatch_list.append(base_error)
+                gap_list.append(short_gap_error)
         # break
     df = pd.DataFrame(data, columns = ["parent","value", "Gene", "group"])
     df.to_csv('/mnt/d/HLAPro_backup/trio/pedigree_haplo_assess.csv', sep=',')
-    print ("Mean base error:", np.mean(base_error_list))
+    print ("Mean base error:", np.mean(mismatch_list), "mean gap rate is", np.mean(gap_list))
 
 def eva_HG002_hisat():
     outdir = "/mnt/d/HLAPro_backup/trio/Trio/hisat/HG002/"
@@ -549,9 +563,10 @@ def eva_HG002_hisat():
         short_gap_error = (choose_align1.short_gap_error + choose_align2.short_gap_error)/2
         gap_recall = (choose_align1.gap_recall + choose_align2.gap_recall)/2
         gap_precision = (choose_align1.gap_precision + choose_align2.gap_precision)/2
+        mapped_len = (choose_align1.mapped_len + choose_align2.mapped_len)/2
         data.append([base_error, short_gap_error, gap_recall, gap_precision, gene])
         print (gene, round(base_error,6), round(short_gap_error,6), round(gap_recall,6), round(gap_precision,6),\
-             round(choose_align1.base_error,6), round(choose_align2.base_error,6))
+             round(choose_align1.base_error,6), round(choose_align2.base_error,6),round(mapped_len))
         # break
     df = pd.DataFrame(data, columns = ["base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
     df.to_csv('/mnt/d/HLAPro_backup/trio/hisat_hg002_haplo_assess.csv', sep=',')
@@ -673,6 +688,9 @@ def eva_simu(database, record_true_file, outdir, sample_name):
         if method == "spechla":
             infer_file1 = outdir + "hla.allele.1.HLA_%s.fasta"%(gene)
             infer_file2 = outdir + "hla.allele.2.HLA_%s.fasta"%(gene)
+            if exon_flag == "exon":
+                infer_file1 = merge_exon(infer_file1)
+                infer_file2 = merge_exon(infer_file2)
         elif method == "hisat":
             infer_file1 = outdir + "hisat.hla.allele.1.HLA_%s.fasta"%(gene)
             infer_file2 = outdir + "hisat.hla.allele.2.HLA_%s.fasta"%(gene)
@@ -851,9 +869,10 @@ def each_simulated_sample(gene, outdir, sample, truth_dir):
 
 def eva_data_types_spechla():
     # dict = {"PE":"novel", "+PacBio":"pacbio_illumina","+Hi-C":"hic_illumina","+ONT":"ont_illumina","PacBio":"pac_alone","+10X":"10x_illumina" }
-    dict = {"PE":"novel", "+PacBio":"pacbio_illumina","+Hi-C":"hic_illumina","+ONT":"ont_illumina","PacBio":"pac_alone","ONT":"ont_alone","+10X":"10x_illumina" }
+    dict = {"PE":"novel", "+PacBio":"pacbio_illumina","+Hi-C":"hic_illumina","+ONT":"ont_illumina","PacBio":"pac_alone","ONT":"ont_alone"}
+    # dict = {"+10X":"10x_illumina" }
     data = []
-    for i in range(1):
+    for i in range(50):
         sample = "novel_%s"%(i)
         for plat in dict.keys():
             outdir = "/mnt/d/HLAPro_backup/pacbio/" + dict[plat]+ "/" + sample + "/"
@@ -862,7 +881,7 @@ def eva_data_types_spechla():
             for gene in gene_list:
                 base_error, short_gap_error, gap_recall, gap_precision = each_simulated_sample(gene, outdir, sample, truth_dir)
                 data.append([sample, gene, base_error, short_gap_error, plat])
-                print (sample, gene, base_error, short_gap_error, plat)
+                # print (sample, gene, base_error, short_gap_error, plat)
     df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "Data"])
     df.to_csv('/mnt/d/HLAPro_backup/pacbio/novel/haplo_assess.csv', sep=',')
 
@@ -895,17 +914,18 @@ if __name__ == "__main__":
         # eva_allele_imblance()
         # eva_HG002_kourami()
         # eva_pedigree_spechla()
-        # eva_HG002_spechla()
+        eva_HG002_spechla()
         # eva_hgsvc2_spechla()
         # eva_hgsvc2_spechla_accelerate()
         # eva_HG002_hisat()
-        eva_data_types_spechla()
+        # eva_data_types_spechla()
     else:
         database = sys.argv[1]
         record_true_file = sys.argv[2]
         sample_dir = sys.argv[3]
         sample_name = sys.argv[4]
         method = sys.argv[5] # spechla, hisat, or kourami
+        exon_flag = sys.argv[6] # exon or not
                 
         if method == "hisat":
             split_hisat_fasta(sample_dir, sample_name)
