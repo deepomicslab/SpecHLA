@@ -15,7 +15,9 @@ Third, index the database.
 ```
 bash index.sh
 ```
-Note: `Novoalign` requires a license in `bin/`, if it is not detected, SpecHLA will use `bowtie2`. 
+Note: `Novoalign` requires a license in `bin/`, if not detected, SpecHLA uses `bowtie2` automatically. 
+License file of `Novoalign` should be put in `bin/` before index
+
 
 
 ## Test
