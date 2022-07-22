@@ -7,6 +7,8 @@ wangshuai July 11, 2022
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 import os
+import sys
+import re
 
 
 gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
@@ -17,9 +19,12 @@ class Eva_typing():
         self.hla_la_result = "/mnt/d/HLAPro_backup/pacbio/HLA-LA.illumina.merge.result.txt"
         # self.hla_la_result = "/mnt/d/HLAPro_backup/pacbio/HLA-LA.merge.result.txt"
         # self.spechla_outdir = "/mnt/d/HLAPro_backup/pacbio/output/"
-        self.spechla_outdir = "/mnt/d/HLAPro_backup/pacbio/hybrid/"
-        self.spechla_result = "/mnt/d/HLAPro_backup/pacbio/spechla.merge.result.txt"
-        self.true_dir = "/mnt/d/HLAPro_backup/pacbio/simulation/"
+        # self.spechla_outdir = "/mnt/d/HLAPro_backup/hybrid/test_illumina/"
+        self.spechla_outdir = "/mnt/d/HLAPro_backup/hybrid/illumina/"
+        # self.spechla_outdir = "/mnt/d/HLAPro_backup/hybrid/pacbio/"
+        # self.spechla_outdir = "/mnt/d/HLAPro_backup/hybrid/pacbio_illumina/"
+        self.spechla_result = "/mnt/d/HLAPro_backup/hybrid/spechla.merge.result.txt"
+        self.true_dir = "/mnt/d/HLAPro_backup/hybrid/data/"
         self.sample_list = []
 
     def get_spechla_merge_result(self):
@@ -32,9 +37,14 @@ class Eva_typing():
             for record in SeqIO.parse(handle, "fasta"):
                 array = record.id.split("_")
                 gene = array[0]
-                type = array[1] + ":" + array[2]
+                # if digit == 6 and len(array) > 3:
+                #     # print (array, len(array))
+                #     type = array[1] + ":" + array[2] + ":" + array[3]
+                # else:
+                #     type = array[1] + ":" + array[2]
                 if gene not in sample_true_dict:
                     sample_true_dict[gene] = []
+                type=G_annotation_dict[record.id]
                 sample_true_dict[gene].append(type)
         return sample_true_dict
     
@@ -58,20 +68,27 @@ class Eva_typing():
             all_sample_infer_dict[sample] = {}
             for allele in array[1:]:
                 gene = allele.split("*")[0]
-                type = allele.split("*")[1][:5]
+                # if digit == 4:
+                #     type = allele.split("*")[1][:5]
+                # elif digit == 6:
+                #     type = allele.split("*")[1][:8]
                 if gene not in all_sample_infer_dict[sample]:
                     all_sample_infer_dict[sample][gene] = []
+                allele = re.sub(":","_",allele)
+                allele = re.sub("\*","_",allele)
+                type = allele
                 all_sample_infer_dict[sample][gene].append(type)
         return all_sample_infer_dict
 
     def main(self):    
         self.get_spechla_merge_result()
         spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
-        hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
-        self.sample_list = list(hla_la_all_sample_infer_dict.keys())
+        # hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
+        self.sample_list = list(spechla_all_sample_infer_dict
+        .keys())
         all_sample_true_dict = self.get_all_truth()
         self.assess(all_sample_true_dict, spechla_all_sample_infer_dict)
-        self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict)
+        # self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict)
     
     def assess(self, all_sample_true_dict, infer_all_sample_infer_dict):
         gene_count = {}
@@ -123,8 +140,44 @@ class Eva_typing():
         error_rate = error_num/allele_num
         print (gene, allele_num, 1 - error_rate)
 
+def read_G_annotation():
+    g_file = "%s/../db/HLA/hla_nom_g.txt"%(sys.path[0])
+    G_annotation_dict = {}
+    i = 0
+    for line in open(g_file):
+        if line[0] == "#":
+            continue
+        # line.replace(":","_", 10000)
+        line = re.sub(":","_",line)
+        array = line.strip().split(";")
+        gene = array[0][:-1]
+        
+        if len(array[-1]) == 0:
+            
+            g_name = gene + "_" + array[-2]
+            # print (g_name)
+            G_annotation_dict[g_name] = g_name
+        else:
+            g_name = gene + "_" + array[-1]
+            alleles = array[-2].split("/")
+            for each in alleles:
+                each = gene + "_" + each
+                G_annotation_dict[each] = g_name
+        # print (array, g_name)
+        # print (G_annotation_dict)
+        # print (len(array))
+        # if i > 2:
+        #     break
+        i += 1
+    return G_annotation_dict
+
+
+
 if __name__ == "__main__":
     # for gene in ['A', 'B', 'C', 'DQB1','DRB1']:
     #     single(gene)
+    G_annotation_dict = read_G_annotation()
+    digit = 6
     typ = Eva_typing()
     typ.main()
+    

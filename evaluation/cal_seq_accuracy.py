@@ -32,10 +32,28 @@ def merge_exon(infer_file):
         for record in SeqIO.parse(handle, "fasta"):
             if record.id in used_exon or record.id.split(":")[0] in ["HLA_DPA1","HLA_DPB1"]:
                 exon_seq += str(record.seq)
+                exon_seq += "N"*200
     with open(merge_exon_file, "w") as output_handle:
         print (">merged_exon", file = output_handle)  
         print (exon_seq, file = output_handle) 
     return  merge_exon_file
+
+def splitN_for_kourami(infer_file):
+    splitN_file = infer_file + ".split.exon.fasta"
+    with open(infer_file) as handle:
+        for record in SeqIO.parse(handle, "fasta"):
+            merged_exon = str(record.seq)
+    if len(merged_exon) > 270:
+        new_exon = merged_exon[:270] + "N"*200 + merged_exon[270:]
+    else:
+        new_exon = merged_exon
+    # print (new_exon)
+    output_handle = open(splitN_file, "w")
+    print (">split_exon", file = output_handle)  
+    print (new_exon, file = output_handle) 
+    output_handle.close()
+    return splitN_file
+
 
 class Align(object):
 
@@ -581,12 +599,14 @@ def eva_HG002_kourami():
     for gene in gene_list:
         infer_file1 = outdir + "kourami.hla.allele.1.HLA_%s.fasta"%(gene)
         infer_file2 = outdir + "kourami.hla.allele.2.HLA_%s.fasta"%(gene)
+
         alleles = ["%s_0:0"%(gene), "%s_1:1"%(gene)]
         if gene == "DQA1":
             alleles = ["%s_0"%(gene), "%s_0"%(gene)]
         fasta_file = outdir + "/HG002.hla_%s.typed.fa"%(gene)
         if not os.path.isfile(fasta_file):
             continue
+
         with open(fasta_file) as handle:
             for record in SeqIO.parse(handle, "fasta"):
                 if record.id == alleles[0]:
@@ -600,7 +620,8 @@ def eva_HG002_kourami():
                     with open(infer_file2, "w") as output_handle:
                         SeqIO.write(record, output_handle, "fasta")
                     break
-
+        infer_file1 = splitN_for_kourami(infer_file1)
+        infer_file2 = splitN_for_kourami(infer_file2)
         seq = Seq_error(infer_file1, truth_file1, gene)
         align_11 = seq.main()
         seq = Seq_error(infer_file2, truth_file2, gene)
@@ -628,9 +649,10 @@ def eva_HG002_kourami():
         short_gap_error = (choose_align1.short_gap_error + choose_align2.short_gap_error)/2
         gap_recall = (choose_align1.gap_recall + choose_align2.gap_recall)/2
         gap_precision = (choose_align1.gap_precision + choose_align2.gap_precision)/2
+        mapped_len = (choose_align1.mapped_len + choose_align2.mapped_len)/2
         data.append([base_error, short_gap_error, gap_recall, gap_precision, gene])
         print (gene, round(base_error,6), round(short_gap_error,6), round(gap_recall,6), round(gap_precision,6),\
-             round(choose_align1.base_error,6), round(choose_align2.base_error,6))
+             round(choose_align1.base_error,6), round(choose_align2.base_error,6),mapped_len)
         # break
     df = pd.DataFrame(data, columns = ["base_error", "short_gap_error", "gap_recall", "gap_precision", "Gene"])
     df.to_csv('/mnt/d/HLAPro_backup/trio/kourami_hg002_haplo_assess.csv', sep=',')   
@@ -678,6 +700,8 @@ def split_kourami_fasta(outdir, sample_name):
                 infer_file = outdir + "/kourami.hla.allele.%s.HLA_%s.fasta"%(record_dict[gene_name], gene_name)
                 with open(infer_file, "w") as output_handle:
                     SeqIO.write(record, output_handle, "fasta")
+                new_infer_file = splitN_for_kourami(infer_file)
+                os.system(f"cp {new_infer_file} {infer_file}")
 
 def eva_simu(database, record_true_file, outdir, sample_name):
     outdir = outdir + "/"
@@ -869,10 +893,10 @@ def each_simulated_sample(gene, outdir, sample, truth_dir):
 
 def eva_data_types_spechla():
     # dict = {"PE":"novel", "+PacBio":"pacbio_illumina","+Hi-C":"hic_illumina","+ONT":"ont_illumina","PacBio":"pac_alone","+10X":"10x_illumina" }
-    dict = {"PE":"novel", "+PacBio":"pacbio_illumina","+Hi-C":"hic_illumina","+ONT":"ont_illumina","PacBio":"pac_alone","ONT":"ont_alone"}
-    # dict = {"+10X":"10x_illumina" }
+    # dict = {"PE":"novel", "+PacBio":"pacbio_illumina","+Hi-C":"hic_illumina","+ONT":"ont_illumina","PacBio":"pac_alone","ONT":"ont_alone"}
+    dict = {"+10X":"10x_illumina" }
     data = []
-    for i in range(50):
+    for i in range(3):
         sample = "novel_%s"%(i)
         for plat in dict.keys():
             outdir = "/mnt/d/HLAPro_backup/pacbio/" + dict[plat]+ "/" + sample + "/"
@@ -910,11 +934,11 @@ def eva_allele_imblance():
 if __name__ == "__main__":
 
     if len(sys.argv) == 1:
-        # eva_data_types_spechla()
+        eva_data_types_spechla()
         # eva_allele_imblance()
         # eva_HG002_kourami()
         # eva_pedigree_spechla()
-        eva_HG002_spechla()
+        # eva_HG002_spechla()
         # eva_hgsvc2_spechla()
         # eva_hgsvc2_spechla_accelerate()
         # eva_HG002_hisat()

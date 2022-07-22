@@ -66,12 +66,12 @@ while(<INL>){
                 my @arrs = (split /\//,$line);
                 foreach my $kk(@arrs){
                         my $hla = "$tag"."$kk";
-                        next if($hla =~ /DQB1\*02:02/);
-                        next if($hla =~ /DQB1\*03/);
-                        next if($hla =~ /DQA1\*05/);
-                        next if($hla =~ /DQA1\*03/);
-                        next if($hla =~ /C\*07/);
-                        next if($hla =~ /DRB1\*14/);
+                        # next if($hla =~ /DQB1\*02:02/);
+                        # next if($hla =~ /DQB1\*03/);
+                        # next if($hla =~ /DQA1\*05/);
+                        # next if($hla =~ /DQA1\*03/);
+                        # next if($hla =~ /C\*07/);
+                        # next if($hla =~ /DRB1\*14/);
                         $hashg{$hla} = $value;
                 }
         }else{

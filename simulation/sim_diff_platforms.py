@@ -23,6 +23,38 @@ import re
 
 gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
 
+def read_G_annotation():
+    g_file = "%s/../db/HLA/hla_nom_g.txt"%(sys.path[0])
+    G_annotation_dict = {}
+    i = 0
+    for line in open(g_file):
+        if line[0] == "#":
+            continue
+        # line.replace(":","_", 10000)
+        line = re.sub(":","_",line)
+        array = line.strip().split(";")
+        gene = array[0][:-1]
+        
+        if len(array[-1]) == 0:
+            
+            g_name = gene + "_" + array[-2]
+            # print (g_name)
+            G_annotation_dict[g_name] = g_name
+        else:
+            g_name = gene + "_" + array[-1]
+            alleles = array[-2].split("/")
+            for each in alleles:
+                each = gene + "_" + each
+                G_annotation_dict[each] = g_name
+        # print (array, g_name)
+        # print (G_annotation_dict)
+        # print (len(array))
+        # if i > 2:
+        #     break
+        i += 1
+    return G_annotation_dict
+
+
 class Fasta():
     def __init__(self):       
         self.database = database
@@ -47,9 +79,17 @@ class Fasta():
         self.selected_alleles = []
         for gene in gene_list:
             random.shuffle(self.allele_dict[gene])
-            self.selected_alleles += self.allele_dict[gene][:2]
-            self.record_allele_name[self.allele_dict[gene][0]] = sample + "." + gene + "_1.fasta"
-            self.record_allele_name[self.allele_dict[gene][1]] = sample + "." + gene + "_2.fasta"
+            record_selected_allele = []
+            for allele in self.allele_dict[gene]:
+                if allele not in G_annotation_dict:
+                    continue
+                if G_annotation_dict[allele][-1] == "G":
+                    record_selected_allele.append(allele)
+                if len(record_selected_allele) == 2:
+                    break
+            self.selected_alleles += record_selected_allele
+            self.record_allele_name[record_selected_allele[0]] = sample + "." + gene + "_1.fasta"
+            self.record_allele_name[record_selected_allele[1]] = sample + "." + gene + "_2.fasta"
         print (self.selected_alleles )
     
     def get_sample_fasta(self, sample):
@@ -166,7 +206,7 @@ class Fastq():
         command = f"""
         sample={sample}
         mkdir {self.dir}/$sample
-        {dwgsim_script} -r 0 -e 0 -E 0 -1 {self.read_len} -2 {self.read_len} -C {self.depth}\
+        {dwgsim_script} -r 0 -e {read_error} -E {read_error} -1 {self.read_len} -2 {self.read_len} -C {self.depth}\
              {self.dir}/$sample.fasta {self.dir}/$sample/$sample.illumina
         # gzip -f {self.dir}/$sample/$sample.illumina.*fastq
         """
@@ -197,7 +237,25 @@ def simulate():
         # no.get_novel_fasta(sample)
         # fq.get_pacbio(sample)  
         # fq.get_illumina(sample)
-        fq.get_nanopore(sample)
+        # fq.get_nanopore(sample)
+        # fq.get_hic(sample)
+
+def simulate_hybrid():
+    print ("start simulation")
+    fa = Fasta()
+    fa.get_all_allele()
+    
+    fq = Fastq()
+    # no = Novel()
+    
+    for i in range(sample_num):
+        sample = f"{prefix}_{i}"
+        print (sample)
+        fa.get_sample_fasta(sample)
+        # no.get_novel_fasta(sample)
+        fq.get_pacbio(sample)  
+        fq.get_illumina(sample)
+        # fq.get_nanopore(sample)
         # fq.get_hic(sample)
 
 if __name__ == "__main__":  
@@ -209,15 +267,20 @@ if __name__ == "__main__":
     
     mutation_rate = 0.001
     read_length = 150
+    G_annotation_dict = read_G_annotation()
 
     database = sys.argv[1]
     outdir = sys.argv[2]
     depth = sys.argv[3]
     sample_num = int(sys.argv[4])
 
-    prefix = "novel"
-    simulate()
-    # sim_pacbio = Sim_Pac()
-    # sim_pacbio.get_benchmark()
-    # sim_pacbio.get_illumina()
-    # sim_pacbio.get_spechla()
+    # read_error = 0
+    # prefix = "novel"
+    # simulate()
+
+
+    read_error = 0.01
+    prefix = "hybrid"
+    simulate_hybrid()
+
+

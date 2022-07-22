@@ -207,9 +207,10 @@ class Fasta():
 
     def annotation(self):
         anno = """
-        perl %s/annoHLA.pl -s %s -i %s -p %s -r whole
+        perl %s/annoHLA.pl -s %s -i %s -p %s -r whole -g %s
         cat %s/hla.result.txt
-        """%(parameter.whole_dir, parameter.sample, parameter.outdir, parameter.population, parameter.outdir)
+        """%(parameter.whole_dir, parameter.sample, parameter.outdir, parameter.population, args["g"], parameter.outdir)
+        # print (anno)
         os.system(anno)
 
 
@@ -234,7 +235,7 @@ if __name__ == "__main__":
     optional.add_argument("-d", type=float, help="Minimum score difference to assign a read to a gene.", metavar="\b", default=0.001)
     optional.add_argument("-m", type=int, help="1 represents typing, 0 means only read assignment", metavar="\b", default=1)
     optional.add_argument("-a", type=str, help="prefix of filtered fastq file.", metavar="\b", default="long_read")
-    # optional.add_argument("-t", type=int, default=5, help="<int> number of threads", metavar="\b")
+    optional.add_argument("-g", type=int, help="Whether use G-translate in annotation [1|0], default is 0.", metavar="\b", default=1)
     optional.add_argument("-h", "--help", action="help")
     args = vars(parser.parse_args()) 
 
@@ -243,10 +244,13 @@ if __name__ == "__main__":
     Min_diff = args["d"]  #0.001
 
     ###assign reads
-    pbin = Pacbio_Binning()
-    pbin.read_bam()
+    if args["m"] != 10086:
+        pbin = Pacbio_Binning()
+        pbin.read_bam()
+    else:
+        print ("skip assignment, just for testing")
 
-    if args["m"] == 1:
+    if args["m"] != 0:
         fa = Fasta()
         fa.get_fasta()
 
