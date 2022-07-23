@@ -55,7 +55,7 @@ Perform full-resolution HLA typing with paired-end reads and Hi-C reads by
 ```
 sh SpecHLA.sh -n <sample> -c <sample.hic.fwd.fq.gz> -d <sample.hic.rev.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
-Perform full-resolution HLA typing with paired-end reads and 10X linked reads by
+Perform full-resolution HLA typing with paired-end reads and 10X linked reads by (LongRanger should be installed in system env)
 ```
 sh SpecHLA.sh -n <sample> -x <sample.10x.read.folder> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
@@ -63,7 +63,7 @@ Consider long Indels and use population information for annotation by
 ```
 sh SpecHLA.sh -n <sample> -v True -p <Asia> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
-Perform full-resolution HLA typing only with long reads by (Longshot 0.4.1 should be installed in system env)
+Perform full-resolution HLA typing only with long reads by 
 ```
 python3 long_read_typing.py -n <sample> -r <Pacbio or Nanopore reads> -o outdir/ 
 ```
@@ -144,6 +144,7 @@ Please apply Novoalign, and put the novoalign.lic (license file) in the `bin/` f
     * pbmm2-1.4.0
     * pbsv Version 2.6.2
     * Bowtie 2 version 2.3.4.1
+    * longshot-0.4.5
 
 
 ## Simulation

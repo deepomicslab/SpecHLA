@@ -1500,7 +1500,7 @@ def run_SpecHap():
                     --sample=$sample --localcores=%s --localmem=10 
             fi
  
-            $bin/extractHAIRS --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam\
+            $bin/ExtractHAIRs --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam\
                  --VCF $vcf --out $outdir/fragment.raw.tenx.file
             gzip -f -d -k $vcf
             python3 %s/link_fragment.py -b $bam -f $outdir/fragment.raw.tenx.file\
