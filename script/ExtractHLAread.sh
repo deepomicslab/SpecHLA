@@ -5,7 +5,7 @@ SCRIPTD=`pwd`
 popd > /dev/null
 
 samtools_sort_memory_per_thread=2G
-num_processors=8
+num_processors=2
 
 me=`basename $0`
 function usage {
@@ -57,7 +57,7 @@ if [ ! -x "$samtools_bin" ]  || [ ! -x "$bamUtil" ];then
     exit 1
 fi
 
-#$samtools_bin index $bam_path
+$samtools_bin index $bam_path
 if [ $ref == "hg38" ]; then
   
 	echo ">>>>>>>>>>>>>>>> extracting reads mapping to HLA loci and ALT contigs (hg38)"
@@ -78,7 +78,7 @@ fi
 if [ $ref == "hg19" ];then
 	
 	 echo ">>>>>>>>>>>>>>>> extracting reads mapping to HLA loci and ALT contigs (hg19)"
-	$samtools_bin view -b $bam_path chr6:29907037-29915661 chr6:31319649-31326989 chr6:31234526-31241863 chr6:32914391-32922899 chr6:32900406-32910847 chr6:32969960-32979389 chr6:32778540-32786825 chr6:33030346-33050555 chr6:33041703-33059473 chr6:32603183-32613429 chr6:32707163-32716664 chr6:32625241-32636466 chr6:32721875-32733330 chr6:32405619-32414826 chr6:32544547-32559613 chr6:32518778-32554154 chr6:32483154-32559613 chr6:30455183-30463982 chr6:29689117-29699106 chr6:29792756-29800899 chr6:29793613-29978954 chr6:29855105-29979733 chr6:29892236-29899009 chr6:30225339-30236728 chr6:31369356-31385092 chr6:31460658-31480901 chr6:29766192-29772202 chr6:32810986-32823755 chr6:32779544-32808599 chr6:29756731-29767588 | $samtools_bin view -b -F 0x4 - | $samtools_bin sort --thread $num_processors -m $samtools_sort_memory_per_thread -O BAM - > $sampleid.tmp.extract.bam
+	$samtools_bin view -b $bam_path chr6:29907037-29915661 chr6:31319649-31326989 chr6:31234526-31241863 chr6:32914391-32922899 chr6:32900406-32910847 chr6:32969960-32979389 chr6:32778540-32786825 chr6:33030346-33050555 chr6:33041703-33059473 chr6:32603183-32613429 chr6:32707163-32716664 chr6:32625241-32636466 chr6:32721875-32733330 chr6:32405619-32414826 chr6:32544547-32559613 chr6:32518778-32554154 chr6:32483154-32559613 chr6:30455183-30463982 chr6:29689117-29699106 chr6:29792756-29800899 chr6:29793613-29978954 chr6:29855105-29979733 chr6:29892236-29899009 chr6:30225339-30236728 chr6:31369356-31385092 chr6:31460658-31480901 chr6:29766192-29772202 chr6:32810986-32823755 chr6:32779544-32808599 chr6:29756731-29767588  chr6_apd_hap1 chr6_cox_hap2 chr6_dbb_hap3 chr6_mann_hap4 chr6_mcf_hap5 chr6_qbl_hap6 chr6_ssto_hap7 | $samtools_bin view -b -F 0x4 - | $samtools_bin sort --thread $num_processors -m $samtools_sort_memory_per_thread -O BAM - > $sampleid.tmp.extract.bam
 
 fi	
 

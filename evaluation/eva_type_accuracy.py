@@ -16,12 +16,12 @@ gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
 class Eva_typing():
 
     def __init__(self):
-        self.hla_la_result = "/mnt/d/HLAPro_backup/pacbio/HLA-LA.illumina.merge.result.txt"
-        # self.hla_la_result = "/mnt/d/HLAPro_backup/pacbio/HLA-LA.merge.result.txt"
-        # self.spechla_outdir = "/mnt/d/HLAPro_backup/pacbio/output/"
+        self.hla_la_result = "/mnt/d/HLAPro_backup/hybrid/HLA-LA.merge.result.pacbio.txt"
+        # self.hla_la_result = "/mnt/d/HLAPro_backup/hybrid/HLA-LA.merge.result.ngs.txt"
+
         # self.spechla_outdir = "/mnt/d/HLAPro_backup/hybrid/test_illumina/"
-        self.spechla_outdir = "/mnt/d/HLAPro_backup/hybrid/illumina/"
-        # self.spechla_outdir = "/mnt/d/HLAPro_backup/hybrid/pacbio/"
+        # self.spechla_outdir = "/mnt/d/HLAPro_backup/hybrid/illumina/"
+        self.spechla_outdir = "/mnt/d/HLAPro_backup/hybrid/pacbio/"
         # self.spechla_outdir = "/mnt/d/HLAPro_backup/hybrid/pacbio_illumina/"
         self.spechla_result = "/mnt/d/HLAPro_backup/hybrid/spechla.merge.result.txt"
         self.true_dir = "/mnt/d/HLAPro_backup/hybrid/data/"
@@ -56,7 +56,6 @@ class Eva_typing():
             all_sample_true_dict[sample] = sample_true_dict
         return all_sample_true_dict
 
-
     def extract_inferred(self, inferred_result):
         all_sample_infer_dict = {}
         f = open(inferred_result, 'r')
@@ -83,12 +82,13 @@ class Eva_typing():
     def main(self):    
         self.get_spechla_merge_result()
         spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
-        # hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
-        self.sample_list = list(spechla_all_sample_infer_dict
-        .keys())
+        hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
+        self.sample_list = list(spechla_all_sample_infer_dict.keys())
         all_sample_true_dict = self.get_all_truth()
+        print ("SpecHLA")
         self.assess(all_sample_true_dict, spechla_all_sample_infer_dict)
-        # self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict)
+        print ("HLA*LA")
+        self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict)
     
     def assess(self, all_sample_true_dict, infer_all_sample_infer_dict):
         gene_count = {}
@@ -107,6 +107,9 @@ class Eva_typing():
             print (gene, gene_count[gene]["right"], gene_count[gene]["all"], gene_count[gene]["right"]/gene_count[gene]["all"])
     
     def compare_allele(self, true_alleles, infer_alleles):
+        # for i in range(2):
+        #     true_alleles[i] = re.sub("G","",true_alleles[i])
+        #     infer_alleles[i] = re.sub("G","",infer_alleles[i])
         right_num, test_1, test_2 = 0, 0, 0
         for i in range(2):
             if true_alleles[i] == infer_alleles[i]:

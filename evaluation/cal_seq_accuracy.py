@@ -893,10 +893,10 @@ def each_simulated_sample(gene, outdir, sample, truth_dir):
 
 def eva_data_types_spechla():
     # dict = {"PE":"novel", "+PacBio":"pacbio_illumina","+Hi-C":"hic_illumina","+ONT":"ont_illumina","PacBio":"pac_alone","+10X":"10x_illumina" }
-    # dict = {"PE":"novel", "+PacBio":"pacbio_illumina","+Hi-C":"hic_illumina","+ONT":"ont_illumina","PacBio":"pac_alone","ONT":"ont_alone"}
+    # dict = {"PE":"novel", "+PacBio":"pacbio_illumina","+Hi-C":"hic_illumina","+ONT":"ont_illumina","PacBio":"pac_alone","ONT":"ont_alone","+10X":"10x_illumina"}
     dict = {"+10X":"10x_illumina" }
     data = []
-    for i in range(3):
+    for i in range(50):
         sample = "novel_%s"%(i)
         for plat in dict.keys():
             outdir = "/mnt/d/HLAPro_backup/pacbio/" + dict[plat]+ "/" + sample + "/"

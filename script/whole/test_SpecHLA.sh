@@ -150,7 +150,7 @@ if [ -f "$license" ];then
     -o FullNW -r All 100000 --mCPU ${num_threads:-5} -c 10  -g 20 -x 3  | $bin/samtools view \
     -Sb - | $bin/samtools sort -  > $outdir/$sample.map_database.bam
 else
-    $bin/bowtie2/bowtie2 --very-sensitive -p ${num_threads:-5} -k 30 -x $db/ref/$database_prefix.fasta -1 $fq1 -2 $fq2|\
+    bowtie2 --very-sensitive -p ${num_threads:-5} -k 30 -x $db/ref/$database_prefix.fasta -1 $fq1 -2 $fq2|\
     $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
 fi
 $bin/samtools index $outdir/$sample.map_database.bam
