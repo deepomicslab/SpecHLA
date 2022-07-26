@@ -19,6 +19,7 @@ import pandas as pd
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 import numpy as np
+import re
 
 gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
 # gene_list = ['DQA1', 'DQB1', 'DRB1']
@@ -53,7 +54,6 @@ def splitN_for_kourami(infer_file):
     print (new_exon, file = output_handle) 
     output_handle.close()
     return splitN_file
-
 
 class Align(object):
 
@@ -303,7 +303,7 @@ class Seq_error_accelerate():
     def main(self):
         result_dict = {}
         self.get_fasta_len()
-        # self.blast_map("strict")
+        self.blast_map("strict")
         print ("blast is done")
         self.read_blast(self.blast_file)
         self.get_gap_per()
@@ -315,7 +315,7 @@ class Seq_error_accelerate():
         for geno_name in self.mapped_interval_dict.keys():
             align = Align(self.mapped_len_dict[geno_name], self.infer_hap_len_dict[geno_name], 1000000, \
                 self.mismatch_num_dict[geno_name], self.gap_open_num_dict[geno_name],self.true_mapped_len_dict[geno_name])
-            print (geno_name, align.base_error, align.short_gap_error, self.mapped_len_dict[geno_name])
+            # print (geno_name, align.base_error, align.short_gap_error, self.mapped_len_dict[geno_name])
             result_dict[geno_name] = [align.base_error, align.short_gap_error, align.gap_precision, self.mapped_len_dict[geno_name]]
         return result_dict
 
@@ -893,8 +893,8 @@ def each_simulated_sample(gene, outdir, sample, truth_dir):
 
 def eva_data_types_spechla():
     # dict = {"PE":"novel", "+PacBio":"pacbio_illumina","+Hi-C":"hic_illumina","+ONT":"ont_illumina","PacBio":"pac_alone","+10X":"10x_illumina" }
-    # dict = {"PE":"novel", "+PacBio":"pacbio_illumina","+Hi-C":"hic_illumina","+ONT":"ont_illumina","PacBio":"pac_alone","ONT":"ont_alone","+10X":"10x_illumina"}
-    dict = {"+10X":"10x_illumina" }
+    dict = {"PE":"novel", "+PacBio":"pacbio_illumina","+Hi-C":"hic_illumina","+ONT":"ont_illumina","PacBio":"pac_alone","ONT":"ont_alone","+10X":"10x_illumina"}
+    # dict = {"+10X":"10x_illumina" }
     data = []
     for i in range(50):
         sample = "novel_%s"%(i)
@@ -906,7 +906,7 @@ def eva_data_types_spechla():
                 base_error, short_gap_error, gap_recall, gap_precision = each_simulated_sample(gene, outdir, sample, truth_dir)
                 data.append([sample, gene, base_error, short_gap_error, plat])
                 # print (sample, gene, base_error, short_gap_error, plat)
-    df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "Data"])
+    df = pd.DataFrame(data, columns = ["sample", "gene", "mismatch_rate", "gap_rate", "Data"])
     df.to_csv('/mnt/d/HLAPro_backup/pacbio/novel/haplo_assess.csv', sep=',')
 
 def eva_allele_imblance():
@@ -931,10 +931,161 @@ def eva_allele_imblance():
     df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "weight", "group"])
     df.to_csv('/mnt/d/HLAPro_backup/imbalance/haplo_assess.csv', sep=',')
 
+class Assess_hgsvc2():
+
+    def __init__(self):
+        self.record_truth_file_dict = {}
+        self.spechla_dir = "/mnt/d/HLAPro_backup/haplotype/spechla/"
+        self.hisat_dir = "/mnt/d/HLAPro_backup/haplotype/shell/Hisat/"
+        self.get_phased_assemblies()
+        
+    def get_phased_assemblies(self):
+        record_truth_file_dict = {}
+        inpath = "/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/"
+        for file in os.listdir(inpath):
+            if file[-5:] != "fasta":
+                continue
+            sample = file.split("_")[1]
+            if sample not in record_truth_file_dict:
+                record_truth_file_dict[sample] = ['', '']
+            full_file = inpath + file
+            if re.search(".h1-", full_file):
+                record_truth_file_dict[sample][0] = full_file
+            else:
+                record_truth_file_dict[sample][1] = full_file
+        # print (record_truth_file_dict)
+        self.record_truth_file_dict =  record_truth_file_dict
+
+    def main(self):
+        data = []
+        for sample in self.record_truth_file_dict.keys():
+            if not os.path.isfile(f"{self.spechla_dir}/{sample}/hla.allele.1.HLA_A.fasta"):
+                continue
+            print (sample)
+            data =self.for_spechla(sample, data)
+            data = self.for_hisat(sample, data)
+        df = pd.DataFrame(data, columns = ["sample", "gene", "mismatch_rate", "gap_rate", "map_len", "sequence_precision", "Methods"])
+        df.to_csv('/mnt/d/HLAPro_backup/haplotype/hgsvc_haplo_assess.csv', sep=',')
+
+    def for_spechla(self, sample, data):
+        outdir = self.spechla_dir + "/" + sample
+        truth_file1 = self.record_truth_file_dict[sample][0]
+        # print (self.record_truth_file_dict[sample], truth_file1)
+        truth_file2 = self.record_truth_file_dict[sample][1]
+        infer_file = outdir + "/hla.allele.all.fasta"
+        os.system("cat %s/hla.allele.*.HLA_*.fasta>%s"%(outdir, infer_file))
+
+        if not os.path.isfile(truth_file1) or not os.path.isfile(truth_file2):
+            print ("############",truth_file1)
+            return data       
+
+        seq = Seq_error_accelerate(infer_file, truth_file1, "hap1")
+        result_dict_1 = seq.main()
+        seq = Seq_error_accelerate(infer_file, truth_file2, "hap2")
+        result_dict_2 = seq.main()
+        for geno_name in result_dict_1.keys():
+            if result_dict_1[geno_name][0] > result_dict_2[geno_name][0]:
+                result_dict_1[geno_name] = result_dict_2[geno_name]
+        gene_dict = {}
+        for geno_name in result_dict_1.keys():
+            gene = geno_name[:-2]
+            if gene not in gene_dict:
+                gene_dict[gene] = []
+            gene_dict[gene].append(result_dict_1[geno_name])
+        for gene in gene_dict:
+            base_error = (gene_dict[gene][0][0] + gene_dict[gene][1][0])/2
+            short_gap_error = (gene_dict[gene][0][1] + gene_dict[gene][1][1])/2
+            gap_precision = (gene_dict[gene][0][2] + gene_dict[gene][1][2])/2
+            map_len = (gene_dict[gene][0][3] + gene_dict[gene][1][3])/2
+            print (sample, gene, base_error, short_gap_error, map_len, gap_precision, "SpecHLA")
+            data.append([sample, gene, base_error, short_gap_error, map_len, gap_precision, "SpecHLA"])
+        return data
+
+
+    def for_hisat(self, sample, data):
+        outdir = self.hisat_dir + "/" + sample
+        report_file = outdir + "/assembly_graph-hla.%s_final_extract_1_fq_gz-hla-extracted-1_fq.report"%(sample)
+        hisat_fasta = outdir + "/assembly_graph-hla.%s_final_extract_1_fq_gz-hla-extracted-1_fq.fasta"%(sample)
+        if not os.path.isfile(hisat_fasta):
+            print ("no", hisat_fasta)
+            return data
+        contig_gene = self.contig2gene(report_file)
+        # print (contig_gene)
+
+        truth_file1 = self.record_truth_file_dict[sample][0]
+        truth_file2 = self.record_truth_file_dict[sample][1]
+        if not os.path.isfile(truth_file1) or not os.path.isfile(truth_file2):
+            print ("############",truth_file1)
+            return data
+
+        with open(hisat_fasta) as handle:
+            for record in SeqIO.parse(handle, "fasta"):
+                if record.id[1] == "0":
+                    hap_index = int(record.id[3]) + 1
+                    gene = contig_gene[record.id]
+                    record.id = "HLA_%s_%s"%(gene, hap_index-1)
+                    infer_file1 = outdir + "/hisat.hla.allele.%s.HLA_%s.fasta"%(hap_index, gene)
+                    with open(infer_file1, "w") as output_handle:
+                        SeqIO.write(record, output_handle, "fasta")
+
+        infer_file = outdir + "/hisat.hla.allele.all.fasta"
+        os.system("cat %s/hisat.hla.allele.*.HLA_*.fasta>%s"%(outdir, infer_file))
+
+        seq = Seq_error_accelerate(infer_file, truth_file1, "hap1")
+        result_dict_1 = seq.main()
+        seq = Seq_error_accelerate(infer_file, truth_file2, "hap2")
+        result_dict_2 = seq.main()
+        for geno_name in result_dict_1.keys():
+            if result_dict_1[geno_name][0] > result_dict_2[geno_name][0]:
+                result_dict_1[geno_name] = result_dict_2[geno_name]
+        gene_dict = {}
+        for geno_name in result_dict_1.keys():
+            gene = geno_name[:-2]
+            if gene not in gene_dict:
+                gene_dict[gene] = []
+            gene_dict[gene].append(result_dict_1[geno_name])
+        for gene in gene_dict:
+            if len(gene_dict[gene]) == 2:
+                base_error = (gene_dict[gene][0][0] + gene_dict[gene][1][0])/2
+                short_gap_error = (gene_dict[gene][0][1] + gene_dict[gene][1][1])/2
+                gap_precision = (gene_dict[gene][0][2] + gene_dict[gene][1][2])/2
+                map_len = (gene_dict[gene][0][3] + gene_dict[gene][1][3])/2
+            else:
+                base_error = gene_dict[gene][0][0] 
+                short_gap_error = gene_dict[gene][0][1] 
+                gap_precision = gene_dict[gene][0][2] 
+                map_len = gene_dict[gene][0][3] 
+            print (sample, gene, base_error, short_gap_error, map_len, gap_precision, "HISAT")
+            data.append([sample, gene, base_error, short_gap_error, map_len, gap_precision, "HISAT"])
+        return data             
+
+
+
+
+    def contig2gene(self, report_file):
+        contig_gene = {}
+        f = open(report_file, "r")
+        for line in f:
+            line = line.strip()
+            if re.search("Node", line):
+                contig_name = line.split()[-1].strip() 
+            elif re.search("vs", line):
+                array = line.split()
+                gene = array[-1].split("*")[0]
+                # if contig_name[:5] == "(0-0)" or contig_name[:5] == "(0-1)":
+                contig_gene[contig_name] = gene
+            else:
+                continue
+        return contig_gene
+
+
+
 if __name__ == "__main__":
 
     if len(sys.argv) == 1:
-        eva_data_types_spechla()
+        ass = Assess_hgsvc2()
+        ass.main()
+        # eva_data_types_spechla()
         # eva_allele_imblance()
         # eva_HG002_kourami()
         # eva_pedigree_spechla()

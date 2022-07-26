@@ -35,7 +35,7 @@ sh ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome>
 ### Typing 
 Full-resolution and exon HLA typing with paired-end reads. SpecHLA can use PacBio, Nanopore, Hi-C, and 10X data to improve the phasing performance if provided. 
 
-Perform full-resolution HLA typing with paired-end reads by
+Perform full-resolution HLA typing with `paired-end` reads by
 ```
 sh SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/
 ```
@@ -43,27 +43,27 @@ Perform exon HLA typing with paired-end reads by
 ```
 sh SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ -u 1
 ```
-Perform full-resolution HLA typing with paired-end reads and PacBio reads by
+Perform full-resolution HLA typing with `paired-end` reads and `PacBio` reads by
 ```
 sh SpecHLA.sh -n <sample> -t <sample.pacbio.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
-Perform full-resolution HLA typing with paired-end reads and Nanopore reads by
+Perform full-resolution HLA typing with `paired-end` reads and `Nanopore` reads by
 ```
 sh SpecHLA.sh -n <sample> -e <sample.nanopore.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
-Perform full-resolution HLA typing with paired-end reads and Hi-C reads by
+Perform full-resolution HLA typing with `paired-end` reads and `Hi-C` reads by
 ```
 sh SpecHLA.sh -n <sample> -c <sample.hic.fwd.fq.gz> -d <sample.hic.rev.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
-Perform full-resolution HLA typing with paired-end reads and 10X linked reads by (LongRanger should be installed in system env)
+Perform full-resolution HLA typing with `paired-end` reads and `10X` linked reads by (LongRanger should be installed in system env)
 ```
 sh SpecHLA.sh -n <sample> -x <sample.10x.read.folder> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
-Consider long Indels and use population information for annotation by
+Consider `long Indels` and use `population information` for annotation by
 ```
 sh SpecHLA.sh -n <sample> -v True -p <Asia> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
-Perform full-resolution HLA typing only with long reads by 
+Perform full-resolution HLA typing only with `long reads` by 
 ```
 python3 long_read_typing.py -n <sample> -r <Pacbio or Nanopore reads> -o outdir/ 
 ```
@@ -83,7 +83,7 @@ perl cal.hla.copy.pl -purity <Purity> -ploidy <Ploidy> -F <freq.file.list> -O <o
 Use `ls output/*/*_freq.txt >freq.list` to generate `freq.file.list`.
 
 ## Interpret output
-SpecHLA will automaticly build a folder named `output/` in the current path. In the `output/` folder, the results of each sample are saved in a folder named as the sample ID.  
+In the denoted outdir, the results of each sample are saved in a folder named as the sample ID.  
 
 In the directory of one specific sample, you will find the below files:
 | Output | Description |

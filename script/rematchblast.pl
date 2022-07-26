@@ -119,7 +119,7 @@ close BI;
 
 open IN, "$rematchfile" or die "$!\n";
 open OUT, ">$outfile";
-print OUT "readid\ttag\tchr\tstart\tcigar\n";
+#print OUT "readid\ttag\tchr\tstart\tcigar\n";
 while(<IN>){
 	chomp;
 	my ($start,$cigar);

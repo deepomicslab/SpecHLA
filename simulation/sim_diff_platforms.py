@@ -206,7 +206,7 @@ class Fastq():
         command = f"""
         sample={sample}
         mkdir {self.dir}/$sample
-        {dwgsim_script} -r 0 -e {read_error} -E {read_error} -1 {self.read_len} -2 {self.read_len} -C {self.depth}\
+        {dwgsim_script} -r 0 -e {read_error} -E {read_error} -d {frag_size} -1 {self.read_len} -2 {self.read_len} -C {self.depth}\
              {self.dir}/$sample.fasta {self.dir}/$sample/$sample.illumina
         # gzip -f {self.dir}/$sample/$sample.illumina.*fastq
         """
@@ -266,7 +266,8 @@ if __name__ == "__main__":
     #pbsim and Sim3C are in the system path
     
     mutation_rate = 0.001
-    read_length = 150
+    read_length = 75 #150
+    frag_size = 75 #500
     G_annotation_dict = read_G_annotation()
 
     database = sys.argv[1]
@@ -280,7 +281,7 @@ if __name__ == "__main__":
 
 
     read_error = 0.01
-    prefix = "hybrid"
+    prefix = "hybrid_short"
     simulate_hybrid()
 
 

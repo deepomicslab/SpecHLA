@@ -270,7 +270,8 @@ foreach my $hla(@hlas){
                  $score = sprintf "%.3f", $score;
                  #DRB1*14:01 and DRB1*14:54 differ in HLA_DRB1:9519
                  if($allele =~ /DRB1\*14:01/){
-                          system("$bin/samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf");
+                          system("$bin/samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/DRB1.bam --output $workdir/snp.vcf");
+                        #   system("$bin/samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf");
                           open TE, "$workdir/snp.vcf" or die "$!\n";
                           while(<TE>){
                                  chomp;

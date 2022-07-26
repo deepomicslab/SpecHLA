@@ -9,7 +9,7 @@ from Bio.SeqRecord import SeqRecord
 import os
 import sys
 import re
-
+import pandas as pd
 
 gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
 
@@ -75,22 +75,54 @@ class Eva_typing():
                     all_sample_infer_dict[sample][gene] = []
                 allele = re.sub(":","_",allele)
                 allele = re.sub("\*","_",allele)
+                allele = allele.split(";")[0]
+                if allele in G_annotation_dict:
+                    allele = G_annotation_dict[allele]
                 type = allele
                 all_sample_infer_dict[sample][gene].append(type)
         return all_sample_infer_dict
 
-    def main(self):    
+    def main(self): 
+        data = []   
+        self.sample_list = []
+        for i in range(20):
+            sample="hybrid_short_%s"%(i)
+            self.sample_list.append(sample)
+        all_sample_true_dict = self.get_all_truth()
+
+        # self.hla_la_result = "/mnt/d/HLAPro_backup/hybrid/HLA-LA.merge.result.pacbio.txt1"
+        # hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
+        # data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PB")
+
+        # self.hla_la_result = "/mnt/d/HLAPro_backup/hybrid/HLA-LA.merge.result.ngs.txt1"
+        # hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
+        # data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PE")
+
+        self.spechla_outdir = "/mnt/d/HLAPro_backup/hybrid/illumina/"
         self.get_spechla_merge_result()
         spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
-        hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
-        self.sample_list = list(spechla_all_sample_infer_dict.keys())
-        all_sample_true_dict = self.get_all_truth()
-        print ("SpecHLA")
-        self.assess(all_sample_true_dict, spechla_all_sample_infer_dict)
-        print ("HLA*LA")
-        self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict)
+        data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PE")
+
+        self.spechla_outdir = "/mnt/d/HLAPro_backup/hybrid/pacbio/"
+        self.get_spechla_merge_result()
+        spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
+        data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PB")
+
+        self.spechla_outdir = "/mnt/d/HLAPro_backup/hybrid/pacbio_illumina/"
+        self.get_spechla_merge_result()
+        spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
+        data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_hybrid")
+
+
+
+        
+        # print ("HLA*LA")
+        
+        df = pd.DataFrame(data, columns = ["Accuracy", "Gene", "Methods"])
+        df.to_csv('/mnt/d/HLAPro_backup/hybrid/hybrid_G_assess.csv', sep=',')
     
-    def assess(self, all_sample_true_dict, infer_all_sample_infer_dict):
+    def assess(self, all_sample_true_dict, infer_all_sample_infer_dict, data, method):
+        # print (infer_all_sample_infer_dict)
         gene_count = {}
         for gene in gene_list:
             gene_count[gene] = {"right":0, "all":0}
@@ -105,18 +137,23 @@ class Eva_typing():
                     print (sample,gene, true_alleles,infer_alleles )
         for gene in gene_list:
             print (gene, gene_count[gene]["right"], gene_count[gene]["all"], gene_count[gene]["right"]/gene_count[gene]["all"])
+            accuracy = gene_count[gene]["right"]/gene_count[gene]["all"]
+            data.append([accuracy, gene, method])
+        return data
     
-    def compare_allele(self, true_alleles, infer_alleles):
-        # for i in range(2):
-        #     true_alleles[i] = re.sub("G","",true_alleles[i])
-        #     infer_alleles[i] = re.sub("G","",infer_alleles[i])
+    def compare_allele(self, my_true_alleles, my_infer_alleles):
+        true_alleles = my_true_alleles.copy()
+        infer_alleles = my_infer_alleles.copy()
+        for i in range(2):
+            true_alleles[i] = re.sub("G","",my_true_alleles[i])
+            infer_alleles[i] = re.sub("G","",my_infer_alleles[i])
         right_num, test_1, test_2 = 0, 0, 0
         for i in range(2):
-            if true_alleles[i] == infer_alleles[i]:
+            if true_alleles[i] == infer_alleles[i]:# or re.search(infer_alleles[i], true_alleles[i]):
                 test_1 += 1
         true_alleles = true_alleles[::-1]
         for i in range(2):
-            if true_alleles[i] == infer_alleles[i]:
+            if true_alleles[i] == infer_alleles[i]:# or re.search(infer_alleles[i], true_alleles[i]):
                 test_2 += 1
         right_num = max(test_1, test_2)
         return right_num

@@ -13,6 +13,7 @@ hla_fa=$db/ref/hla.ref.extend.fa
 exec >$outdir/$sample.local_assem.log 2>&1 #redirect log info to the outdir
 
 rm -rf $outdir/rematch.total.read.format.txt
+echo "readid	tag	chr	start	cigar" > $outdir/rematch.total.read.format.txt
 
 for pos in `cat $bedfile`
 do
@@ -23,23 +24,27 @@ ref=$db/HLA/$hla/$hla
 $sdir/samtools view --threads $thread -f 64 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##1 "$2,$3}' > $outdir/extract.fa
 $sdir/samtools view --threads $thread -f 128 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##2 "$2,$3}' >> $outdir/extract.fa
 
+if [ ! -f "$outdir/extract.fa" ]
+then
+	echo "$pos noreads"
+else
 $sdir/fermikit/fermi.kit/fermi2.pl unitig -s1k -t $thread  -T 10 -2 -l $rlen -p $outdir/prefix2 $outdir/extract.fa > $outdir/prefix2.mak
 
 make -f $outdir/prefix2.mak
 
 if [ ! -f "$outdir/prefix2.mag.gz" ]
 then
-	echo "$pos"
+	echo "$pos assemble fail"
 else
-        less $outdir/prefix2.mag.gz|awk '{if(NR%4==1) {printf(">%s\n",substr($0,2));} else if(NR%4==2) print;}'  > $outdir/prefix2.mag.fa
-        less $outdir/prefix2.mag.gz|awk '{if(NR%4==1) {printf(">%s\n",substr($0,2));} else if(NR%4==2) print;}' | while read L; do  echo $L|awk '{print $1"_r"}' >>$outdir/prefix2.mag.fa; read L; echo "$L" | rev | tr "ATGC" "TACG" >>$outdir/prefix2.mag.fa; done
+        zless $outdir/prefix2.mag.gz|awk '{if(NR%4==1) {printf(">%s\n",substr($0,2));} else if(NR%4==2) print;}'  > $outdir/prefix2.mag.fa
+        zless $outdir/prefix2.mag.gz|awk '{if(NR%4==1) {printf(">%s\n",substr($0,2));} else if(NR%4==2) print;}' | while read L; do  echo $L|awk '{print $1"_r"}' >>$outdir/prefix2.mag.fa; read L; echo "$L" | rev | tr "ATGC" "TACG" >>$outdir/prefix2.mag.fa; done
 
         $sdir/blastn -num_threads $thread -query $outdir/prefix2.mag.fa -out $outdir/prefix2.mag.blast -db $ref -outfmt 6 -strand plus  -penalty -1 -reward 1 -gapopen 4 -gapextend 1 
         less $outdir/prefix2.mag.blast |cut -f 1|sort|uniq > $outdir/id.list
 
 if [ ! -f "$outdir/id.list" ]
 then
-	echo "$pos"
+	echo "$pos bad contig"
 else
         $sdir/samtools faidx $outdir/prefix2.mag.fa 
         rm -rf $outdir/assembly.fa
@@ -59,11 +64,13 @@ else
        
 fi
 fi
+fi
+
 rm -rf $outdir/prefix2* $outdir/id.list
 done
 
 python3 $dir/realignblast.py -i $bam -o $outdir/$sample.realign.bam -r $outdir/rematch.total.read.format.txt
 $sdir/samtools sort --threads $thread $outdir/$sample.realign.bam > $outdir/$sample.realign.sort.bam
-java -jar $sdir/picard.jar FixMateInformation I=$outdir/$sample.realign.sort.bam O=$outdir/$sample.realign.sort.fixmate.bam
-$sdir/samtools index $outdir/$sample.realign.sort.fixmate.bam
+#java -jar $sdir/picard.jar FixMateInformation I=$outdir/$sample.realign.sort.bam O=$outdir/$sample.realign.sort.fixmate.bam
+$sdir/samtools index $outdir/$sample.realign.sort.bam
 
