@@ -188,7 +188,7 @@ $bin/freebayes -a -f $hlaref -p 3 $outdir/$sample.realign.sort.bam > $outdir/$sa
 rm -rf $outdir/$sample.realign.vcf.gz 
 bgzip -f $outdir/$sample.realign.vcf
 tabix -f $outdir/$sample.realign.vcf.gz
-less $outdir/$sample.realign.vcf.gz |grep "#" > $outdir/$sample.realign.filter.vcf
+zless $outdir/$sample.realign.vcf.gz |grep "#" > $outdir/$sample.realign.filter.vcf
 echo BAM and VCF are ready.
 if [ $focus_exon_flag == 1 ];then #exon
     $bin/bcftools filter -R $dir/exon_extent.bed $outdir/$sample.realign.vcf.gz |grep -v "#"  >> $outdir/$sample.realign.filter.vcf  
