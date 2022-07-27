@@ -226,11 +226,11 @@ if [ ${long_indel:-False} == True ] && [ $focus_exon_flag != 1 ]; #don't call lo
   bfile=$outdir/Scanindel/$sample.breakpoint.txt
   if [ ${tgs:-NA} != NA ]
     then
-    $bin/pbmm2 align $hlaref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --preset HIFI --sample $sample --rg '@RG\tID:movie1'
-    $bin/pbsv discover $outdir/$sample.movie1.bam $outdir/$sample.svsig.gz
-    $bin/pbsv call $hlaref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
+    $bin/pbmm2 align -j ${num_threads:-5} $hlaref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --sample $sample --rg '@RG\tID:movie1'
+    $bin/pbsv discover -l 100 -q 30 $outdir/$sample.movie1.bam $outdir/$sample.svsig.gz
+    $bin/pbsv call --gt-min-reads 5 -t DEL,INS -m 100 -j ${num_threads:-5} $hlaref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
     python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $outdir/$sample.tgs.breakpoint.txt
-    cat $outdir/$sample.tgs.breakpoint.txt >>$bfile
+    cat $outdir/$sample.tgs.breakpoint.txt >$bfile
   fi
 else
   bfile=nothing

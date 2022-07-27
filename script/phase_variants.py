@@ -654,6 +654,7 @@ class Share_reads():
         gene_area[0] = int(float(gene_area[0])) + 1
         gene_area[1] = int(float(gene_area[1]))
         start = gene_area[0]
+        # print (self.deletion_region)
         for i in range(len(self.deletion_region)):
             if self.deletion_region[i][1] > gene_area[1]:
                 self.deletion_region[i][1] = gene_area[1]
@@ -673,6 +674,7 @@ class Share_reads():
 
     def normal_reads(self):
         normal_region, segs = self.generate_normal_region()
+        # print ("normal region", normal_region)
         reads_support = [[], []]
         samfile = pysam.AlignmentFile(self.bamfile, "rb")
         for region in normal_region:
@@ -700,7 +702,7 @@ class Share_reads():
                         if self.gene == "HLA_DRB1" and read.reference_start < 3988: 
                             self.before_dup_reads[hap_belong].append(read.query_name)
 
-        print (len(reads_support[0]), len(self.before_dup_reads[0]))
+        # print (len(reads_support[0]), len(self.before_dup_reads[0]))
         return reads_support
 
     def check_hap(self,support_alleles,support_loci):
@@ -732,7 +734,7 @@ class Share_reads():
             for i in range(self.strainsNum):
                 if read.query_name in self.reads_support[i]:
                     link_reads[i] += 1
-        print (deletion_index, link_reads, self.most_support(link_reads))
+        print ("deletion index is", deletion_index, link_reads, self.most_support(link_reads))   
         return self.most_support(link_reads)
 
     def insertion_reads(self,deletion_index):
@@ -740,10 +742,14 @@ class Share_reads():
         for i in range(self.strainsNum):
             link_reads.append(0)
         samfile = pysam.AlignmentFile(self.bamfile, "rb")
-        for read in samfile.fetch('%s_%s'%(self.gene,self.deletion_region[deletion_index][0])):
+        map_ins_read_num = 0
+        ins_segment_name = '%s_%s'%(self.gene,self.deletion_region[deletion_index][0])
+        for read in samfile.fetch(ins_segment_name):
             for i in range(self.strainsNum):
                 if read.query_name in self.reads_support[i]:
                     link_reads[i] += 1
+            map_ins_read_num += 1
+        print ("insertion index is", deletion_index, link_reads, self.most_support(link_reads), "read num is", map_ins_read_num, "ins name", ins_segment_name)  
         return self.most_support(link_reads)
 
     def deletion_phase(self):
@@ -812,31 +818,24 @@ class Share_reads():
                 new_seg_sequence[id_name[segseq]] = seg_sequence[segseq]
             hap_seq = ''
             for seg in segs:
-                # print (seg, str(seg[0]) + '_' + str(seg[1]))
-               # print (str(seg[0]) + '_' + str(seg[1]) )
                 if seg[2] == 'normal':
                     hap_seq += new_seg_sequence[str(seg[0]) + '_' + str(seg[1]) ]
                 elif seg[2] == 'deletion':
                     deletion_index = seg[3]
                     assign_index = self.deletion_reads(deletion_index)[0]
-                    print ('deletion assign_index', assign_index, self.deletion_region[deletion_index])
+                    print ('deletion assign index', assign_index, "copy number is", \
+                        self.deletion_region[deletion_index][2], self.deletion_region[deletion_index])
                     if  i == assign_index and self.deletion_region[deletion_index][2] == 1:
                         hap_seq += new_seg_sequence[str(seg[0]) + '_' + str(seg[1]) ]
                 elif seg[2] == 'insertion':
-                    # continue
                     deletion_index = seg[3]
                     assign_index = self.insertion_reads(deletion_index)[0]
-                    print ('###########insertion', seg, assign_index, self.deletion_region[deletion_index][2])
+                    print ('insertion assign index', assign_index,"copy number is", self.deletion_region[deletion_index][2], seg)
                     insertion_seg = '%s_%s'%(self.gene, seg[0])
                     if self.deletion_region[deletion_index][2] == 2:                        
                         insert_seq = self.link_diploid_insertion(insertion_seg)
-                        hap_seq += insert_seq[i]
-                        # print ('#2 copy insertion', seg, assign_index,self.deletion_region[deletion_index][2])
-                        # hap_seq += self.ins_seq[seg[0]]
-                        
+                        hap_seq += insert_seq[i]                      
                     elif  i == assign_index and self.deletion_region[deletion_index][2] == 1:
-                        # hap_seq += self.ins_seq[seg[0]]
-                        # print ('#1 copy insertion', seg, assign_index,self.deletion_region[deletion_index][2])
                         hap_seq += self.consensus_insertion(insertion_seg)
 
                 elif seg[2] == 'dup':
@@ -848,7 +847,6 @@ class Share_reads():
                     # the seg that contain the dup region
                     hap_seq += new_seg_sequence[str(seg[1])+'<']                    
             hap_seq =  '>%s_%s\n'%(self.gene, i) + hap_seq[:]
-            # print ('________________', len(hap_seq))
             out = open('%s/hla.allele.%s.%s.fasta'%(self.outdir,i+1,self.gene), 'w')
             print (hap_seq, file = out)
             out.close()
@@ -1063,20 +1061,25 @@ def get_copy_number(outdir, deletion_region, gene, ins_seq):
     for i in range(len(deletion_region)):
         # deletion_region[i] += [np.mean(deletions_depth_list[i])/np.mean(normal_depth), zero_per(deletions_depth_list[i])]
         if float(deletion_region[i][0]) == float(deletion_region[i][1]):
+            seg_type = "INS"
             chrom_name = '%s_%s'%(gene, int(deletion_region[i][0]))
             # print ('compute assign index', np.mean(insertions_depth_list[chrom_name]),np.mean(normal_depth))
-            if np.mean(insertions_depth_list[chrom_name])/np.mean(normal_depth) > 0.5:
+            ratio = np.mean(insertions_depth_list[chrom_name])/np.mean(normal_depth)
+            if ratio > 0.5:
                 deletion_region[i] += [2]
             else:
                 deletion_region[i] += [1]
+            print ('### copy number', seg_type, ratio)
         else:
-            print ('compute copy number for deletion', deletion_region[i], zero_per(deletions_depth_list[i]))
-            if zero_per(deletions_depth_list[i]) > 0.2:
+            seg_type = "DEL"
+            # print ('compute copy number for deletion', deletion_region[i], zero_per(deletions_depth_list[i]))
+            zero_rate = zero_per(deletions_depth_list[i])
+            if  zero_rate> 0.2:
                 deletion_region[i] += [0]
             else:
                 deletion_region[i] += [1]
-        print ('### copy number', deletion_region[i])
-    
+            print ('### copy number', seg_type, deletion_region[i], zero_rate)
+    deletion_region = sort_intervals(deletion_region)
     return deletion_region
 
 def zero_per(list):
@@ -1228,9 +1231,15 @@ def get_deletion_region(long_indel_file, gene):
             new_deletion_region.append(segs)
     deletion_region = new_deletion_region
     # print ('new_deletion_region',deletion_region)
+    deletion_region = sort_intervals(deletion_region)
+    # print ('#ordered deletion region:', deletion_region)
+    return deletion_region, ins_seq
+
+def sort_intervals(deletion_region):
     while True:
         flag = True
         new_deletion_region = deletion_region[:]
+        # print (new_deletion_region)
         for i in range(len(deletion_region) - 1):
             if deletion_region[i+1][0] < deletion_region[i][0]:
                 flag = False
@@ -1247,8 +1256,7 @@ def get_deletion_region(long_indel_file, gene):
         # print (deletion_region)
         if flag:
             break
-    # print ('#ordered deletion region:', deletion_region)
-    return deletion_region, ins_seq
+    return deletion_region
 
 def get_unphased_loci(outdir, gene, invcf, snp_list, spec_vcf):
     """

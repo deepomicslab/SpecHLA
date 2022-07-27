@@ -222,15 +222,15 @@ python3 $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d ${mas
 if [ ${long_indel:-False} == True ] && [ $focus_exon_flag != 1 ]; #don't call long indel for exon typing
   then
   port=$(date +%N|cut -c5-9)
-  sh $dir/../ScanIndel/run_scanindel_sample.sh $sample $bam $outdir $port
+  # sh $dir/../ScanIndel/run_scanindel_sample.sh $sample $bam $outdir $port
   bfile=$outdir/Scanindel/$sample.breakpoint.txt
   if [ ${tgs:-NA} != NA ]
     then
-    $bin/pbmm2 align $hlaref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --preset HIFI --sample $sample --rg '@RG\tID:movie1'
-    $bin/pbsv discover $outdir/$sample.movie1.bam $outdir/$sample.svsig.gz
-    $bin/pbsv call $hlaref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
+    $bin/pbmm2 align -j ${num_threads:-5} $hlaref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --sample $sample --rg '@RG\tID:movie1'
+    $bin/pbsv discover -l 100 -q 30 $outdir/$sample.movie1.bam $outdir/$sample.svsig.gz
+    $bin/pbsv call --gt-min-reads 5 -t DEL,INS -m 100 -j ${num_threads:-5} $hlaref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
     python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $outdir/$sample.tgs.breakpoint.txt
-    cat $outdir/$sample.tgs.breakpoint.txt >>$bfile
+    cat $outdir/$sample.tgs.breakpoint.txt >$bfile
   fi
 else
   bfile=nothing
@@ -255,7 +255,7 @@ fi
 
 echo Minimum Minor Allele Frequency is $my_maf.
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
-# hlas=(A)
+# hlas=(DQB1)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
 python3 $dir/../phase_variants.py \

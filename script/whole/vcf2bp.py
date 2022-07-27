@@ -15,7 +15,13 @@ def convert():
             continue
         array = line.strip().split()
         # print (array)
+        if array[6] != "PASS":
+            continue
+        if re.search("IMPRECISE", line):
+            continue
         if not re.search('DEL', array[2]) and not re.search('INS', array[2]):
+            continue
+        if re.search('DUP', array[2]):
             continue
         for_len = re.search('SVLEN=(.*?)$', array[-3])
         sv_len = for_len.group(1)

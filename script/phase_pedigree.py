@@ -5,7 +5,10 @@ import sys
 import time
 import re
 from itertools import combinations, permutations
-import realign_and_sv_break
+import os
+from pysam import VariantFile
+import numpy as np
+import pysam
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):

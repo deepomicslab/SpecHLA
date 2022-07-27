@@ -90,13 +90,13 @@ class Eva_typing():
             self.sample_list.append(sample)
         all_sample_true_dict = self.get_all_truth()
 
-        # self.hla_la_result = "/mnt/d/HLAPro_backup/hybrid/HLA-LA.merge.result.pacbio.txt1"
-        # hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
-        # data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PB")
+        self.hla_la_result = "/mnt/d/HLAPro_backup/hybrid/pacbio.HLA-LA.merge.result.all.txt"
+        hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
+        data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PB")
 
-        # self.hla_la_result = "/mnt/d/HLAPro_backup/hybrid/HLA-LA.merge.result.ngs.txt1"
-        # hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
-        # data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PE")
+        self.hla_la_result = "/mnt/d/HLAPro_backup/hybrid/ngs.HLA-LA.merge.result.all.txt"
+        hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
+        data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PE")
 
         self.spechla_outdir = "/mnt/d/HLAPro_backup/hybrid/illumina/"
         self.get_spechla_merge_result()
