@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+#vcf  mainfile metafile
 my ($vcflist, $output, $sampleinfo) = @ARGV;
 my (%hash,%hashr,%hasha,%hashaa,%hashp);
 sub uniq {
@@ -8,7 +9,7 @@ sub uniq {
 
 
 open OUT, ">$output";
-print OUT "#Sample\talt_type\tchr\tpos\tref_allele\talt_allele\tgene\tphase\tCN\tM\tm\n";
+print OUT "#SampleID,alt_type,chr,pos,ref_allele,alt_allele,gene,phase,CN,M,m\n";
 open LI, "$vcflist" or die "$!\n";
 while(my $file=<LI>){
 	chomp $file;
@@ -118,13 +119,13 @@ foreach my $kk(sort keys %hashp){
 	        }
 		
 	}
-	print OUT "$sa\tSNP\t$gene\t$pos\t$r\t$a\t$gene\t$ph\t2\t1\t1\n";
+	print OUT "$sa,SNP,chr$gene,$pos,$r,$a,$gene,$ph,2,1,1\n";
       
 
 }
 
 open OUT2, ">$sampleinfo";
-print OUT2 "gene\tsample\tphased\tmut_num\tmut_density\n";
+print OUT2 "gene,sample,phased,n_mut_num,n_mut_density\n";
 foreach my $key(sort keys %hash){
 	my ($sa,$gene) = (split /\t/,$key)[0,1];
 	my $d = 0;
@@ -137,8 +138,43 @@ foreach my $key(sort keys %hash){
 	if($gene eq "HLA_DQA1"){$d = $m /6492}
 	if($gene eq "HLA_DQB1"){$d = $m /7480}
 	if($gene eq "HLA_DRB1"){$d = $m /11229}
-	print OUT2 "$gene\t$sa\tTRUE\t$hash{$key}\t$d\n";
+	print OUT2 "$gene,$sa,TRUE,$hash{$key},$d\n";
 }
 close OUT2;
 
+open IN, "$output" or die "$!\n";
+open OUT, ">$output.anno.phased.txt";
+print OUT "Chr\tStart\tRef\tAlt\tdbSNP\tMergeFunc.ensGene\tAAChange.ensGene\tcosmic\n";
+my %hash;
+<IN>;
+while(<IN>){
+    chomp;
+    my ($id,$snp,$chr,$pos,$ref,$alt,$gene,$phase,$cn,$M,$m) = (split /,/,$_);
+    my $Chr;
+    if($chr =~ /chr/){$Chr = $chr}else{$Chr = "chr"."$chr"}
+    my $key = "$Chr\t$pos";
+    my $tt = "$ref\t$alt";
+    $hash{$key} .= "$tt\n";
+}
+close IN;
+
+sub uniq {
+  my %seen;
+  return grep { !$seen{$_}++ } @_;
+}
+
+foreach my $key (sort keys %hash){
+     my $i = 0;
+     my @arrs = (split /\n/, $hash{$key});
+     my @arrss = uniq(@arrs);
+     my ($chr,$pos) = (split /\t/,$key)[0,1];
+     foreach my $arr(@arrss){
+          my ($ref,$alt) = (split /\t/,$arr)[0,1];  
+          $alt =~ s/,/\//;
+          $i += 1;
+          if($i == 1){print OUT "$chr\t$pos\t$ref\t$alt\t.\tintergenic\t.\t.\n";}
+          else{print OUT "$chr\t$pos\t$ref\t$alt\t.\t.\t.\t.\n";}  
+    }
+}
+close OUT;
 

@@ -34,6 +34,7 @@ def main():
         os.system(command)
         i += 1
     command = "perl %s/convert.tro.pl %s %s %s"%(sys.path[0], vcf_list, args.outfile, args.outinf)
+    # print (command)
     os.system(command)
     os.system("rm %s"%(vcf_list))
 

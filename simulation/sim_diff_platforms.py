@@ -266,8 +266,8 @@ if __name__ == "__main__":
     #pbsim and Sim3C are in the system path
     
     mutation_rate = 0.001
-    read_length = 75 #150
-    frag_size = 75 #500
+    read_length = 150 #150
+    frag_size = 500 #500
     G_annotation_dict = read_G_annotation()
 
     database = sys.argv[1]
@@ -281,7 +281,7 @@ if __name__ == "__main__":
 
 
     read_error = 0.01
-    prefix = "hybrid_short"
+    prefix = "hybrid_sv"
     simulate_hybrid()
 
 

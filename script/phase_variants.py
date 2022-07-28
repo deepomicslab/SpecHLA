@@ -61,6 +61,8 @@ optional.add_argument("--indel_len",help="The maximum length for indel to be con
 optional.add_argument("--weight_imb",help="The weight of using phase information of allele imbalance\
  [0-1], default is 0. (default is 0)",dest='weight_imb',metavar='',default=0, type=float)
 optional.add_argument("--thread_num",help="thread num.",dest='thread_num',metavar='',default=5, type=int)
+optional.add_argument("--use_database",help="Whether use database to link blocks [0,1]. Default is 1.\
+     Just used for evaluation",dest='use_database',metavar='',default=1, type=int)
 
 
 parser._action_groups.append(optional)
@@ -837,6 +839,8 @@ class Share_reads():
                         hap_seq += insert_seq[i]                      
                     elif  i == assign_index and self.deletion_region[deletion_index][2] == 1:
                         hap_seq += self.consensus_insertion(insertion_seg)
+                    else:
+                        print ("seems fasle positive INS, skip")
 
                 elif seg[2] == 'dup':
                     # print ('the seg contain dup region')
@@ -1058,17 +1062,24 @@ def get_copy_number(outdir, deletion_region, gene, ins_seq):
             insertions_depth_list[array[0]].append(float(array[2]))
 
 
+    remove_indel_index = []
     for i in range(len(deletion_region)):
         # deletion_region[i] += [np.mean(deletions_depth_list[i])/np.mean(normal_depth), zero_per(deletions_depth_list[i])]
         if float(deletion_region[i][0]) == float(deletion_region[i][1]):
             seg_type = "INS"
             chrom_name = '%s_%s'%(gene, int(deletion_region[i][0]))
             # print ('compute assign index', np.mean(insertions_depth_list[chrom_name]),np.mean(normal_depth))
-            ratio = np.mean(insertions_depth_list[chrom_name])/np.mean(normal_depth)
-            if ratio > 0.5:
-                deletion_region[i] += [2]
+            if len(insertions_depth_list[chrom_name]) == 0:
+                ratio = 0
             else:
+                ratio = np.mean(insertions_depth_list[chrom_name])/np.mean(normal_depth)
+            if ratio > 0.85:
+                deletion_region[i] += [2]
+            elif ratio > 0.1 and ratio <= 0.85:
                 deletion_region[i] += [1]
+            else:
+                deletion_region[i] += [0]
+                remove_indel_index.append(i)
             print ('### copy number', seg_type, ratio)
         else:
             seg_type = "DEL"
@@ -1079,6 +1090,9 @@ def get_copy_number(outdir, deletion_region, gene, ins_seq):
             else:
                 deletion_region[i] += [1]
             print ('### copy number', seg_type, deletion_region[i], zero_rate)
+    for i in remove_indel_index:
+        print ("discard", deletion_region[i])
+        del deletion_region[i]
     deletion_region = sort_intervals(deletion_region)
     return deletion_region
 
@@ -1423,24 +1437,37 @@ def run_SpecHap():
 
     # integrate phase info from pacbio data if provided.
     if args.tgs != 'NA':
+        # command = """
+        # fq=%s
+        # outdir=%s
+        # bin=%s/../bin
+        # gene=%s
+        # ref=%s
+        # sample=pacbio
+        # $bin/minimap2 -t %s -a $ref %s > $outdir/$sample.tgs.sam
+        # $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
+        # $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
+        # $bin/ExtractHAIRs --triallelic 1 --pacbio 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.$sample.file
+        # cat $outdir/fragment.$sample.file >> $outdir/fragment.all.file
+        # """%(args.tgs, outdir, sys.path[0], gene.split("_")[1], hla_ref, args.thread_num, args.tgs, gene_vcf)
+
         command = """
         fq=%s
-        ref=%s
         outdir=%s
         bin=%s/../bin
         gene=%s
+        ref=%s
         sample=pacbio
-        $bin/minimap2 -t %s -a $ref $outdir/%s/$gene.pacbio.fq.gz > $outdir/$sample.tgs.sam
-        $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
-        $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
+
+        $bin/pbmm2 align -j %s $ref $outdir/%s/$gene.pacbio.fq.gz $outdir/$sample.tgs.sort.bam --sort --sample $sample --rg '@RG\tID:movie1'
         $bin/ExtractHAIRs --triallelic 1 --pacbio 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.$sample.file
         cat $outdir/fragment.$sample.file >> $outdir/fragment.all.file
-        """%(args.tgs, hla_ref, outdir, sys.path[0], gene.split("_")[1], args.thread_num, args.sample_id, gene_vcf)
-        print ('extract linkage info from pacbio TGS data.')
+        """%(args.tgs, outdir, sys.path[0], gene.split("_")[1], hla_ref, args.thread_num, args.sample_id, gene_vcf)
+
+        print ('extract linkage info from pacbio data.')
         os.system(command)
         order = '%s/../bin/SpecHap -P --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
         --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
-        # print (order)
 
     # nanopore
     if args.nanopore != 'NA':
@@ -1622,16 +1649,20 @@ def link_blocks():
         # Ergodic method for exon phasing
         update_seqlist = all_poss_block_link()
     else:
-        # reph='perl %s/whole/read_unphased_block.pl %s/%s_break_points_spechap.txt\
-        #     %s 2 %s/%s_break_points_score.txt wgs'%(sys.path[0],outdir,gene,outdir,outdir,gene)   
-        reph='python3 %s/whole/map_block2_database.py %s %s'%(sys.path[0],gene,outdir)     
-        os.system(str(reph))
-        # phase block with spectral graph theory
-        print ("phase block with spectral graph theory")
-        spec_block = "python3 %s/phase_unlinked_block.py %s/%s_break_points_score.txt %s/%s_break_points_phased.txt"\
-            %(sys.path[0],outdir,gene,outdir,gene)
-        os.system(str(spec_block))       
-        record_block_haps = read_block_hap()
+        if args.use_database == True:
+            reph='python3 %s/whole/map_block2_database.py %s %s'%(sys.path[0],gene,outdir)     
+            os.system(str(reph))
+            # phase block with spectral graph theory
+            print ("phase block with spectral graph theory")
+            spec_block = "python3 %s/phase_unlinked_block.py %s/%s_break_points_score.txt %s/%s_break_points_phased.txt"\
+                %(sys.path[0],outdir,gene,outdir,gene)
+            os.system(str(spec_block))       
+            record_block_haps = read_block_hap()
+        else:
+            # don't use database to link blocks
+            # just for test and evaluation
+            print ("skip phasing with blocks.")
+            record_block_haps = []
         # refine the haplotype
         update_seqlist = block_phase(outdir,seq_list,snp_list,gene,gene_vcf,rephase_vcf,record_block_haps)  
     return update_seqlist
@@ -1778,5 +1809,6 @@ if __name__ == "__main__":
             # phase long indels
             sh = Share_reads(deletion_region, outdir, strainsNum, gene, gene_profile, ins_seq)
             sh.split_seg()
+        print ('Phasing of %s is done!\n\n'%(gene))
 
 
