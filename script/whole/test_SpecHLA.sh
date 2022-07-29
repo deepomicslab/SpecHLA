@@ -277,7 +277,7 @@ fi
 
 echo Minimum Minor Allele Frequency is $my_maf.
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
-# hlas=(DQB1)
+# hlas=(DPA1)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
 python3 $dir/../phase_variants.py \
@@ -301,7 +301,8 @@ python3 $dir/../phase_variants.py \
   --weight_imb ${weight_imb:-0} \
   --exon $focus_exon_flag \
   --thread_num ${num_threads:-5}\
-  --use_database 0
+  --use_database 0\
+  --trio child_0:father_0:mother_0
 done
 # ##################################################################################################
   # --fq1 $fq1 \

@@ -63,7 +63,8 @@ optional.add_argument("--weight_imb",help="The weight of using phase information
 optional.add_argument("--thread_num",help="thread num.",dest='thread_num',metavar='',default=5, type=int)
 optional.add_argument("--use_database",help="Whether use database to link blocks [0,1]. Default is 1.\
      Just used for evaluation",dest='use_database',metavar='',default=1, type=int)
-
+optional.add_argument("--trio",help="The trio infromation; give sample names in the order of child:mother:father.\
+ Example: NA12878:NA12891:NA12892. The order of mother and father can be ambiguous.",dest='trio',metavar='', default="None",type=str)
 
 parser._action_groups.append(optional)
 args = parser.parse_args()
@@ -1735,6 +1736,144 @@ def vcf2fasta(rephase_vcf):
             os.system(fastq2)
         j += 1
 
+class Pedigree():
+
+    def __init__(self):
+        self.root_dir = "/".join(outdir.split("/")[:-1]) 
+        self.sample_list = []
+        self.vcf_split_tool = "%s/../bin/vcfallelicprimitives"%(sys.path[0])
+
+    def generate_ped_file(self): # get config file to run pedhap
+        sample_list = args.trio.split(':')
+        ped = '%s/%s/trio.ped'%(self.root_dir, sample_list[0])
+        f = open(ped, 'w')
+        if len(sample_list) == 3:
+            content = """0 %s %s %s 0 1\n0 %s 0 0 2 1\n0 %s 0 0 1 1"""%(sample_list[0], sample_list[2], sample_list[1], sample_list[1], sample_list[2])
+        else:
+            print ('The trio info is incorrect.')
+        print (content, end='',file = f)
+        f.close()
+        self.sample_list = sample_list  
+        print (self.sample_list, gene, self.root_dir)
+
+    def pedhap(self): # run pedhap
+        command = """
+        bin=%s/../bin/
+        workdir=%s
+        gene=%s
+        child=%s
+        mother=%s
+        father=%s
+        $bin/bcftools merge $workdir/$child/$gene.specHap.phased.refined.vcf.gz $workdir/$mother/$gene.specHap.phased.refined.vcf.gz $workdir/$father/$gene.specHap.phased.refined.vcf.gz -o $workdir/$child/$gene.trio.merge.vcf.gz -Oz -0
+        echo "$bin/bcftools merge $workdir/$child/$gene.specHap.phased.refined.vcf.gz $workdir/$mother/$gene.specHap.phased.refined.vcf.gz $workdir/$father/$gene.specHap.phased.refined.vcf.gz -o $workdir/$child/$gene.trio.merge.vcf.gz -Oz -0"
+        tabix -f $workdir/$child/$gene.trio.merge.vcf.gz
+        python3 %s/pedhap/main.py --threshold1 0.6 --threshold2 0 -v $workdir/$child/$gene.trio.merge.vcf.gz -p $workdir/$child/trio.ped -o $workdir/$child/$gene.trio.rephase.vcf.gz
+        file=$workdir/$child/$gene.trio.rephase.vcf.gz
+        tabix -f $file
+        for sample in `$bin/bcftools query -l $file`; do
+            $bin/bcftools view -c1 -Oz -s $sample -o $workdir/$sample/trio/$sample.$gene.trio.vcf.gz $file
+            tabix -f $workdir/$sample/trio/$sample.$gene.trio.vcf.gz
+        done        
+        """%(sys.path[0],self.root_dir, gene, self.sample_list[0], self.sample_list[1], self.sample_list[2], sys.path[0])
+        os.system(command)  
+        print ("pedhap is done")  
+
+    def refine_vcf(self):
+        for sample in self.sample_list:
+            trio_dir =  self.root_dir + '/' + sample + "/trio/"
+            if not os.path.isdir(trio_dir):
+                os.system('mkdir %s'%(trio_dir))
+            raw = f"{self.root_dir}/{sample}/{gene}.specHap.phased.vcf"
+            # raw1 = f"{self.root_dir}/{sample}/{gene}.specHap.phased.snp.vcf"
+            # os.system(f"{self.vcf_split_tool} -kg {raw} >{raw1}")
+            new = f"{self.root_dir}/{sample}/{gene}.specHap.phased.refined.vcf"
+            self.remove_conflicts(raw, new, sample)
+           
+    def remove_conflicts(self, raw, new, sample):
+        # there might be conflicts when we merge vcf files
+        # refine the vcf to avoid conflicts
+        out_f = open(new, 'w')
+        for line in open(raw):
+            line = line.strip()
+            if line[0] == "#":
+                # if re.search("INFO=<ID=DP", line):
+                #     line = line.replace("Number=1", "Number=1")
+                if re.search("FORMAT=<ID=AD", line):
+                    line = line.replace("Number=R", "Number=.")
+                if re.search("FORMAT=<ID=AO", line):
+                    line = line.replace("Number=A", "Number=.")
+                if re.search("FORMAT=<ID=QA", line):
+                    line = line.replace("Number=A", "Number=.")
+                if re.search("INFO=<ID=CIGAR", line):
+                    line = line.replace("Number=A", "Number=.")
+                print (line, file = out_f)
+            else:
+                print (line, file = out_f)
+        out_f.close()
+        command = f"""
+        bgzip -f {self.root_dir}/{sample}/{gene}.specHap.phased.refined.vcf
+        tabix -f {self.root_dir}/{sample}/{gene}.specHap.phased.refined.vcf.gz
+        """
+        os.system(command)
+        # if sample == "child_0":
+        #     os.system(f"zcat {self.root_dir}/{sample}/{gene}.specHap.phased.refined.vcf.gz")
+
+    def merge_hete_homo_vcf(self, raw, phased, final_vcf):
+
+        #remove confict, for bcftools consensus
+        in_vcf = VariantFile(phased)
+        # out = VariantFile(newvcffile,'w',header=in_vcf.header)
+        sample = list(in_vcf.header.samples)[0]
+        geno_dict = {}
+        block_dict = {}
+        allele_dict = {}
+        for record in in_vcf.fetch():
+            geno_dict[record.pos] = record.samples[sample]['GT']
+            block_dict[record.pos] = record.samples[sample]['PS'] 
+            alleles = [record.ref]
+            for alt in record.alts:
+                alleles.append(alt)
+            phased_allele = [alleles[record.samples[sample]['GT'][0]], alleles[record.samples[sample]['GT'][1]]]
+            allele_dict[record.pos] = phased_allele
+        in_vcf.close()
+
+        in_vcf = VariantFile(raw)
+        out = VariantFile(final_vcf,'w',header=in_vcf.header)
+        sample = list(in_vcf.header.samples)[0]
+        for record in in_vcf.fetch():
+            if record.pos in geno_dict:
+                # record.samples[sample]['GT'] = geno_dict[record.pos]
+                record.samples[sample]['PS'] = block_dict[record.pos]
+                new_geno = list(record.samples[sample]['GT'])
+                new_phased_allele = allele_dict[record.pos]
+                alleles = [record.ref]
+                for alt in record.alts:
+                    alleles.append(alt)
+                for i in range(len(alleles)):
+                    if alleles[i] == new_phased_allele[0]:
+                        new_geno[0] = i
+                    if alleles[i] == new_phased_allele[1]:
+                        new_geno[1] = i
+                record.samples[sample]['GT'] = new_geno
+
+            out.write(record)
+        in_vcf.close()
+        out.close()
+        os.system("tabix -f %s"%(final_vcf))
+
+
+    def main(self):
+        self.generate_ped_file()
+        self.refine_vcf()
+        self.pedhap()
+
+        for sample in self.sample_list:
+            raw = f"{self.root_dir}/{sample}/{gene}.specHap.phased.vcf"
+            phased = f"{self.root_dir}/{sample}/trio/{sample}.{gene}.trio.vcf.gz"
+            final_vcf =  f"{self.root_dir}/{sample}/trio/{sample}.{gene}.pedhap.trio.vcf.gz"
+            self.merge_hete_homo_vcf(raw, phased, final_vcf)
+        print ("pedigree phasing is done.")
+
 if __name__ == "__main__":   
     if len(sys.argv)==1:
         print (Usage%{'prog':sys.argv[0]})
@@ -1771,6 +1910,15 @@ if __name__ == "__main__":
         else:  
             # phase small variants          
             run_SpecHap()
+            # if trio is offorded, use pedigree to refine phasing
+            if args.trio != "None":
+                if os.path.isfile("%s/%s.specHap.phased.vcf"%(outdir, gene)):
+                    ped = Pedigree()
+                    ped.main()
+                    raw_spec_vcf = outdir + '/trio/%s.%s.pedhap.trio.vcf.gz'%(args.sample_id, gene)
+                else:
+                    print ("## We should perform SpecHLA on the trio samples first, and reperfrom SpecHLA with trio info.")
+
             # found blcok boundaries from phased vcf of Spechap
             block_boundaries = get_unphased_loci(outdir, gene, raw_spec_vcf, snp_list, spec_vcf)
             seq_list = read_spechap_seq(spec_vcf, snp_list) # the haplotype obtained from SpecHap 

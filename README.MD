@@ -69,11 +69,11 @@ python3 long_read_typing.py -n <sample> -r <Pacbio or Nanopore reads> -o outdir/
 ```
 
 ### Pedigree phasing
-After performing haplotyping, User can afford pedigree information to update the results by
+After performing HLA typing, we can afford trio information to update the results of child by
 ```
-python3 phase_pedigree.py --trio NA12878:NA12891:NA12892 --workdir <specHLA output folder>
+sh SpecHLA.sh -n <child> -1 <child.fq.1.gz> -2 <child.fq.2.gz> -o outdir/ --trio child:parent1:parent2
 ```
-The fresh reconstructed sequences can be found in the trio/ folder at each original sample's output folder.
+The fresh results can be found in the trio/ folder inside the original result folder.
 
 ### Detect HLA LOH in cancer samples
 If the purity of cancer sample and the ploidy of HLA region are known, we can infer HLA LOH event by

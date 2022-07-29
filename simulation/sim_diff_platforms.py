@@ -101,6 +101,22 @@ class Fasta():
             command += " " + allele
         command += ">" + sample_fasta
         os.system(command)
+    
+    def get_parent_fasta(self, parent_name, index):
+        father_alleles = []
+        for i in range(index, len(self.selected_alleles), 2):
+            inherit_allele = self.selected_alleles[i]
+            gene = inherit_allele.split("_")[0]
+            random.shuffle(self.allele_dict[gene])
+            not_inherit_allele = self.allele_dict[gene][0]
+            father_alleles += [inherit_allele, not_inherit_allele]
+        command  = f"samtools faidx {self.database} "
+        for allele in father_alleles:
+            # os.system(f"samtools faidx {self.database} {allele} >{self.dir}/truth/{self.record_allele_name[allele]}")
+            command += " " + allele
+        sample_fasta = f"{self.dir}/{parent_name}.fasta"
+        command += ">" + sample_fasta
+        os.system(command)
 
 class Novel():
 
@@ -258,17 +274,50 @@ def simulate_hybrid():
         # fq.get_nanopore(sample)
         # fq.get_hic(sample)
 
+def simulate_trio():
+    print ("start simulation")
+    fa = Fasta()
+    fa.get_all_allele()
+    
+    fq = Fastq()
+    # no = Novel()
+    
+    for i in range(sample_num):
+        sample = f"{prefix}_{i}"
+        print (sample)
+        fa.get_sample_fasta(sample)
+        # fq.get_illumina(sample)
+        father_name = "father_%s"%(i)
+        fa.get_parent_fasta(father_name, 0)
+        mother_name = "mother_%s"%(i)
+        fa.get_parent_fasta(mother_name, 1)
+
+        fq.get_illumina(sample)
+        fq.get_illumina(father_name)
+        fq.get_illumina(mother_name)
+
 if __name__ == "__main__":  
 
     deep_simulator_script = "/mnt/e/hla_tgs/nanopore/DeepSimulator/deep_simulator.sh"
     dwgsim_script = "/mnt/d/HLAPro_backup/insert/dwgsim"
     origin = '/mnt/d/HLAPro_backup/HLAPro/db/ref/hla.ref.extend.fa'
-    #pbsim and Sim3C are in the system path
+    G_annotation_dict = read_G_annotation()
     
     mutation_rate = 0.001
-    read_length = 150 #150
-    frag_size = 500 #500
-    G_annotation_dict = read_G_annotation()
+
+
+    # read_length = 75 
+    # frag_size = 75 
+    # read_error = 0.01
+    # prefix = "hybrid_short"
+
+    read_length = 75 #150
+    frag_size = 300 #500
+    read_error = 0.01
+    prefix = "child"
+
+
+    
 
     database = sys.argv[1]
     outdir = sys.argv[2]
@@ -279,9 +328,7 @@ if __name__ == "__main__":
     # prefix = "novel"
     # simulate()
 
-
-    read_error = 0.01
-    prefix = "hybrid_sv"
-    simulate_hybrid()
+    # simulate_hybrid()
+    simulate_trio()
 
 

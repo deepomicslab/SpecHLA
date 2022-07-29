@@ -42,6 +42,9 @@
 ###   -k        The mean depth in a window lower than this value will be masked by N, default is 5.
 ###             Set 0 to avoid masking.
 ###   -z        Whether only mask exon region, True or False, default is True.
+###   -f        The trio infromation; child:parent_1:parent_2 [Example: NA12878:NA12891:NA12892]. 
+###             Note: this parameter should be used after performing SpecHLA once.
+###   -b        Whether use database for phasing [1|0], default is 1.
 ###   -h        Show this message.
 
 help() {
@@ -53,7 +56,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
     exit 1
 fi
 
-while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:z:y:" opt; do
+while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:z:y:f:b:" opt; do
   case $opt in
     n) sample="$OPTARG"
     ;;
@@ -100,6 +103,10 @@ while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:z:y:" opt; do
     z) mask_exon="$OPTARG"
     ;;
     y) mini_score="$OPTARG"
+    ;;
+    f) trio="$OPTARG"
+    ;;
+    b) use_database="$OPTARG"
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
@@ -218,38 +225,40 @@ python3 $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d ${mas
 
 # ###################### call long indel #############################################
 if [ ${long_indel:-False} == True ] && [ $focus_exon_flag != 1 ]; #don't call long indel for exon typing
-  then
-  port=$(date +%N|cut -c5-9)
-  bfile=$outdir/$sample.long.InDel.breakpoint.txt
+    then
+    port=$(date +%N|cut -c5-9)
+    bfile=$outdir/$sample.long.InDel.breakpoint.txt
 
-  if [ ${tgs:-NA} != NA ] then # detect long Indel with pacbio
-    $bin/pbmm2 align -j ${num_threads:-5} $hlaref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --sample $sample --rg '@RG\tID:movie1'
-    $bin/samtools view -H $outdir/$sample.movie1.bam >$outdir/header.sam
+    if [ ${tgs:-NA} != NA ] # detect long Indel with pacbio
+        then
+        $bin/pbmm2 align -j ${num_threads:-5} $hlaref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --sample $sample --rg '@RG\tID:movie1'
+        $bin/samtools view -H $outdir/$sample.movie1.bam >$outdir/header.sam
 
-    hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
-    for hla in ${hlas[@]}; do # map assigned long reads to the gene reference
-            hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-            $bin/pbmm2 align -j ${num_threads:-5} $hla_ref $outdir/$sample/$hla.pacbio.fq.gz $outdir/$hla.gene.bam --sort --sample $sample --rg '@RG\tID:movie1'
-            $bin/samtools index $outdir/$hla.gene.bam
-    done
-    $bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.pacbio.bam $outdir/A.gene.bam $outdir/B.gene.bam $outdir/C.gene.bam\
-    $outdir/DPA1.gene.bam $outdir/DPB1.gene.bam $outdir/DQA1.gene.bam $outdir/DQB1.gene.bam $outdir/DRB1.gene.bam
-    $bin/samtools index $outdir/$sample.pacbio.bam
+        hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
+        for hla in ${hlas[@]}; do
+                hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
+                $bin/pbmm2 align -j ${num_threads:-5} $hla_ref $outdir/$sample/$hla.pacbio.fq.gz $outdir/$hla.gene.bam --sort --sample $sample --rg '@RG\tID:movie1'
+                $bin/samtools index $outdir/$hla.gene.bam
+        done
+        $bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.pacbio.bam $outdir/A.gene.bam $outdir/B.gene.bam $outdir/C.gene.bam\
+        $outdir/DPA1.gene.bam $outdir/DPB1.gene.bam $outdir/DQA1.gene.bam $outdir/DQB1.gene.bam $outdir/DRB1.gene.bam
+        $bin/samtools index $outdir/$sample.pacbio.bam
 
-    $bin/pbsv discover -l 100 $outdir/$sample.pacbio.bam $outdir/$sample.svsig.gz
-    $bin/pbsv call -t DEL,INS -m 150 -j ${num_threads:-5} $hlaref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
-    python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $outdir/$sample.tgs.breakpoint.txt
-    cat $outdir/$sample.tgs.breakpoint.txt >$bfile
-  else # detect long Indel with pair end data.
-    sh $dir/../ScanIndel/run_scanindel_sample.sh $sample $bam $outdir $port
-    cat $outdir/Scanindel/$sample.breakpoint.txt >$bfile
-  fi
+
+        $bin/pbsv discover -l 100 $outdir/$sample.pacbio.bam $outdir/$sample.svsig.gz
+        $bin/pbsv call -t DEL,INS -m 150 -j ${num_threads:-5} $hlaref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
+        python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $outdir/$sample.tgs.breakpoint.txt
+        cat $outdir/$sample.tgs.breakpoint.txt >$bfile
+    else # detect long Indel with pair end data.
+        sh $dir/../ScanIndel/run_scanindel_sample.sh $sample $bam $outdir $port
+        cat $outdir/Scanindel/$sample.breakpoint.txt >$bfile
+    fi
 else
-  bfile=nothing
+    bfile=nothing
 fi
 if [ ${sv:-NA} != NA ]
-  then
-  bfile=$sv
+    then
+    bfile=$sv
 fi
 # #############################################################################################
 
@@ -290,7 +299,9 @@ python3 $dir/../phase_variants.py \
   --sa $sample \
   --weight_imb ${weight_imb:-0} \
   --exon $focus_exon_flag \
-  --thread_num ${num_threads:-5}
+  --thread_num ${num_threads:-5} \
+  --use_database ${use_database:-1} \
+  --trio ${trio:-None}
 done
 # ##################################################################################################
 
