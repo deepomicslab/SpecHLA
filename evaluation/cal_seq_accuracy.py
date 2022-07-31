@@ -26,12 +26,12 @@ gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
 
 def merge_exon(infer_file, gene, index):
     used_exon = ["HLA_A:1504-1773","HLA_A:2015-2290","HLA_B:1486-1755","HLA_B:2001-2276","HLA_C:1699-1968","HLA_C:2215-2490",\
-        "HLA_DQA1:5600-5848","HLA_DQB1:3073-3342","HLA_DRB1:6972-7241"]
+        "HLA_DQA1:5600-5848","HLA_DQB1:3073-3342","HLA_DRB1:6972-7241","HLA_DPA1:5208-5453","HLA_DPB1:6002-6265"]
     merge_exon_file = infer_file + ".merged.exon.fasta"
     exon_seq = ''
     with open(infer_file) as handle:
         for record in SeqIO.parse(handle, "fasta"):
-            if record.id in used_exon or record.id.split(":")[0] in ["HLA_DPA1","HLA_DPB1"]:
+            if record.id in used_exon:# or record.id.split(":")[0] in ["HLA_DPA1","HLA_DPB1"]:
                 exon_seq += str(record.seq)
                 exon_seq += "N"*200
     with open(merge_exon_file, "w") as output_handle:
@@ -864,6 +864,9 @@ def eva_hgsvc2_spechla():
 def each_simulated_sample(gene, outdir, sample, truth_dir):
     truth_file1 = "%s/%s.HLA_%s_1.fasta"%(truth_dir, sample, gene)
     truth_file2 = "%s/%s.HLA_%s_2.fasta"%(truth_dir, sample, gene)
+    if not os.path.isfile(truth_file1):
+        truth_file1 = "%s/%s.%s_1.fasta"%(truth_dir, sample, gene)
+        truth_file2 = "%s/%s.%s_2.fasta"%(truth_dir, sample, gene)
     infer_file1 = outdir + "hla.allele.1.HLA_%s.fasta"%(gene)
     infer_file2 = outdir + "hla.allele.2.HLA_%s.fasta"%(gene)
     seq = Seq_error(infer_file1, truth_file1, gene)
@@ -1199,13 +1202,13 @@ class Assess_hgsvc2():
         for sample in self.record_truth_file_dict.keys():
             if not os.path.isfile(f"/mnt/d/HLAPro_backup/haplotype/spechla//{sample}/hla.allele.1.HLA_A.fasta"):
                 continue
-            # if sample != "HG01505":
+            # if sample != "HG03125":
             #     continue
             print (sample)
             sample_num += 1
             self.spechla_dir = "/mnt/d/HLAPro_backup/haplotype/spechla_exon/"
             data = self.for_spechla_exon(sample, data, "SpecHLA")
-            data = self.for_kourami(sample, data, "Kourami")
+            # data = self.for_kourami(sample, data, "Kourami")
             # break
         print ("total sample number:", sample_num)
         df = pd.DataFrame(data, columns = ["sample", "gene", "mismatch_rate", "gap_rate", "map_len", "Methods"])
@@ -1252,15 +1255,36 @@ class Assess_hgsvc2():
             # data = self.for_spechla(sample, data, "SpecHLA-SV")
         print ("total sample number:", sample_num)
 
+def eva_simu_trio():
+    truth_dir = "/mnt/d/HLAPro_backup/trio/simu_pedigree/data/truth/"
+    data = []
+    for i in range(6):
+        sample = "child_%s"%(i)
+        outdir = "/mnt/d/HLAPro_backup/trio/simu_pedigree/output/" + sample + "/"
+        print (sample, "SpecHLA-trio")
+        for gene in gene_list:
+            base_error, short_gap_error, gap_recall, gap_precision = each_simulated_sample(gene, outdir, sample, truth_dir)
+            data.append([sample, gene, base_error, short_gap_error, "SpecHLA-trio"])
+        print (sample, "SpecHLA")
+        outdir = "/mnt/d/HLAPro_backup/trio/simu_pedigree/output_no_trio/" + sample + "/"
+        for gene in gene_list:
+            base_error, short_gap_error, gap_recall, gap_precision = each_simulated_sample(gene, outdir, sample, truth_dir)
+            data.append([sample, gene, base_error, short_gap_error, "SpecHLA"])
+
+
+
+    df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "Methods"])
+    df.to_csv('/mnt/d/HLAPro_backup/trio/simu_pedigree/haplo_assess_trio.csv', sep=',')
 
 
 
 if __name__ == "__main__":
 
     if len(sys.argv) == 1:
-        ass = Assess_hgsvc2()
+        # ass = Assess_hgsvc2()
         # ass.main()
-        ass.test()
+        # ass.test()
+        eva_simu_trio()
         # ass.main_exon()
         # eva_data_types_spechla()
         # eva_allele_imblance()

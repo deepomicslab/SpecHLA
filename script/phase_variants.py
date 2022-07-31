@@ -1741,7 +1741,6 @@ class Pedigree():
     def __init__(self):
         self.root_dir = "/".join(outdir.split("/")[:-1]) 
         self.sample_list = []
-        self.vcf_split_tool = "%s/../bin/vcfallelicprimitives"%(sys.path[0])
 
     def generate_ped_file(self): # get config file to run pedhap
         sample_list = args.trio.split(':')
@@ -1765,7 +1764,6 @@ class Pedigree():
         mother=%s
         father=%s
         $bin/bcftools merge $workdir/$child/$gene.specHap.phased.refined.vcf.gz $workdir/$mother/$gene.specHap.phased.refined.vcf.gz $workdir/$father/$gene.specHap.phased.refined.vcf.gz -o $workdir/$child/$gene.trio.merge.vcf.gz -Oz -0
-        echo "$bin/bcftools merge $workdir/$child/$gene.specHap.phased.refined.vcf.gz $workdir/$mother/$gene.specHap.phased.refined.vcf.gz $workdir/$father/$gene.specHap.phased.refined.vcf.gz -o $workdir/$child/$gene.trio.merge.vcf.gz -Oz -0"
         tabix -f $workdir/$child/$gene.trio.merge.vcf.gz
         python3 %s/pedhap/main.py --threshold1 0.6 --threshold2 0 -v $workdir/$child/$gene.trio.merge.vcf.gz -p $workdir/$child/trio.ped -o $workdir/$child/$gene.trio.rephase.vcf.gz
         file=$workdir/$child/$gene.trio.rephase.vcf.gz
@@ -1784,8 +1782,6 @@ class Pedigree():
             if not os.path.isdir(trio_dir):
                 os.system('mkdir %s'%(trio_dir))
             raw = f"{self.root_dir}/{sample}/{gene}.specHap.phased.vcf"
-            # raw1 = f"{self.root_dir}/{sample}/{gene}.specHap.phased.snp.vcf"
-            # os.system(f"{self.vcf_split_tool} -kg {raw} >{raw1}")
             new = f"{self.root_dir}/{sample}/{gene}.specHap.phased.refined.vcf"
             self.remove_conflicts(raw, new, sample)
            
@@ -1815,14 +1811,10 @@ class Pedigree():
         tabix -f {self.root_dir}/{sample}/{gene}.specHap.phased.refined.vcf.gz
         """
         os.system(command)
-        # if sample == "child_0":
-        #     os.system(f"zcat {self.root_dir}/{sample}/{gene}.specHap.phased.refined.vcf.gz")
 
     def merge_hete_homo_vcf(self, raw, phased, final_vcf):
-
-        #remove confict, for bcftools consensus
+        # the result of pedigree phasing only contain hete loci, add homo loci
         in_vcf = VariantFile(phased)
-        # out = VariantFile(newvcffile,'w',header=in_vcf.header)
         sample = list(in_vcf.header.samples)[0]
         geno_dict = {}
         block_dict = {}
@@ -1855,6 +1847,7 @@ class Pedigree():
                     if alleles[i] == new_phased_allele[1]:
                         new_geno[1] = i
                 record.samples[sample]['GT'] = new_geno
+                record.samples[sample].phased=True
 
             out.write(record)
         in_vcf.close()
@@ -1870,9 +1863,10 @@ class Pedigree():
         for sample in self.sample_list:
             raw = f"{self.root_dir}/{sample}/{gene}.specHap.phased.vcf"
             phased = f"{self.root_dir}/{sample}/trio/{sample}.{gene}.trio.vcf.gz"
-            final_vcf =  f"{self.root_dir}/{sample}/trio/{sample}.{gene}.pedhap.trio.vcf.gz"
-            self.merge_hete_homo_vcf(raw, phased, final_vcf)
+            # final_vcf =  f"{self.root_dir}/{sample}/trio/{sample}.{gene}.pedhap.trio.vcf.gz"
+            # self.merge_hete_homo_vcf(raw, phased, final_vcf)
         print ("pedigree phasing is done.")
+
 
 if __name__ == "__main__":   
     if len(sys.argv)==1:
@@ -1915,7 +1909,8 @@ if __name__ == "__main__":
                 if os.path.isfile("%s/%s.specHap.phased.vcf"%(outdir, gene)):
                     ped = Pedigree()
                     ped.main()
-                    raw_spec_vcf = outdir + '/trio/%s.%s.pedhap.trio.vcf.gz'%(args.sample_id, gene)
+                    # raw_spec_vcf = outdir + '/trio/%s.%s.pedhap.trio.vcf.gz'%(args.sample_id, gene)
+                    raw_spec_vcf = outdir + '/trio/%s.%s.trio.vcf.gz'%(args.sample_id, gene)
                 else:
                     print ("## We should perform SpecHLA on the trio samples first, and reperfrom SpecHLA with trio info.")
 
