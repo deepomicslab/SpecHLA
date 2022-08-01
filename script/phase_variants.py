@@ -1783,7 +1783,17 @@ class Pedigree():
                 os.system('mkdir %s'%(trio_dir))
             raw = f"{self.root_dir}/{sample}/{gene}.specHap.phased.vcf"
             new = f"{self.root_dir}/{sample}/{gene}.specHap.phased.refined.vcf"
+
+            if not os.path.isfile(raw):# no hete variants
+                os.system(f"zcat {self.root_dir}/{sample}/{gene}.rephase.vcf.gz >{raw}")
+
             self.remove_conflicts(raw, new, sample)
+
+            command = f"""
+            bgzip -f {new}
+            tabix -f {new}.gz
+            """
+            os.system(command)
            
     def remove_conflicts(self, raw, new, sample):
         # there might be conflicts when we merge vcf files
@@ -1806,11 +1816,7 @@ class Pedigree():
             else:
                 print (line, file = out_f)
         out_f.close()
-        command = f"""
-        bgzip -f {self.root_dir}/{sample}/{gene}.specHap.phased.refined.vcf
-        tabix -f {self.root_dir}/{sample}/{gene}.specHap.phased.refined.vcf.gz
-        """
-        os.system(command)
+
 
     def main(self):
         self.generate_ped_file()
