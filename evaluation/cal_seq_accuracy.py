@@ -1258,7 +1258,7 @@ class Assess_hgsvc2():
 def eva_simu_trio():
     truth_dir = "/mnt/d/HLAPro_backup/trio/simu_pedigree/data/truth/"
     data = []
-    for i in range(6):
+    for i in range(50):
         sample = "child_%s"%(i)
         outdir = "/mnt/d/HLAPro_backup/trio/simu_pedigree/output/" + sample + "/"
         print (sample, "SpecHLA-trio")

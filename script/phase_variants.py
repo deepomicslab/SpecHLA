@@ -1812,59 +1812,10 @@ class Pedigree():
         """
         os.system(command)
 
-    def merge_hete_homo_vcf(self, raw, phased, final_vcf):
-        # the result of pedigree phasing only contain hete loci, add homo loci
-        in_vcf = VariantFile(phased)
-        sample = list(in_vcf.header.samples)[0]
-        geno_dict = {}
-        block_dict = {}
-        allele_dict = {}
-        for record in in_vcf.fetch():
-            geno_dict[record.pos] = record.samples[sample]['GT']
-            block_dict[record.pos] = record.samples[sample]['PS'] 
-            alleles = [record.ref]
-            for alt in record.alts:
-                alleles.append(alt)
-            phased_allele = [alleles[record.samples[sample]['GT'][0]], alleles[record.samples[sample]['GT'][1]]]
-            allele_dict[record.pos] = phased_allele
-        in_vcf.close()
-
-        in_vcf = VariantFile(raw)
-        out = VariantFile(final_vcf,'w',header=in_vcf.header)
-        sample = list(in_vcf.header.samples)[0]
-        for record in in_vcf.fetch():
-            if record.pos in geno_dict:
-                # record.samples[sample]['GT'] = geno_dict[record.pos]
-                record.samples[sample]['PS'] = block_dict[record.pos]
-                new_geno = list(record.samples[sample]['GT'])
-                new_phased_allele = allele_dict[record.pos]
-                alleles = [record.ref]
-                for alt in record.alts:
-                    alleles.append(alt)
-                for i in range(len(alleles)):
-                    if alleles[i] == new_phased_allele[0]:
-                        new_geno[0] = i
-                    if alleles[i] == new_phased_allele[1]:
-                        new_geno[1] = i
-                record.samples[sample]['GT'] = new_geno
-                record.samples[sample].phased=True
-
-            out.write(record)
-        in_vcf.close()
-        out.close()
-        os.system("tabix -f %s"%(final_vcf))
-
-
     def main(self):
         self.generate_ped_file()
         self.refine_vcf()
         self.pedhap()
-
-        for sample in self.sample_list:
-            raw = f"{self.root_dir}/{sample}/{gene}.specHap.phased.vcf"
-            phased = f"{self.root_dir}/{sample}/trio/{sample}.{gene}.trio.vcf.gz"
-            # final_vcf =  f"{self.root_dir}/{sample}/trio/{sample}.{gene}.pedhap.trio.vcf.gz"
-            # self.merge_hete_homo_vcf(raw, phased, final_vcf)
         print ("pedigree phasing is done.")
 
 
