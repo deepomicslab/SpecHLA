@@ -285,7 +285,7 @@ def freq_output(outdir, gene, fresh_alpha, hete_var_num):
     for j in range(len(fresh_alpha)):
         print ('hla.allele.%s.%s.fasta'%(str(j+1), gene),fresh_alpha[j],file=ra_file)
         # print ('str-'+str(j+1),fresh_alpha[j],file=ra_file)
-    print ("# The number of heterozygote variant is %s"%(hete_var_num),file=ra_file)
+    print ("# The number of heterozygous variant is %s"%(hete_var_num),file=ra_file)
     # print ("# Frequency inference is more reliable with more heterozygotes variants.",file=ra_file)
     ra_file.close()
         

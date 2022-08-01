@@ -94,11 +94,11 @@ In the directory of one specific sample, you will find the below files:
 | HLA_*_freq.txt | Haplotype frequencies of each gene |
 | HLA_*.rephase.vcf.gz | Phased vcf file for each gene |
 
-If you performed pedigree phasing, you will find below files in the output/ folder.
+If you performed pedigree phasing, you will find below files.
 | Output | Description |
 | --- | --- |
-| trio/HLA_*.rephase.vcf.gz | Phased vcf file after pedigree phasing |
-| trio/hla.allele.\*.HLA_\*.fasta | Sequence of each allele after pedigree phasing|
+| trio/HLA_*.trio.vcf.gz | Phased vcf file after pedigree phasing |
+| hla.allele.\*.HLA_\*.fasta | Allele sequence after pedigree phasing|
 
 An example for "hla.result.txt" is as below:
 ```
@@ -110,7 +110,7 @@ An example for "HLA_*_freq.txt" is as below:
 # Haplotype     Frequency
 hla.allele.1.HLA_A.fasta 0.532
 hla.allele.2.HLA_A.fasta 0.468
-# The number of heterozygote variant is 30
+# The number of heterozygous variant is 30
 ```
 
 
