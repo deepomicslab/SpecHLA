@@ -315,7 +315,7 @@ class Seq_error_accelerate():
     def main(self):
         result_dict = {}
         self.get_fasta_len()
-        # self.blast_map("strict")
+        self.blast_map("strict")
         print ("blast is done")
         self.read_blast(self.blast_file)
         self.get_gap_per()
@@ -1429,8 +1429,11 @@ def eva_real_hybrid():
                 short_gap_error = (gene_dict[gene][0][1] + gene_dict[gene][1][1])/2
                 gap_precision = (gene_dict[gene][0][2] + gene_dict[gene][1][2])/2
                 map_len = (gene_dict[gene][0][3] + gene_dict[gene][1][3])/2
-                print (sample, gene, base_error, short_gap_error, map_len, gap_precision, method)
-                data.append([sample, gene, base_error, short_gap_error, map_len, gap_precision, method])
+                N_ratio = (gene_dict[gene][0][4] + gene_dict[gene][1][4])/2
+
+                if N_ratio < 0.2:
+                    print (sample, gene, base_error, short_gap_error, map_len, gap_precision, method)
+                    data.append([sample, gene, base_error, short_gap_error, map_len, gap_precision, method])
 
 
     df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "map_len", "gap_precision", "Methods"])

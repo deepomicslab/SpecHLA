@@ -1,9 +1,9 @@
 @HD	VN:1.0	SO:unsorted
-@SQ	SN:HLA_A	LN:5503	M5:3d309b48b33158bd2afc51f61c0dccd9	UR:file:///home/wangmengyao/scripts/NeedleHLA/ref/ref/hla.ref.extend.fa
-@SQ	SN:HLA_B	LN:6081	M5:0e2a9d198c4a2afe7ecffcda6d112262	UR:file:///home/wangmengyao/scripts/NeedleHLA/ref/ref/hla.ref.extend.fa
-@SQ	SN:HLA_C	LN:6304	M5:e0ed2bfabaafa6311887f25176eb2935	UR:file:///home/wangmengyao/scripts/NeedleHLA/ref/ref/hla.ref.extend.fa
-@SQ	SN:HLA_DPA1	LN:11775	M5:8ccaa9bcfd88b126638f4044b1bcd921	UR:file:///home/wangmengyao/scripts/NeedleHLA/ref/ref/hla.ref.extend.fa
-@SQ	SN:HLA_DPB1	LN:13468	M5:797603788c7cfe8e172540e589bc77dc	UR:file:///home/wangmengyao/scripts/NeedleHLA/ref/ref/hla.ref.extend.fa
-@SQ	SN:HLA_DQA1	LN:8492	M5:e80263ab2af22ff31320a5f3360f068e	UR:file:///home/wangmengyao/scripts/NeedleHLA/ref/ref/hla.ref.extend.fa
-@SQ	SN:HLA_DQB1	LN:9480	M5:b0c2b73f15e28b4d4bf13b3a69c7297e	UR:file:///home/wangmengyao/scripts/NeedleHLA/ref/ref/hla.ref.extend.fa
-@SQ	SN:HLA_DRB1	LN:13229	M5:75da88adbd71ac3389326af537819093	UR:file:///home/wangmengyao/scripts/NeedleHLA/ref/ref/hla.ref.extend.fa
+@SQ	SN:HLA_A	LN:5503	M5:eb052abd310e6b99a11ba03121548103	UR:file:///home/wangmengyao/SpecHLA/ndb/ref/hla.ref.extend.fa
+@SQ	SN:HLA_B	LN:6081	M5:2c56e87b1023cc82beba62d86e1c500c	UR:file:///home/wangmengyao/SpecHLA/ndb/ref/hla.ref.extend.fa
+@SQ	SN:HLA_C	LN:6304	M5:2db8e7a97e5225360d1a25d12fe058e9	UR:file:///home/wangmengyao/SpecHLA/ndb/ref/hla.ref.extend.fa
+@SQ	SN:HLA_DPA1	LN:11775	M5:1de1eef0729bda092a2f5f1e4cc13c33	UR:file:///home/wangmengyao/SpecHLA/ndb/ref/hla.ref.extend.fa
+@SQ	SN:HLA_DPB1	LN:13468	M5:0d570ed1cbba07a81cadf08740b17a38	UR:file:///home/wangmengyao/SpecHLA/ndb/ref/hla.ref.extend.fa
+@SQ	SN:HLA_DQA1	LN:8492	M5:65db59ad9663ff02ec85f0ffccbb3b6a	UR:file:///home/wangmengyao/SpecHLA/ndb/ref/hla.ref.extend.fa
+@SQ	SN:HLA_DQB1	LN:9480	M5:3602c50c9c75fbad9b663a4e3f47ebcc	UR:file:///home/wangmengyao/SpecHLA/ndb/ref/hla.ref.extend.fa
+@SQ	SN:HLA_DRB1	LN:13229	M5:c3866607692d09a3d10db0794c66b0f7	UR:file:///home/wangmengyao/SpecHLA/ndb/ref/hla.ref.extend.fa
