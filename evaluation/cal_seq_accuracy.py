@@ -200,6 +200,7 @@ class Seq_error_accelerate():
         self.truth_hap_file = truth_hap_file
         self.blast_file = f"{self.infer_hap_file}.{tag}.blast"
         self.infer_hap_len_dict = {}
+        self.infer_hap_N_ratio_dict = {}
         self.truth_hap_len_dict = {}
         self.mapped_interval_dict = {} # for inferred hap
         self.true_mapped_interval_dict = {} # for true hap
@@ -207,6 +208,7 @@ class Seq_error_accelerate():
         self.true_mapped_len_dict = {}
         self.mismatch_num_dict = {}
         self.gap_open_num_dict = {}
+
 
     def blast_map(self, flag):
         #-penalty -1 -reward 1 -gapopen 4 -gapextend 1 -strand plus
@@ -231,7 +233,11 @@ class Seq_error_accelerate():
     def get_fasta_len(self):
         with open(self.infer_hap_file) as handle:
             for record in SeqIO.parse(handle, "fasta"):
-                self.infer_hap_len_dict[record.id] = len(record.seq)
+                nCount = str(record.seq).lower().count('n')
+                total_length = len(record.seq)
+                self.infer_hap_len_dict[record.id] = total_length - nCount
+                self.infer_hap_N_ratio_dict[record.id] = round(nCount/total_length, 2)
+                # print (record.id, total_length, nCount, self.infer_hap_len_dict[record.id], round(nCount/total_length, 2))
         # with open(self.truth_hap_file) as handle: # too large
         #     for record in SeqIO.parse(handle, "fasta"):
         #         self.truth_hap_len_dict[record.id] = len(record.seq)
@@ -309,7 +315,7 @@ class Seq_error_accelerate():
     def main(self):
         result_dict = {}
         self.get_fasta_len()
-        self.blast_map("strict")
+        # self.blast_map("strict")
         print ("blast is done")
         self.read_blast(self.blast_file)
         self.get_gap_per()
@@ -323,7 +329,7 @@ class Seq_error_accelerate():
                 self.mismatch_num_dict[geno_name], self.gap_open_num_dict[geno_name],self.true_mapped_len_dict[geno_name])
             # print (geno_name, align.base_error, align.short_gap_error, self.mapped_len_dict[geno_name])
             # print (geno_name, self.mapped_len_dict[geno_name], self.infer_hap_len_dict[geno_name], self.mapped_interval_dict[geno_name])
-            result_dict[geno_name] = [align.base_error, align.short_gap_error, align.gap_precision, self.mapped_len_dict[geno_name]]
+            result_dict[geno_name] = [align.base_error, align.short_gap_error, align.gap_precision, self.mapped_len_dict[geno_name], self.infer_hap_N_ratio_dict[geno_name]]
         return result_dict
 
 class Seq_error_muscle():
@@ -945,14 +951,19 @@ class Assess_hgsvc2():
 
     def __init__(self):
         self.record_truth_file_dict = {}
-        self.spechla_dir = "/mnt/d/HLAPro_backup/haplotype/spechla/"
-        self.hisat_dir = "/mnt/d/HLAPro_backup/haplotype/shell/Hisat/"
-        self.kourami_dir = "/mnt/d/HLAPro_backup/haplotype/shell/Kourami/"
+        self.work_dir = "/mnt/d/HLAPro_backup/haplotype_v2"
+        self.spechla_dir = self.work_dir + "/spechla/"
+        self.hisat_dir = self.work_dir + "/shell/Hisat/"
+        self.kourami_dir = self.work_dir + "/shell/Kourami/"
         self.get_phased_assemblies()
         self.hisat_gene_count = {}
+        self.spechla_gene_count = {}
         self.kourami_gene_count = {}
         self.kourami_exon_accuracy = {}
         self.spechla_exon_accuracy = {}
+        self.record_hisat_output = {} # record whether hisat reconstruct the seq
+        self.N_ratio_cutoff = 0.2
+
         
     def get_phased_assemblies(self):
         record_truth_file_dict = {}
@@ -974,25 +985,41 @@ class Assess_hgsvc2():
     def main(self):
         data = []
         sample_num = 0
+        print ("number of samples with phased assembly", len(self.record_truth_file_dict))
         for sample in self.record_truth_file_dict.keys():
-            if not os.path.isfile(f"/mnt/d/HLAPro_backup/haplotype/spechla//{sample}/hla.allele.1.HLA_A.fasta"):
+            if not os.path.isfile(self.spechla_dir + f"/{sample}/hla.allele.1.HLA_A.fasta"):
                 continue
-            # if sample != "NA19240":
+            # if sample != "NA20509":
             #     continue
             print (sample)
             sample_num += 1
-            self.spechla_dir = "/mnt/d/HLAPro_backup/haplotype/spechla/"
-            data = self.for_spechla(sample, data, "SpecHLA")
+            self.spechla_dir = self.work_dir + "/spechla/"
+
             data = self.for_hisat(sample, data)
-            self.spechla_dir = "/mnt/d/HLAPro_backup/haplotype/spechla_sv/"
-            data = self.for_spechla(sample, data, "SpecHLA-SV")
+            data = self.for_spechla(sample, data, "SpecHLA")
+            
+            # self.spechla_dir = self.work_dir + "/spechla_sv/"
+            # data = self.for_spechla(sample, data, "SpecHLA-SV")
         print ("total sample number:", sample_num)
         df = pd.DataFrame(data, columns = ["sample", "gene", "mismatch_rate", "gap_rate", "map_len", "sequence_precision", "Methods"])
-        df.to_csv('/mnt/d/HLAPro_backup/haplotype/hgsvc_haplo_assess.csv', sep=',')
+        df.to_csv(self.work_dir + '/hgsvc_haplo_assess.csv', sep=',')
         print ("reconstructed gene num of hisat", self.hisat_gene_count)
+        print ("gene num of spechla with < %s N"%(self.N_ratio_cutoff), self.spechla_gene_count)
+        data = []
+        for gene in gene_list:
+            gene = "HLA_" + gene
+            if gene in self.hisat_gene_count:
+                allele_num = self.hisat_gene_count[gene]
+            else:
+                allele_num = 0
+            data.append([allele_num, "HISAT", gene])
+            data.append([self.spechla_gene_count[gene], "SpecHLA", gene])
+        df = pd.DataFrame(data, columns = ["Allele_num", "Methods", "gene"])
+        df.to_csv(self.work_dir + '/hgsvc_haplo_assess_allele_num.csv', sep=',')
 
     def for_spechla(self, sample, data, Method):
         outdir = self.spechla_dir + "/" + sample
+        low_depth_dict = self.get_low_depth_bed(sample)
         truth_file1 = self.record_truth_file_dict[sample][0]
         # print (self.record_truth_file_dict[sample], truth_file1)
         truth_file2 = self.record_truth_file_dict[sample][1]
@@ -1021,8 +1048,16 @@ class Assess_hgsvc2():
             short_gap_error = (gene_dict[gene][0][1] + gene_dict[gene][1][1])/2
             gap_precision = (gene_dict[gene][0][2] + gene_dict[gene][1][2])/2
             map_len = (gene_dict[gene][0][3] + gene_dict[gene][1][3])/2
-            print (sample, gene, base_error, short_gap_error, map_len, gap_precision, Method)
-            data.append([sample, gene, base_error, short_gap_error, map_len, gap_precision, Method])
+            N_ratio = (gene_dict[gene][0][4] + gene_dict[gene][1][4])/2
+            # if gene in self.record_hisat_output[sample]:
+            # if gene not in low_depth_dict:
+            # if True:
+            if N_ratio < self.N_ratio_cutoff:
+                if gene not in self.spechla_gene_count:
+                    self.spechla_gene_count[gene] = 0
+                self.spechla_gene_count[gene] += 1
+                print (sample, gene, base_error, short_gap_error, map_len, gap_precision, Method, N_ratio)
+                data.append([sample, gene, base_error, short_gap_error, map_len, gap_precision, Method])
         return data
 
     def for_spechla_exon(self, sample, data, Method):
@@ -1137,6 +1172,9 @@ class Assess_hgsvc2():
         return data
 
     def for_hisat(self, sample, data):
+        if sample not in self.record_hisat_output:
+            self.record_hisat_output[sample] = {}
+
         outdir = self.hisat_dir + "/" + sample
         report_file = outdir + "/assembly_graph-hla.%s_final_extract_1_fq_gz-hla-extracted-1_fq.report"%(sample)
         hisat_fasta = outdir + "/assembly_graph-hla.%s_final_extract_1_fq_gz-hla-extracted-1_fq.fasta"%(sample)
@@ -1178,7 +1216,10 @@ class Assess_hgsvc2():
             if gene not in gene_dict:
                 gene_dict[gene] = []
             gene_dict[gene].append(result_dict_1[geno_name])
+
         for gene in gene_dict:
+            if gene not in self.record_hisat_output[sample]:
+                self.record_hisat_output[sample][gene] = 0
             if gene not in self.hisat_gene_count:
                 self.hisat_gene_count[gene] = 0
             self.hisat_gene_count[gene] += 1
@@ -1200,27 +1241,26 @@ class Assess_hgsvc2():
         data = []
         sample_num = 0
         for sample in self.record_truth_file_dict.keys():
-            if not os.path.isfile(f"/mnt/d/HLAPro_backup/haplotype/spechla//{sample}/hla.allele.1.HLA_A.fasta"):
+            if not os.path.isfile(self.work_dir + f"/spechla//{sample}/hla.allele.1.HLA_A.fasta"):
                 continue
-            # if sample != "HG03125":
+            # if sample != "HG02587":
             #     continue
             print (sample)
             sample_num += 1
-            self.spechla_dir = "/mnt/d/HLAPro_backup/haplotype/spechla_exon/"
+            self.spechla_dir = self.work_dir + "/spechla_exon/"
             data = self.for_spechla_exon(sample, data, "SpecHLA")
-            # data = self.for_kourami(sample, data, "Kourami")
+            data = self.for_kourami(sample, data, "Kourami")
             # break
         print ("total sample number:", sample_num)
         df = pd.DataFrame(data, columns = ["sample", "gene", "mismatch_rate", "gap_rate", "map_len", "Methods"])
-        df.to_csv('/mnt/d/HLAPro_backup/haplotype/hgsvc_haplo_exon_assess.csv', sep=',')
+        df.to_csv(self.work_dir + '/hgsvc_haplo_exon_assess.csv', sep=',')
         print ("reconstructed gene num of kourami", self.kourami_gene_count)
         print ("kourami", self.kourami_exon_accuracy)
         print ("spechla", self.spechla_exon_accuracy)
         for gene in self.spechla_exon_accuracy:
-            print ("spechla", gene, self.spechla_exon_accuracy[gene], round(self.spechla_exon_accuracy[gene]/40, 2))
+            print ("spechla", gene, self.spechla_exon_accuracy[gene], round(self.spechla_exon_accuracy[gene]/(sample_num*2), 2))
             if gene in self.kourami_exon_accuracy:
-                print ("kourami", gene, self.kourami_exon_accuracy[gene], round(self.kourami_exon_accuracy[gene]/40, 2))
-
+                print ("kourami", gene, self.kourami_exon_accuracy[gene], round(self.kourami_exon_accuracy[gene]/(sample_num*2), 2))
 
     def contig2gene(self, report_file):
         contig_gene = {}
@@ -1255,6 +1295,17 @@ class Assess_hgsvc2():
             # data = self.for_spechla(sample, data, "SpecHLA-SV")
         print ("total sample number:", sample_num)
 
+    def get_low_depth_bed(self, sample):
+        low_depth_dict = {}
+        low_bed = self.spechla_dir + sample + "/low_depth.bed" 
+        f = open(low_bed, 'r')
+        for line in f:
+            array = line.strip().split()
+            gene = array[0]
+            low_depth_dict[gene] = 1
+        f.close()
+        return low_depth_dict
+
 def eva_simu_trio():
     truth_dir = "/mnt/d/HLAPro_backup/trio/simu_pedigree/data/truth/"
     data = []
@@ -1270,22 +1321,131 @@ def eva_simu_trio():
         for gene in gene_list:
             base_error, short_gap_error, gap_recall, gap_precision = each_simulated_sample(gene, outdir, sample, truth_dir)
             data.append([sample, gene, base_error, short_gap_error, "SpecHLA"])
-
-
-
     df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "Methods"])
     df.to_csv('/mnt/d/HLAPro_backup/trio/simu_pedigree/haplo_assess_trio.csv', sep=',')
 
+def eva_real_trio():
+    # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
+    dict = {"SpecHLA-trio":"spechla", "SpecHLA":"spechla_no_trio"}
+    truth_file1_dict = {"NA12878":"/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/v12_NA12878_giab_pbsq2-ccs_1000-pereg.h1-un.racon-p2.fasta",
+                        "NA19240":"/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/v12_NA19240_hgsvc_pbsq2-clr_1000-flye.h1-un.arrow-p1.fasta"}
+    truth_file2_dict = {"NA12878":"/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/v12_NA12878_giab_pbsq2-ccs_1000-pereg.h2-un.racon-p2.fasta",
+                        "NA19240":"/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/v12_NA19240_hgsvc_pbsq2-clr_1000-flye.h2-un.arrow-p1.fasta"}
+    data = []
+    for sample in ["NA12878", "NA19240"]:
+        for method in dict.keys():
+            # sample = "NA12878"
+            # truth_file1 = "/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/v12_NA12878_giab_pbsq2-ccs_1000-pereg.h1-un.racon-p2.fasta"
+            # truth_file2 = "/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/v12_NA12878_giab_pbsq2-ccs_1000-pereg.h2-un.racon-p2.fasta"
+            # sample = "NA19240"
+            # truth_file1 =  "/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/v12_NA19240_hgsvc_pbsq2-clr_1000-flye.h1-un.arrow-p1.fasta"
+            # truth_file2 =  "/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/v12_NA19240_hgsvc_pbsq2-clr_1000-flye.h2-un.arrow-p1.fasta"
+            # sample = "HG00733"
+            # truth_file1 =  "/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/v12_HG00733_hgsvc_pbsq2-ccs_1000-pereg.h1-un.racon-p2.fasta"
+            # truth_file2 =  "/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/v12_HG00733_hgsvc_pbsq2-ccs_1000-pereg.h2-un.racon-p2.fasta"
+            # sample = "HG00514"
+            # truth_file1 =  "/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/v12_HG00514_hgsvc_pbsq2-ccs_1000-pereg.h1-un.racon-p2.fasta"
+            # truth_file2 =  "/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/v12_HG00514_hgsvc_pbsq2-ccs_1000-pereg.h2-un.racon-p2.fasta"
+            truth_file1, truth_file2 = truth_file1_dict[sample], truth_file2_dict[sample]
+            outdir = "/mnt/d/HLAPro_backup/trio/real_trio/%s/"%(dict[method]) + sample + "/"
+            infer_file = outdir + "/hla.allele.all.fasta"
+            os.system("cat %s/hla.allele.*.HLA_*.fasta>%s"%(outdir, infer_file))
+            
 
+            seq = Seq_error_accelerate(infer_file, truth_file1, "hap1")
+            result_dict_1 = seq.main()
+            seq = Seq_error_accelerate(infer_file, truth_file2, "hap2")
+            result_dict_2 = seq.main()
+            for geno_name in result_dict_1.keys():
+                if result_dict_1[geno_name][0] > result_dict_2[geno_name][0]:
+                    result_dict_1[geno_name] = result_dict_2[geno_name]
+            gene_dict = {}
+            for geno_name in result_dict_1.keys():
+                gene = geno_name[:-2]
+                if gene not in gene_dict:
+                    gene_dict[gene] = []
+                gene_dict[gene].append(result_dict_1[geno_name])
+            for gene in gene_dict:
+                base_error = (gene_dict[gene][0][0] + gene_dict[gene][1][0])/2
+                short_gap_error = (gene_dict[gene][0][1] + gene_dict[gene][1][1])/2
+                gap_precision = (gene_dict[gene][0][2] + gene_dict[gene][1][2])/2
+                map_len = (gene_dict[gene][0][3] + gene_dict[gene][1][3])/2
+                print (sample, gene, base_error, short_gap_error, map_len, gap_precision, method)
+                data.append([sample, gene, base_error, short_gap_error, map_len, gap_precision, method])
+
+
+    df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "map_len", "gap_precision", "Methods"])
+    df.to_csv('/mnt/d/HLAPro_backup/trio/real_trio//real_trio_haplo_assess.csv', sep=',')
+
+def eva_real_hybrid():
+    # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
+    dict = {"SpecHLA-hybrid":"spechla_with_pac", "SpecHLA":"spechla_no_pac"}
+    # dict = {"SpecHLA-hybrid-sv":"spechla"}
+    truth_dir = "/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/"
+    truth_file1_dict = {
+                        "HG00733":"v12_HG00733_hgsvc_pbsq2-ccs_1000-pereg.h1-un.racon-p2.fasta",
+                        "HG00731":"v12_HG00731_hgsvc_pbsq2-ccs_1000-pereg.h1-un.racon-p2.fasta",
+                        "HG00732":"v12_HG00732_hgsvc_pbsq2-ccs_1000-pereg.h1-un.racon-p2.fasta",
+                        "NA19238":"v12_NA19238_hgsvc_pbsq2-ccs_1000-pereg.h1-un.racon-p2.fasta",
+                        "NA19239":"v12_NA19239_hgsvc_pbsq2-ccs_1000-pereg.h1-un.racon-p2.fasta",
+                        "NA19240":"v12_NA19240_hgsvc_pbsq2-ccs_1000-pereg.h1-un.racon-p2.fasta",
+                        "HG00514":"v12_HG00514_hgsvc_pbsq2-ccs_1000-pereg.h1-un.racon-p2.fasta"
+                        }
+
+    truth_file2_dict = {
+                        "HG00733":"v12_HG00733_hgsvc_pbsq2-ccs_1000-pereg.h2-un.racon-p2.fasta",
+                        "HG00731":"v12_HG00731_hgsvc_pbsq2-ccs_1000-pereg.h2-un.racon-p2.fasta",
+                        "HG00732":"v12_HG00732_hgsvc_pbsq2-ccs_1000-pereg.h2-un.racon-p2.fasta",
+                        "NA19238":"v12_NA19238_hgsvc_pbsq2-ccs_1000-pereg.h2-un.racon-p2.fasta",
+                        "NA19239":"v12_NA19239_hgsvc_pbsq2-ccs_1000-pereg.h2-un.racon-p2.fasta",
+                        "NA19240":"v12_NA19240_hgsvc_pbsq2-ccs_1000-pereg.h2-un.racon-p2.fasta",
+                        "HG00514":"v12_HG00514_hgsvc_pbsq2-ccs_1000-pereg.h2-un.racon-p2.fasta"
+                        }
+    data = []
+    for sample in truth_file1_dict.keys():
+    # for sample in ["HG00733"]:
+        for method in dict.keys():
+            truth_file1, truth_file2 = truth_dir + truth_file1_dict[sample], truth_dir + truth_file2_dict[sample]
+            outdir = "/mnt/d/HLAPro_backup/hybrid/real_hybrid/%s/"%(dict[method]) + sample + "/"
+            infer_file = outdir + "/hla.allele.all.fasta"
+            os.system("cat %s/hla.allele.*.HLA_*.fasta>%s"%(outdir, infer_file))
+            
+
+            seq = Seq_error_accelerate(infer_file, truth_file1, "hap1")
+            result_dict_1 = seq.main()
+            seq = Seq_error_accelerate(infer_file, truth_file2, "hap2")
+            result_dict_2 = seq.main()
+            for geno_name in result_dict_1.keys():
+                if result_dict_1[geno_name][0] > result_dict_2[geno_name][0]:
+                    result_dict_1[geno_name] = result_dict_2[geno_name]
+            gene_dict = {}
+            for geno_name in result_dict_1.keys():
+                gene = geno_name[:-2]
+                if gene not in gene_dict:
+                    gene_dict[gene] = []
+                gene_dict[gene].append(result_dict_1[geno_name])
+            for gene in gene_dict:
+                base_error = (gene_dict[gene][0][0] + gene_dict[gene][1][0])/2
+                short_gap_error = (gene_dict[gene][0][1] + gene_dict[gene][1][1])/2
+                gap_precision = (gene_dict[gene][0][2] + gene_dict[gene][1][2])/2
+                map_len = (gene_dict[gene][0][3] + gene_dict[gene][1][3])/2
+                print (sample, gene, base_error, short_gap_error, map_len, gap_precision, method)
+                data.append([sample, gene, base_error, short_gap_error, map_len, gap_precision, method])
+
+
+    df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "map_len", "gap_precision", "Methods"])
+    df.to_csv('/mnt/d/HLAPro_backup/hybrid/real_hybrid/real_hybrid_haplo_assess.csv', sep=',')
 
 if __name__ == "__main__":
 
     if len(sys.argv) == 1:
-        # ass = Assess_hgsvc2()
+        ass = Assess_hgsvc2()
         # ass.main()
         # ass.test()
-        eva_simu_trio()
-        # ass.main_exon()
+        # eva_simu_trio()
+        # eva_real_trio()
+        # eva_real_hybrid()
+        ass.main_exon()
         # eva_data_types_spechla()
         # eva_allele_imblance()
         # eva_HG002_kourami()

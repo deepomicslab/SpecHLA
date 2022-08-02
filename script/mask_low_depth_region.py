@@ -53,14 +53,20 @@ class Mask_low():
                 mask_flag = True
             else:
                 if mask_flag == True:
-                    mask_region.append([mask_start, mask_end])
+                    if len(mask_region) > 0 and mask_start < mask_region[-1][1]:
+                        mask_region[-1][1] = mask_end
+                    else:
+                        mask_region.append([mask_start, mask_end])
                 mask_flag = False
         if mask_flag == True:
-            mask_region.append([mask_start, win_end])
+            if len(mask_region) > 0 and mask_start < mask_region[-1][1]:
+                mask_region[-1][1] = mask_end
+            else:
+                mask_region.append([mask_start, mask_end])
         return mask_region
 
     def select_focus_interval(self, depth_list, exon_intervals):
-        mask_region = []
+        mask_region = []    
         if self.focus_exon == True:
             for interval in exon_intervals:
                 mask_region = self.get_low_region(depth_list, mask_region, interval[0], interval[1])
@@ -87,8 +93,11 @@ class Mask_low():
         self.record_depth()
         # gene = "HLA_DPB1"
         f = open(mask_bed, 'w')
+        mean_depth_dict = {}
         for gene in self.depth_dict.keys():
             depth_list = self.depth_dict[gene]
+            mean_depth = np.mean(depth_list[1000:-1000])
+            mean_depth_dict[gene] = round(mean_depth)
             exon_intervals = self.read_exons(gene)
             mask_region = self.select_focus_interval(depth_list, exon_intervals)
             # mask_region = self.get_low_region(depth_list)
@@ -96,6 +105,7 @@ class Mask_low():
             for mask in mask_region:
                 print (gene, mask[0]-1, mask[1]-1, file = f)
         f.close()
+        print ("Mean depth", mean_depth_dict)
         # print (self.mask_dict)
         # with open("%s/mask_dict.pkl"%(outdir), 'wb') as f:
         #     pickle.dump(self.mask_dict, f)
