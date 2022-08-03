@@ -219,7 +219,7 @@ fi
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
 # ###################### mask low-depth region #############################################
-$bin/samtools depth -a $bam>$bam.depth  
+$bin/samtools depth -aa $bam>$bam.depth  
 python3 $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d ${mask_depth:-5} -f ${mask_exon:-True}
 
 

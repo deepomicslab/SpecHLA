@@ -66,7 +66,11 @@ class Align(object):
             self.base_error = self.mismatch_num/self.mapped_len
             self.gap_recall = self.true_mapped_len/self.truth_hap_len
             # self.gap_recall = self.mapped_len/self.truth_hap_len
-            self.gap_precision = self.mapped_len/self.infer_hap_len
+            if self.mapped_len > self.infer_hap_len:
+                self.gap_precision = 1
+                print ("larger than 1 caused by short N sequence.", self.mapped_len, self.infer_hap_len)
+            else:
+                self.gap_precision = self.mapped_len/self.infer_hap_len
         else:
             self.short_gap_error = 1
             self.base_error = 1
@@ -195,7 +199,7 @@ class Seq_error():
 
 class Seq_error_accelerate():
 
-    def __init__(self, infer_hap_file, truth_hap_file, tag):
+    def __init__(self, infer_hap_file, truth_hap_file, tag, method):
         self.infer_hap_file = infer_hap_file
         self.truth_hap_file = truth_hap_file
         self.blast_file = f"{self.infer_hap_file}.{tag}.blast"
@@ -208,6 +212,7 @@ class Seq_error_accelerate():
         self.true_mapped_len_dict = {}
         self.mismatch_num_dict = {}
         self.gap_open_num_dict = {}
+        self.method = method
 
 
     def blast_map(self, flag):
@@ -235,7 +240,10 @@ class Seq_error_accelerate():
             for record in SeqIO.parse(handle, "fasta"):
                 nCount = str(record.seq).lower().count('n')
                 total_length = len(record.seq)
-                self.infer_hap_len_dict[record.id] = total_length - nCount
+                if self.method == "spechla" or self.method == "hisat": 
+                    self.infer_hap_len_dict[record.id] = total_length - nCount
+                else:
+                    self.infer_hap_len_dict[record.id] = total_length
                 self.infer_hap_N_ratio_dict[record.id] = round(nCount/total_length, 2)
                 # print (record.id, total_length, nCount, self.infer_hap_len_dict[record.id], round(nCount/total_length, 2))
         # with open(self.truth_hap_file) as handle: # too large
@@ -263,7 +271,7 @@ class Seq_error_accelerate():
                 self.gap_open_num_dict[seq_name] = 0
                 line_count[seq_name] = 0
             line_count[seq_name] += 1
-            if line_count[seq_name] > 20:
+            if line_count[seq_name] > 50:
                 continue
 
             self.mapped_interval_dict[seq_name] = self.get_uniq_map(map_s, map_e, mismatches, gap_opens, self.mapped_interval_dict[seq_name],seq_name)
@@ -271,7 +279,7 @@ class Seq_error_accelerate():
             true_map_e = int(array[9])
             self.true_mapped_interval_dict[seq_name] = self.get_uniq_map(true_map_s, true_map_e, 0, 0, self.true_mapped_interval_dict[seq_name],seq_name)
             i += 1
-        # print (self.mapped_interval_dict)
+        # print (self.mapped_interval_dict, self.infer_hap_len_dict)
 
     def get_uniq_map(self, map_s, map_e, mismatches, gap_opens, mapped_interval,seq_name):
         if map_e < map_s:
@@ -962,7 +970,7 @@ class Assess_hgsvc2():
         self.kourami_exon_accuracy = {}
         self.spechla_exon_accuracy = {}
         self.record_hisat_output = {} # record whether hisat reconstruct the seq
-        self.N_ratio_cutoff = 0.2
+        self.N_ratio_cutoff = Min_N_ratio
 
         
     def get_phased_assemblies(self):
@@ -989,7 +997,7 @@ class Assess_hgsvc2():
         for sample in self.record_truth_file_dict.keys():
             if not os.path.isfile(self.spechla_dir + f"/{sample}/hla.allele.1.HLA_A.fasta"):
                 continue
-            # if sample != "NA20509":
+            # if sample != "HG03732":
             #     continue
             print (sample)
             sample_num += 1
@@ -1030,9 +1038,9 @@ class Assess_hgsvc2():
             print ("############",truth_file1)
             return data       
 
-        seq = Seq_error_accelerate(infer_file, truth_file1, "hap1")
+        seq = Seq_error_accelerate(infer_file, truth_file1, "hap1", "spechla")
         result_dict_1 = seq.main()
-        seq = Seq_error_accelerate(infer_file, truth_file2, "hap2")
+        seq = Seq_error_accelerate(infer_file, truth_file2, "hap2", "spechla")
         result_dict_2 = seq.main()
         for geno_name in result_dict_1.keys():
             if result_dict_1[geno_name][0] > result_dict_2[geno_name][0]:
@@ -1056,8 +1064,10 @@ class Assess_hgsvc2():
                 if gene not in self.spechla_gene_count:
                     self.spechla_gene_count[gene] = 0
                 self.spechla_gene_count[gene] += 1
-                print (sample, gene, base_error, short_gap_error, map_len, gap_precision, Method, N_ratio)
+                # print (sample, gene, base_error, short_gap_error, map_len, gap_precision, Method, N_ratio)
                 data.append([sample, gene, base_error, short_gap_error, map_len, gap_precision, Method])
+            else:
+                print (sample, gene, base_error, short_gap_error, map_len, gap_precision, Method, N_ratio)
         return data
 
     def for_spechla_exon(self, sample, data, Method):
@@ -1077,9 +1087,9 @@ class Assess_hgsvc2():
             print ("############", truth_file1)
             return data       
 
-        seq = Seq_error_accelerate(infer_file, truth_file1, "hap1")
+        seq = Seq_error_accelerate(infer_file, truth_file1, "hap1", "spechla")
         result_dict_1 = seq.main()
-        seq = Seq_error_accelerate(infer_file, truth_file2, "hap2")
+        seq = Seq_error_accelerate(infer_file, truth_file2, "hap2", "spechla")
         result_dict_2 = seq.main()
         for geno_name in result_dict_1.keys():
             if geno_name in result_dict_1 and geno_name not in result_dict_2:
@@ -1139,9 +1149,9 @@ class Assess_hgsvc2():
         os.system("cat %s/*.split.exon.fasta>%s"%(outdir, infer_file))
 
 
-        seq = Seq_error_accelerate(infer_file, truth_file1, "hap1")
+        seq = Seq_error_accelerate(infer_file, truth_file1, "hap1", "kourami")
         result_dict_1 = seq.main()
-        seq = Seq_error_accelerate(infer_file, truth_file2, "hap2")
+        seq = Seq_error_accelerate(infer_file, truth_file2, "hap2", "kourami")
         result_dict_2 = seq.main()
         for geno_name in result_dict_1.keys():
             if geno_name in result_dict_1 and geno_name not in result_dict_2:
@@ -1203,9 +1213,9 @@ class Assess_hgsvc2():
         infer_file = outdir + "/hisat.hla.allele.all.fasta"
         os.system("cat %s/hisat.hla.allele.*.HLA_*.fasta>%s"%(outdir, infer_file))
 
-        seq = Seq_error_accelerate(infer_file, truth_file1, "hap1")
+        seq = Seq_error_accelerate(infer_file, truth_file1, "hap1", "hisat")
         result_dict_1 = seq.main()
-        seq = Seq_error_accelerate(infer_file, truth_file2, "hap2")
+        seq = Seq_error_accelerate(infer_file, truth_file2, "hap2", "hisat")
         result_dict_2 = seq.main()
         for geno_name in result_dict_1.keys():
             if result_dict_1[geno_name][0] > result_dict_2[geno_name][0]:
@@ -1352,9 +1362,9 @@ def eva_real_trio():
             os.system("cat %s/hla.allele.*.HLA_*.fasta>%s"%(outdir, infer_file))
             
 
-            seq = Seq_error_accelerate(infer_file, truth_file1, "hap1")
+            seq = Seq_error_accelerate(infer_file, truth_file1, "hap1", "spechla")
             result_dict_1 = seq.main()
-            seq = Seq_error_accelerate(infer_file, truth_file2, "hap2")
+            seq = Seq_error_accelerate(infer_file, truth_file2, "hap2", "spechla")
             result_dict_2 = seq.main()
             for geno_name in result_dict_1.keys():
                 if result_dict_1[geno_name][0] > result_dict_2[geno_name][0]:
@@ -1370,8 +1380,10 @@ def eva_real_trio():
                 short_gap_error = (gene_dict[gene][0][1] + gene_dict[gene][1][1])/2
                 gap_precision = (gene_dict[gene][0][2] + gene_dict[gene][1][2])/2
                 map_len = (gene_dict[gene][0][3] + gene_dict[gene][1][3])/2
-                print (sample, gene, base_error, short_gap_error, map_len, gap_precision, method)
-                data.append([sample, gene, base_error, short_gap_error, map_len, gap_precision, method])
+                N_ratio = (gene_dict[gene][0][4] + gene_dict[gene][1][4])/2
+                if N_ratio < Min_N_ratio:
+                    print (sample, gene, base_error, short_gap_error, map_len, gap_precision, method)
+                    data.append([sample, gene, base_error, short_gap_error, map_len, gap_precision, method])
 
 
     df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "map_len", "gap_precision", "Methods"])
@@ -1411,9 +1423,9 @@ def eva_real_hybrid():
             os.system("cat %s/hla.allele.*.HLA_*.fasta>%s"%(outdir, infer_file))
             
 
-            seq = Seq_error_accelerate(infer_file, truth_file1, "hap1")
+            seq = Seq_error_accelerate(infer_file, truth_file1, "hap1", "spechla")
             result_dict_1 = seq.main()
-            seq = Seq_error_accelerate(infer_file, truth_file2, "hap2")
+            seq = Seq_error_accelerate(infer_file, truth_file2, "hap2", "spechla")
             result_dict_2 = seq.main()
             for geno_name in result_dict_1.keys():
                 if result_dict_1[geno_name][0] > result_dict_2[geno_name][0]:
@@ -1431,7 +1443,7 @@ def eva_real_hybrid():
                 map_len = (gene_dict[gene][0][3] + gene_dict[gene][1][3])/2
                 N_ratio = (gene_dict[gene][0][4] + gene_dict[gene][1][4])/2
 
-                if N_ratio < 0.2:
+                if N_ratio < Min_N_ratio:
                     print (sample, gene, base_error, short_gap_error, map_len, gap_precision, method)
                     data.append([sample, gene, base_error, short_gap_error, map_len, gap_precision, method])
 
@@ -1440,15 +1452,16 @@ def eva_real_hybrid():
     df.to_csv('/mnt/d/HLAPro_backup/hybrid/real_hybrid/real_hybrid_haplo_assess.csv', sep=',')
 
 if __name__ == "__main__":
+    Min_N_ratio = 0.3
 
     if len(sys.argv) == 1:
-        ass = Assess_hgsvc2()
+        # ass = Assess_hgsvc2()
         # ass.main()
         # ass.test()
         # eva_simu_trio()
-        # eva_real_trio()
+        eva_real_trio()
         # eva_real_hybrid()
-        ass.main_exon()
+        # ass.main_exon()
         # eva_data_types_spechla()
         # eva_allele_imblance()
         # eva_HG002_kourami()

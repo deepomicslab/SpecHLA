@@ -1033,7 +1033,7 @@ def get_insertion_linkage(ins_seq):
     return ins_seq
 
 def get_copy_number(outdir, deletion_region, gene, ins_seq):
-    os.system('%s/../bin/samtools depth -a %s/newref_insertion.bam >%s/newref_insertion.depth'%(sys.path[0],outdir, outdir))
+    os.system('%s/../bin/samtools depth -aa %s/newref_insertion.bam >%s/newref_insertion.depth'%(sys.path[0],outdir, outdir))
     normal_depth = []
     deletions_depth_list = []
     for i in range(len(deletion_region)):
