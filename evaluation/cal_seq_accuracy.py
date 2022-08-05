@@ -323,7 +323,7 @@ class Seq_error_accelerate():
     def main(self):
         result_dict = {}
         self.get_fasta_len()
-        self.blast_map("strict")
+        # self.blast_map("strict")
         print ("blast is done")
         self.read_blast(self.blast_file)
         self.get_gap_per()
@@ -971,8 +971,7 @@ class Assess_hgsvc2():
         self.spechla_exon_accuracy = {}
         self.record_hisat_output = {} # record whether hisat reconstruct the seq
         self.N_ratio_cutoff = Min_N_ratio
-
-        
+       
     def get_phased_assemblies(self):
         record_truth_file_dict = {}
         inpath = "/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/"
@@ -992,6 +991,7 @@ class Assess_hgsvc2():
 
     def main(self):
         data = []
+        record_used_samples = []
         sample_num = 0
         print ("number of samples with phased assembly", len(self.record_truth_file_dict))
         for sample in self.record_truth_file_dict.keys():
@@ -999,6 +999,7 @@ class Assess_hgsvc2():
                 continue
             # if sample != "HG03732":
             #     continue
+            record_used_samples.append([sample, self.record_truth_file_dict[sample][0].split("/")[-1], self.record_truth_file_dict[sample][1].split("/")[-1]])
             print (sample)
             sample_num += 1
             self.spechla_dir = self.work_dir + "/spechla/"
@@ -1024,6 +1025,8 @@ class Assess_hgsvc2():
             data.append([self.spechla_gene_count[gene], "SpecHLA", gene])
         df = pd.DataFrame(data, columns = ["Allele_num", "Methods", "gene"])
         df.to_csv(self.work_dir + '/hgsvc_haplo_assess_allele_num.csv', sep=',')
+        df = pd.DataFrame(record_used_samples, columns = ["Sample", "Haplotype1", "Haplotype2"])
+        df.to_csv(self.work_dir + '/hgsvc_used_samples.csv', sep=',')
 
     def for_spechla(self, sample, data, Method):
         outdir = self.spechla_dir + "/" + sample
@@ -1316,6 +1319,16 @@ class Assess_hgsvc2():
         f.close()
         return low_depth_dict
 
+    def main_HG002(self):
+        data = []
+        sample="HG002"
+        self.record_truth_file_dict[sample] = ["/mnt/d/HLAPro_backup/trio/truth_MHC/H1-asm.fa","/mnt/d/HLAPro_backup/trio/truth_MHC/H2-asm.fa"]
+        # self.hisat_dir = "/mnt/d/HLAPro_backup/trio/Trio/hisat/"
+        # data = self.for_hisat(sample, data)
+        self.spechla_dir = "/mnt/d/HLAPro_backup/trio/"
+        data = self.for_spechla(sample, data, "SpecHLA")
+        print (data)
+
 def eva_simu_trio():
     truth_dir = "/mnt/d/HLAPro_backup/trio/simu_pedigree/data/truth/"
     data = []
@@ -1392,6 +1405,7 @@ def eva_real_trio():
 def eva_real_hybrid():
     # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
     dict = {"SpecHLA-hybrid":"spechla_with_pac", "SpecHLA":"spechla_no_pac"}
+    # dict = {"SpecHLA-hybrid":"spechla_with_pac"}
     # dict = {"SpecHLA-hybrid-sv":"spechla"}
     truth_dir = "/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/"
     truth_file1_dict = {
@@ -1457,15 +1471,15 @@ if __name__ == "__main__":
     if len(sys.argv) == 1:
         # ass = Assess_hgsvc2()
         # ass.main()
+        # ass.main_exon()
         # ass.test()
         # eva_simu_trio()
-        eva_real_trio()
+        # eva_real_trio()
         # eva_real_hybrid()
-        # ass.main_exon()
         # eva_data_types_spechla()
         # eva_allele_imblance()
         # eva_HG002_kourami()
-        # eva_pedigree_spechla()
+        eva_pedigree_spechla()
         # eva_HG002_spechla()
         # eva_hgsvc2_spechla()
         # eva_hgsvc2_spechla_accelerate()

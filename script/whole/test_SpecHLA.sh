@@ -165,7 +165,7 @@ python3 $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir -d $
 -b ${outdir}/${sample}.map_database.bam -nm ${nm:-2}
 # #############################################################################################################
 
-
+!
 
 # ########### align the gene-specific reads to the corresponding gene reference################################
 $bin/bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 | $bin/samtools view -H  >$outdir/header.sam
