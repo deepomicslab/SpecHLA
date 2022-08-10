@@ -41,7 +41,7 @@
 ###   -g        Whether use G-translate in annotation [1|0], default is 0.
 ###   -k        The mean depth in a window lower than this value will be masked by N, default is 5.
 ###             Set 0 to avoid masking.
-###   -z        Whether only mask exon region, True or False, default is True.
+###   -z        Whether only mask exon region, True or False, default is False.
 ###   -f        The trio infromation; child:parent_1:parent_2 [Example: NA12878:NA12891:NA12892]. 
 ###             Note: this parameter should be used after performing SpecHLA once.
 ###   -b        Whether use database for phasing [1|0], default is 1.
@@ -165,7 +165,7 @@ python3 $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir -d $
 -b ${outdir}/${sample}.map_database.bam -nm ${nm:-2}
 # #############################################################################################################
 
-!
+
 
 # ########### align the gene-specific reads to the corresponding gene reference################################
 $bin/bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 | $bin/samtools view -H  >$outdir/header.sam
@@ -220,7 +220,7 @@ bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
 # ###################### mask low-depth region #############################################
 $bin/samtools depth -aa $bam>$bam.depth  
-python3 $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d ${mask_depth:-5} -f ${mask_exon:-True}
+python3 $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d ${mask_depth:-5} -f ${mask_exon:-False}
 
 
 # ###################### call long indel #############################################

@@ -30,7 +30,7 @@ die $usage unless ($sample && $dir && $pop && $wxs );
 print "parameter:\tsample:$sample\tdir:$dir\tpop:$pop\twxs:$wxs\tG_nom:$g_nom\n";
 
 my $k = 2;
-my (%hashp, %hashpp, %hashg, %hashc, %hash,%hashdd);
+my (%hashp,%hashp2, %hashpp, %hashg, %hashc, %hash,%hashdd);
 my $db="$Bin/../../db/HLA";
 my $bin="$Bin/../../bin";
 my @hlas = ("HLA_A","HLA_B","HLA_C","HLA_DPA1","HLA_DPB1","HLA_DQA1","HLA_DQB1","HLA_DRB1");
@@ -43,10 +43,11 @@ open FIN, "$db/HLA_FREQ_HLA_I_II.txt" or die "$!\n";
 while(<FIN>){
     chomp;
     my ($gene,$c,$b,$a) = (split);
-    $a = sprintf "%.3f",$a;
-    $b = sprintf "%.3f",$b;
-    $c = sprintf "%.3f",$c;
+    $a = sprintf "%.4f",$a;
+    $b = sprintf "%.4f",$b;
+    $c = sprintf "%.4f",$c;
     $hashpp{$gene} = "$c;$b;$a";
+    $hashp2{$gene} = ($a+$b+$c)/3;
     if($pop eq "Unknown"){$hashp{$gene} = ($a+$b+$c)/3}
     if($pop eq "Asian"){$hashp{$gene} = $a}
     if($pop eq "Black"){$hashp{$gene} = $b}
@@ -134,10 +135,10 @@ sub exon_blast{
                 #print "$hla\t$score\t$mis\t$len\t$hash4{$hla}\n";        
                          my @tt = (split /:/, $hla);
                          my $kid = "$tt[0]".":"."$tt[1]";
-                         my $fre=0;
-                         if(exists $hashp{$kid}){$fre=$hashp{$kid}} #fre:population frequency of 4 digit HLA allele
+                         my ($fre,$fre2)=(0,0);
+                         if(exists $hashp{$kid}){$fre=$hashp{$kid}; $fre2=$hashp2{$kid}} #fre:population frequency of 4 digit HLA allele
                          $hash3{$hla} = $score;
-                         next if($pop ne "nonuse" && $fre == 0);
+                         next if($pop ne "nonuse" && $fre2 == 0);
                          if($score>=$mscorel){$mscorel = $score;$hh=$hla;$hash_max{$mscorel} .= "$hla;$score\t"}
                  }
 
@@ -219,10 +220,10 @@ sub whole_blast{
                       #next if(!exists $hash21{$key});
                       my @tt = (split /:/, $key);
                       my $kid = "$tt[0]".":"."$tt[1]";
-                      my $fre=0;
-                      if(exists $hashp{$kid}){$fre=$hashp{$kid}} ## population frequency of 4 digit hla allele
+                      my ($fre,$fre2)=(0,0);
+                      if(exists $hashp{$kid}){$fre=$hashp{$kid};$fre2=$hashp2{$kid}} ## population frequency of 4 digit hla allele
                       my $s = 100 * (1 - $hash12{$key}/$hash11{$key}); #blast score
-                      next if($pop ne "nonuse" && $fre == 0);
+                      next if($pop ne "nonuse" && $fre2 == 0);
                       my $scorel=$s;
 
                       if($scorel >= $score){
@@ -270,8 +271,7 @@ foreach my $hla(@hlas){
                  $score = sprintf "%.3f", $score;
                  #DRB1*14:01 and DRB1*14:54 differ in HLA_DRB1:9519
                  if($allele =~ /DRB1\*14:01/){
-                          system("$bin/samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/DRB1.bam --output $workdir/snp.vcf");
-                        #   system("$bin/samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf");
+                          system("$bin/samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf");
                           open TE, "$workdir/snp.vcf" or die "$!\n";
                           while(<TE>){
                                  chomp;

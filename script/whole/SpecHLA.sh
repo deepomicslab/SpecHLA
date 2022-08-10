@@ -41,7 +41,7 @@
 ###   -g        Whether use G-translate in annotation [1|0], default is 0.
 ###   -k        The mean depth in a window lower than this value will be masked by N, default is 5.
 ###             Set 0 to avoid masking.
-###   -z        Whether only mask exon region, True or False, default is True.
+###   -z        Whether only mask exon region, True or False, default is False.
 ###   -f        The trio infromation; child:parent_1:parent_2 [Example: NA12878:NA12891:NA12892]. 
 ###             Note: this parameter should be used after performing SpecHLA once.
 ###   -b        Whether use database for phasing [1|0], default is 1.
@@ -220,7 +220,7 @@ bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
 # ###################### mask low-depth region #############################################
 $bin/samtools depth -a $bam>$bam.depth  
-python3 $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d ${mask_depth:-5} -f ${mask_exon:-True}
+python3 $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d ${mask_depth:-5} -f ${mask_exon:-False}
 
 
 # ###################### call long indel #############################################

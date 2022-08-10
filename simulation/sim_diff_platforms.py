@@ -306,15 +306,15 @@ if __name__ == "__main__":
     mutation_rate = 0.001
 
 
-    # read_length = 75 
-    # frag_size = 75 
-    # read_error = 0.01
-    # prefix = "hybrid_short"
-
-    read_length = 75 #150
-    frag_size = 300 #500
+    read_length = 75 
+    frag_size = 200 
     read_error = 0.01
-    prefix = "child"
+    prefix = "hybrid"
+
+    # read_length = 75 #150
+    # frag_size = 300 #500
+    # read_error = 0.01
+    # prefix = "child"
 
 
     
@@ -324,11 +324,13 @@ if __name__ == "__main__":
     depth = sys.argv[3]
     sample_num = int(sys.argv[4])
 
+    if not os.path.isdir(outdir + "/truth/"):
+        os.system("mkdir %s/truth"%(outdir))
     # read_error = 0
     # prefix = "novel"
     # simulate()
 
-    # simulate_hybrid()
-    simulate_trio()
+    simulate_hybrid()
+    # simulate_trio()
 
 
