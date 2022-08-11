@@ -29,6 +29,7 @@ def read_fq(file, outfile):
             print (line, file= out)
         line_num += 1
     out.close()
+    return line_num
 
 def read_fq_unzip(file, outfile):
     saved_name = {}
@@ -52,11 +53,16 @@ def read_fq_unzip(file, outfile):
             print (line, file= out)
         line_num += 1
     out.close()
+    return line_num
 
 if __name__ == "__main__":
 
     if sys.argv[1][-3:] == ".gz":
-        read_fq(sys.argv[1], sys.argv[2])
+        line_num = read_fq(sys.argv[1], sys.argv[2])
     else:
-        read_fq_unzip(sys.argv[1], sys.argv[2][:-3])
+        line_num = read_fq_unzip(sys.argv[1], sys.argv[2][:-3])
         os.system("gzip -f %s"%(sys.argv[2][:-3]))
+    reads_num = int(line_num/4)
+    if reads_num > 100000:
+        print ("WARNING: %s reads are detected, please check if they are HLA-related reads.\
+            If not, please extract HLA-related reads first. Otherwise, the process will be slow."%(reads_num))
