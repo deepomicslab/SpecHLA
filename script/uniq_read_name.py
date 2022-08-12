@@ -63,6 +63,6 @@ if __name__ == "__main__":
         line_num = read_fq_unzip(sys.argv[1], sys.argv[2][:-3])
         os.system("gzip -f %s"%(sys.argv[2][:-3]))
     reads_num = int(line_num/4)
-    if reads_num > 100000:
+    if reads_num > 1000000:
         print ("WARNING: %s reads are detected, please check if they are HLA-related reads.\
             If not, please extract HLA-related reads first. Otherwise, the process will be slow."%(reads_num))

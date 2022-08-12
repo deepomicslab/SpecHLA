@@ -79,21 +79,40 @@ class Construct_Graph():
             for j in range(i+1, len(self.fragments)):
                 fragment1 = self.fragments[i]
                 fragment2 = self.fragments[j]
+                # for two fragments, get the weight of their linkage from blast file
+                # the weight is the edge weight in the graph
                 egde_info = []
+
+                # choose a higher score from 00 and 11, or 01 and 10 as the edge weight
+                # for x in range(2):
+                #     edge_score = 0
+                #     edge_link = None
+                #     for y in range(2):
+                #         # print (self.link_type[x][y])
+                #         blast_file_1 = f"{outdir}/{fragment1}_hap{self.link_type[x][y][0]}.fasta.out"
+                #         blast_file_2 = f"{outdir}/{fragment2}_hap{self.link_type[x][y][1]}.fasta.out"
+                #         analyze = Analyze_map()
+                #         link = analyze.main(blast_file_1, blast_file_2)
+                #         if link.high_score >= edge_score:
+                #             edge_link = link
+                #             edge_score = link.high_score
+                #     egde_info += [edge_score, edge_link.support_allele]
+
+                # sum the score of 00 and 11, or 01 and 10 as the edge weight
+                egde_info = [0, [], 0, []]
                 for x in range(2):
-                    edge_score = 0
-                    edge_link = None
                     for y in range(2):
                         # print (self.link_type[x][y])
                         blast_file_1 = f"{outdir}/{fragment1}_hap{self.link_type[x][y][0]}.fasta.out"
                         blast_file_2 = f"{outdir}/{fragment2}_hap{self.link_type[x][y][1]}.fasta.out"
                         analyze = Analyze_map()
                         link = analyze.main(blast_file_1, blast_file_2)
-                        if link.high_score >= edge_score:
-                            edge_link = link
-                            edge_score = link.high_score
-                    # print (fragment1,fragment2, x, edge_score, edge_link.support_allele)
-                    egde_info += [edge_score, edge_link.support_allele]
+                        if x == y:
+                            egde_info[0] += link.high_score
+                            egde_info[1] += link.support_allele
+                        else:
+                            egde_info[2] += link.high_score
+                            egde_info[3] += link.support_allele        
                 
                 support_1 = ""
                 for allele in egde_info[1]:  
@@ -138,6 +157,7 @@ class Analyze_map():
         return link
 
 class Linkage():
+    # get the edge score, and the support allele
     def __init__(self, merged_score_dict):
         high_score = 0
         support_allele = []
@@ -146,16 +166,20 @@ class Linkage():
             for allele in merged_score_dict:
                 score_list = merged_score_dict[allele]
                 weight_score = score_list[0] * score_list[1] + score_list[2] * score_list[3]
+                # score is frag_1_mapped_length*frag_1_identity + frag_2_mapped_length*frag_2_identity
                 if i == 0:
                     high_score = weight_score
                     support_allele.append([allele] + score_list )
                 else:
                     if weight_score == high_score:
                         support_allele.append([allele] + score_list )
+                # if i < 5:
+                #     print (allele, merged_score_dict[allele], weight_score)
 
                 i += 1
         self.high_score = high_score
         self.support_allele = support_allele
+        # print (support_allele, high_score)
 
 
 # analyze = Analyze_map()

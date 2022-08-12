@@ -43,9 +43,9 @@ open FIN, "$db/HLA_FREQ_HLA_I_II.txt" or die "$!\n";
 while(<FIN>){
     chomp;
     my ($gene,$c,$b,$a) = (split);
-    $a = sprintf "%.8f",$a;
-    $b = sprintf "%.8f",$b;
-    $c = sprintf "%.8f",$c;
+    $a = sprintf "%.3f",$a;
+    $b = sprintf "%.3f",$b;
+    $c = sprintf "%.3f",$c;
     $hashpp{$gene} = "$c;$b;$a";
     $hashp2{$gene} = ($a+$b+$c)/3;
     if($pop eq "Unknown"){$hashp{$gene} = ($a+$b+$c)/3}
@@ -268,7 +268,7 @@ foreach my $hla(@hlas){
              my ($max,$pfre) = (0,0);
              foreach my $oo(@arrs){
                  my ($allele,$score) = (split /;/,$oo)[0,1];
-                 $score = sprintf "%.8f", $score;
+                 $score = sprintf "%.3f", $score;
                  #DRB1*14:01 and DRB1*14:54 differ in HLA_DRB1:9519
                  if($allele =~ /DRB1\*14:01/){
                           system("$bin/samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf");

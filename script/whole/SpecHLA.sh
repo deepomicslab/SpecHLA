@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ###
-### HLA typing with paired-end reads. This script can use PacBio, Nanopore,
-### Hi-C, and 10X sequencing data to improve the phasing performance if provided.
+### SpecHLA: Full resolution HLA typing with paired-end, PacBio, Nanopore,
+### Hi-C, and 10X data. Supports WGS, WES, and RNASeq.
 ### 
 ###
 ### Usage:
