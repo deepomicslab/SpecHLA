@@ -64,6 +64,7 @@ class Eva_typing():
             if array[0] == "Sample":
                 continue
             sample = array[0]
+            sample = sample.split("_")[0]
             all_sample_infer_dict[sample] = {}
             for allele in array[1:]:
                 gene = allele.split("*")[0]
@@ -113,14 +114,61 @@ class Eva_typing():
         spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
         data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_hybrid")
 
-
-
-        
         # print ("HLA*LA")
         
         df = pd.DataFrame(data, columns = ["Accuracy", "Gene", "Methods"])
         df.to_csv('/mnt/d/HLAPro_backup/hybrid/hybrid_G_assess.csv', sep=',')
-    
+
+    def main_real(self): 
+        data = []   
+        self.sample_list = []
+        all_sample_true_dict = {}
+        for line in open("/mnt/d/HLAPro_backup/compare_hlala/merge.anno.out", "r"):
+            array = line.strip().split()
+            sample = array[0][:-3]
+            if sample not in self.sample_list:
+                self.sample_list.append(sample)
+            gene = array[1]
+            if sample not in all_sample_true_dict:
+                all_sample_true_dict[sample] = {}
+            array[2] = re.sub(":","_",array[2])
+            array[2] = re.sub("\*","_",array[2])
+            # print (array)
+            if gene not in all_sample_true_dict[sample]:
+                all_sample_true_dict[sample][gene] = []
+            all_sample_true_dict[sample][gene] += [array[2]]
+
+
+        self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/hifi_hlala/HLA-LA.merge.result.txt"
+        hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
+        data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PB")
+        # print (hla_la_all_sample_infer_dict)
+
+        # self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/ngs_hlala/HLA-LA.merge.result.txt1"
+        # hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
+        # data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PE")
+
+        # self.spechla_outdir = "/mnt/d/HLAPro_backup/hybrid/illumina/"
+        # self.get_spechla_merge_result()
+        # spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
+        # data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PE")
+
+        self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/spechla_no_pac/"
+        self.get_spechla_merge_result()
+        spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
+        data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PE")
+
+        self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/spechla_with_pac/"
+        self.get_spechla_merge_result()
+        spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
+        # print(spechla_all_sample_infer_dict)
+        data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_hybrid")
+
+        # print ("HLA*LA")
+        
+        df = pd.DataFrame(data, columns = ["Accuracy", "Gene", "Methods"])
+        df.to_csv('/mnt/d/HLAPro_backup/hybrid/hybrid_G_assess_real.csv', sep=',')
+
     def assess(self, all_sample_true_dict, infer_all_sample_infer_dict, data, method):
         # print (infer_all_sample_infer_dict)
         gene_count = {}
@@ -134,7 +182,7 @@ class Eva_typing():
                 gene_count[gene]["right"] += right_num
                 gene_count[gene]["all"] += 2
                 if right_num != 2:
-                    print (sample,gene, true_alleles,infer_alleles )
+                    print (sample, gene, true_alleles, infer_alleles)
         for gene in gene_list:
             print (gene, gene_count[gene]["right"], gene_count[gene]["all"], gene_count[gene]["right"]/gene_count[gene]["all"])
             accuracy = gene_count[gene]["right"]/gene_count[gene]["all"]
@@ -219,5 +267,5 @@ if __name__ == "__main__":
     G_annotation_dict = read_G_annotation()
     digit = 6
     typ = Eva_typing()
-    typ.main()
+    typ.main_real()
     
