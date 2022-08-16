@@ -141,17 +141,17 @@ class Eva_typing():
 
         self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/hifi_hlala/HLA-LA.merge.result.txt"
         hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
-        data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PB")
+        data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PacBio")
         # print (hla_la_all_sample_infer_dict)
 
-        # self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/ngs_hlala/HLA-LA.merge.result.txt1"
-        # hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
-        # data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PE")
+        self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/ngs_hlala/HLA-LA.merge.result.txt1"
+        hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
+        data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PE")
 
-        # self.spechla_outdir = "/mnt/d/HLAPro_backup/hybrid/illumina/"
-        # self.get_spechla_merge_result()
-        # spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
-        # data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PE")
+        self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/pacbio/"
+        self.get_spechla_merge_result()
+        spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
+        data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PacBio")
 
         self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/spechla_no_pac/"
         self.get_spechla_merge_result()
@@ -191,7 +191,11 @@ class Eva_typing():
     
     def compare_allele(self, my_true_alleles, my_infer_alleles):
         true_alleles = my_true_alleles.copy()
+        
+        if len(my_infer_alleles) == 1:
+            my_infer_alleles = my_infer_alleles + my_infer_alleles
         infer_alleles = my_infer_alleles.copy()
+        # print (my_infer_alleles)
         for i in range(2):
             true_alleles[i] = re.sub("G","",my_true_alleles[i])
             infer_alleles[i] = re.sub("G","",my_infer_alleles[i])

@@ -36,7 +36,8 @@ class Read_Obj():
         self.read_name = read.query_name
         self.allele_name = read.reference_name
         self.mismatch_num = mis_NM
-        self.mismatch_rate = round(float(mis_NM)/self.read_length, 6)
+        # self.mismatch_rate = round(float(mis_NM)/self.read_length, 6)
+        self.mismatch_rate = round(float(mis_NM)/self.match_num, 6)
         self.match_rate = 1 - self.mismatch_rate
         # self.match_rate = round(float(self.match_num)/self.read_length, 6)
         self.loci_name = self.allele_name.split("*")[0]
@@ -63,9 +64,10 @@ class Score_Obj():
     
     def assign(self, assign_file):
         f = open(assign_file, 'w')
+        # print (len(self.loci_score))
         for read_name in self.loci_score:
             gene_score = sorted(self.loci_score[read_name].items(), key=lambda item: item[1], reverse = True)
-            # if gene_score[0][0] == "B" or gene_score[0][0] == "C":
+            # if gene_score[0][0] == "B" or gene_score[0][0] == "C" or gene_score[0][0] == "A":
             #     print (read_name, gene_score)
             if gene_score[0][1] < Min_score:
                 continue
@@ -92,7 +94,6 @@ class Pacbio_Binning():
         self.sam = f"{parameter.outdir}/{parameter.sample}.db.sam"
         self.bamfile = pysam.AlignmentFile(self.sam, 'r')   
         self.assign_file = f"{parameter.outdir}/{parameter.sample}.assign.txt"
-
 
     def map2db(self):
         alignDB_order = f"""
