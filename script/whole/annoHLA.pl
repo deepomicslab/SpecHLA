@@ -153,7 +153,7 @@ sub exon_blast{
 sub whole_blast{
     foreach my $class(@hlas){
         my $ref="$db/whole/$class";
-        if($class =~ "DRB1"){$ref="$db/whole/HLA_DRB1.exon";}
+        if($class =~ "DRB1" && $pop ne "nonuse"){$ref="$db/whole/HLA_DRB1.exon";}
         for(my $i=1;$i<=$k;$i++){
                my $fa="$fadir/hla.allele.$i.$class.fasta";
                #extract the diversity region for annotation
