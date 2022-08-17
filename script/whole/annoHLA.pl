@@ -43,9 +43,16 @@ open FIN, "$db/HLA_FREQ_HLA_I_II.txt" or die "$!\n";
 while(<FIN>){
     chomp;
     my ($gene,$c,$b,$a) = (split);
-    $a = sprintf "%.3f",$a;
-    $b = sprintf "%.3f",$b;
-    $c = sprintf "%.3f",$c;
+    if($wxs eq "exon"){
+       $a = sprintf "%.3f",$a;
+       $b = sprintf "%.3f",$b;
+       $c = sprintf "%.3f",$c;
+    }
+    if($wxs eq "whole"){
+       $a = sprintf "%.8f",$a;
+       $b = sprintf "%.8f",$b;
+       $c = sprintf "%.8f",$c;
+    }
     $hashpp{$gene} = "$c;$b;$a";
     $hashp2{$gene} = ($a+$b+$c)/3;
     if($pop eq "Unknown"){$hashp{$gene} = ($a+$b+$c)/3}
