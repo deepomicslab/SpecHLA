@@ -214,7 +214,7 @@ fi
 if [ ${nanopore_data:-NA} != NA ];then
     python3 $dir/../long_read_typing.py -r ${nanopore_data} -n $sample -m 0 -o $outdir -j ${num_threads:-5} -a nanopore
 fi
-!
+# !
 
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
