@@ -10,10 +10,11 @@ for hla in ${HLAs[@]}; do
     echo blat=$dir/db/HLA/HLA_${hla}/ >>$config_file
 done
 
-# index the database
+# index the database for bowtie2
 bowtie2-build $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta
 bowtie2-build $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta
 
+# index the database for novoalign
 license=$dir/bin/novoalign.lic
 if [ -f "$license" ];then
     $dir/bin/novoindex  -k 14 -s 1 $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.ndx \
@@ -22,3 +23,9 @@ if [ -f "$license" ];then
     $dir/bin/novoindex  -k 14 -s 1 $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.ndx \
     $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta
 fi
+
+# the lib required by samtools
+ln -s $dir/spechla_env/lib/libncurses.so.6 $dir/spechla_env/lib/libncurses.so.5
+ln -s $dir/spechla_env/lib/libtinfo.so.6 $dir/spechla_env/lib/libtinfo.so.5
+
+echo The indexing process is finished! Please start using SpecHLA.

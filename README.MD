@@ -1,4 +1,4 @@
-# SpecHLA: a comprehensive package for HLA haplotyping and LOH inference
+# SpecHLA: full-resolution HLA typing from sequencing data
 
 ## Install  
 First, create the env with conda, and activate the env.
