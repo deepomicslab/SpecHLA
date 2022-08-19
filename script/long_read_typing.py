@@ -190,11 +190,7 @@ class Fasta():
             bgzip -f $outdir/$sample.$hla.longshot.vcf
             tabix -f $outdir/$sample.$hla.longshot.vcf.gz
 
-            if [ %s == 1 ];then 
-                $bin/bcftools filter -R $bin/../script/whole/exon_extent.bed $outdir/$sample.$hla.longshot.vcf.gz >$outdir/$sample.$hla.phased.vcf
-            else 
-                zcat $outdir/$sample.$hla.longshot.vcf.gz >$outdir/$sample.$hla.phased.vcf
-            fi            
+            zcat $outdir/$sample.$hla.longshot.vcf.gz >$outdir/$sample.$hla.phased.vcf          
             bgzip -f $outdir/$sample.$hla.phased.vcf
             tabix -f $outdir/$sample.$hla.phased.vcf.gz
 
@@ -203,7 +199,7 @@ class Fasta():
             cat $outdir/hla.allele.$i.HLA_$hla.raw.fasta|grep -v ">" >>$outdir/hla.allele.$i.HLA_$hla.fasta
             
             $bin/samtools faidx $outdir/hla.allele.$i.HLA_$hla.fasta        
-            """%(parameter.sample, parameter.bin, parameter.db, parameter.outdir, gene, index+1, index,parameter.threads, args["a"], args["u"], interval_dict[gene], gene)
+            """%(parameter.sample, parameter.bin, parameter.db, parameter.outdir, gene, index+1, index,parameter.threads, args["a"], interval_dict[gene], gene)
             os.system(order)
             # -S -A -Q 10 -E 0.3 -e 5
 
@@ -244,7 +240,7 @@ if __name__ == "__main__":
     optional.add_argument("-m", type=int, help="1 represents typing, 0 means only read assignment", metavar="\b", default=1)
     optional.add_argument("-a", type=str, help="prefix of filtered fastq file.", metavar="\b", default="long_read")
     optional.add_argument("-g", type=int, help="Whether use G-translate in annotation [1|0], default is 0.", metavar="\b", default=1)
-    optional.add_argument("-u", type=str, help="Choose full-length or exon typing. 0 indicates full-length, 1 means exon.", metavar="\b", default="0")
+    # optional.add_argument("-u", type=str, help="Choose full-length or exon typing. 0 indicates full-length, 1 means exon.", metavar="\b", default="0")
     optional.add_argument("-h", "--help", action="help")
     args = vars(parser.parse_args()) 
 
@@ -267,7 +263,9 @@ if __name__ == "__main__":
     if args["m"] != 0:
         fa = Fasta()
         fa.get_fasta()
+        print ("Sequence is reconstructed, start annotation...")
         fa.annotation()
+    print ("Finished.")
 
 
 
