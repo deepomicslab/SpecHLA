@@ -16,6 +16,7 @@ gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
 
 
 class Read_Obj():
+    # for each alignment record, extract information (identity, gene name)
     def __init__(self, read):
         mis_NM = 0
         for ta in read.get_tags():
@@ -43,6 +44,7 @@ class Read_Obj():
         self.loci_name = self.allele_name.split("*")[0]
 
 class Score_Obj():
+    # determine which gene to assign
     def __init__(self):
         self.loci_score = {}
         self.loci_mismatch_score = {}
@@ -65,17 +67,20 @@ class Score_Obj():
     def assign(self, assign_file):
         f = open(assign_file, 'w')
         # print (len(self.loci_score))
-        for read_name in self.loci_score:
+        for read_name in self.loci_score: # for each read
             gene_score = sorted(self.loci_score[read_name].items(), key=lambda item: item[1], reverse = True)
             # if gene_score[0][0] == "B" or gene_score[0][0] == "C" or gene_score[0][0] == "A":
             #     print (read_name, gene_score)
             if gene_score[0][1] < Min_score:
                 continue
-            if len(gene_score) == 1:
+            if len(gene_score) == 1: # mapped to only one gene, directly assign to that gene
                 assigned_locus = gene_score[0][0]
             else:
+                # map to more than one gene, check the score difference
                 if gene_score[0][1] - gene_score[1][1] >= Min_diff:
                     assigned_locus = gene_score[0][0]
+                # score diff too small, can not determine which gene to assign
+                # discard this read
                 else:
                     continue
             print (read_name, assigned_locus, file = f)
@@ -96,6 +101,7 @@ class Pacbio_Binning():
         self.assign_file = f"{parameter.outdir}/{parameter.sample}.assign.txt"
 
     def map2db(self):
+        # map raw reads to database
         alignDB_order = f"""
         fq={parameter.raw_fq}
         ref={self.db}
@@ -108,6 +114,7 @@ class Pacbio_Binning():
         os.system(alignDB_order)
 
     def read_bam(self):
+        # observe each read, assign it to gene based on alignment records
         scor = Score_Obj()
         for read in self.bamfile:
             if read.is_unmapped:
@@ -122,6 +129,7 @@ class Pacbio_Binning():
         print ("reads-binning done.")
 
     def filter_fq(self, gene, dict):
+        # output the assigned reads to the fastq file of each gene
         i = 0
         #gene = 'A'
         outfile = parameter.outdir + '/%s.%s.fq'%(gene, args["a"])

@@ -25,6 +25,7 @@ def blast_map(fragment1):
     os.system(command)
 
 class Construct_Graph():
+    # get the linkage of blocks from database
 
     def __init__(self):
         self.fragments = []

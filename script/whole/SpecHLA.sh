@@ -262,7 +262,7 @@ if [ ${long_indel:-False} == True ] && [ $focus_exon_flag != 1 ]; #don't call lo
         python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $outdir/$sample.tgs.breakpoint.txt
         cat $outdir/$sample.tgs.breakpoint.txt >$bfile
     else # detect long Indel with pair end data.
-        sh $dir/../ScanIndel/run_scanindel_sample.sh $sample $bam $outdir $port
+        bash $dir/../ScanIndel/run_scanindel_sample.sh $sample $bam $outdir $port
         cat $outdir/Scanindel/$sample.breakpoint.txt >$bfile
     fi
 else

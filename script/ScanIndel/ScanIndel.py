@@ -475,7 +475,7 @@ def main():
 				sys.exit(1)
 			remove_assembly_fp(blat_input, output_dir + '/' + each + '.temp.indel.vcf', output_dir + '/' + each + '.assembly.indel.vcf', readlen * softclip_ratio, hetero_factor)
 			path = os.path.dirname(os.path.realpath(__file__))
-			os.system('python2 ' + path + '/vcf-combine.py ' + output_dir + '/'+ each + '.mapping.indel.vcf ' + output_dir + '/' + each + '.assembly.indel.vcf | bedtools sort -i stdin -header > ' + output_dir + '/' + each + '.merged.indel.vcf')
+			os.system('python3 ' + path + '/vcf-combine.py ' + output_dir + '/'+ each + '.mapping.indel.vcf ' + output_dir + '/' + each + '.assembly.indel.vcf | bedtools sort -i stdin -header > ' + output_dir + '/' + each + '.merged.indel.vcf')
 		freebayes_end = time.time()
 		print('Freebayes [ScanIndel] takes ' + str(freebayes_end - freebayes_start) + ' seconds.')
 
