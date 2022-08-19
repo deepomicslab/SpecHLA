@@ -248,6 +248,10 @@ if __name__ == "__main__":
     optional.add_argument("-h", "--help", action="help")
     args = vars(parser.parse_args()) 
 
+    if len(sys.argv) < 2:
+        parser.print_help()
+        sys.exit(0)
+
     parameter = Parameters()
     # Min_score = 0.1  #the read is too long, so the score can be very low.
     Min_score = 0  #the read is too long, so the score can be very low.
