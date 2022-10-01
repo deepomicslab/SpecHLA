@@ -287,7 +287,19 @@ foreach my $hla(@hlas){
                                  if($alt =~ /T/){print "$allele\n"} else{$allele = "DRB1*14:54";}
                           }
                           close TE;
-                }
+                 }
+                 #C*07:01 and C*07:18 differ in HLA_C:4061
+                 if($allele =~ /C\*07:01/ && $wxs eq "exon"){
+                          system("$bin/samtools  mpileup -r HLA_C:4061-4061 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf");
+                          open TE, "$workdir/snp.vcf" or die "$!\n";
+                          while(<TE>){
+                                 chomp;
+                                 next if(/^#/);
+                                 my $alt = (split)[4];
+                                 if($alt =~ /T/){$allele = "C*07:18:01:01";}
+                          }
+                          close TE;
+                 }
 
                  my @tt = (split /:/, $allele);
                  my $kid = "$tt[0]".":"."$tt[1]";
