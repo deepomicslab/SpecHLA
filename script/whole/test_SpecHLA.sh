@@ -137,14 +137,3 @@ echo use ${num_threads:-5} threads.
 bash $dir/SpecHLA.sh -1 $fq1 -2 $fq2 -p $pop -o $given_outdir -m $nm -j $num_threads -n $sample -z $mask_exon
 python3 $dir/top_allele_2_reads.py $given_outdir/$sample/
 bash $dir/SpecHLA.sh -1 $fq1 -2 $fq2 -p $pop -o $given_outdir -m $nm -j $num_threads -n $sample -z $mask_exon -t $given_outdir/$sample/top_allele.fastq
-
-
-
-
-
-
-
-
-
-cat $outdir/hla.result.txt
-echo $sample is done.
