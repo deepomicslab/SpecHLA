@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ###
-### HLA typing with paired-end reads. This script can use PacBio, Nanopore,
-### Hi-C, and 10X sequencing data to improve the phasing performance if provided.
+### SpecHLA: Full resolution HLA typing with paired-end, PacBio, Nanopore,
+### Hi-C, and 10X data. Supports WGS, WES, and RNASeq.
 ### 
 ###
 ### Usage:
@@ -134,191 +134,17 @@ mkdir -p $outdir
 group='@RG\tID:'$sample'\tSM:'$sample
 echo use ${num_threads:-5} threads.
 
-:<<!
-# ################ remove the repeat read name #################
-python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
-python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
-fq1=$outdir/$sample.uniq.name.R1.gz
-fq2=$outdir/$sample.uniq.name.R2.gz
-# ###############################################################
+bash $dir/SpecHLA.sh -1 $fq1 -2 $fq2 -p $pop -o $given_outdir -m $nm -j $num_threads -n $sample -z $mask_exon
+python3 $dir/top_allele_2_reads.py $given_outdir/$sample/
+bash $dir/SpecHLA.sh -1 $fq1 -2 $fq2 -p $pop -o $given_outdir -m $nm -j $num_threads -n $sample -z $mask_exon -t $given_outdir/$sample/top_allele.fastq
 
 
 
-# ################### assign the reads to original gene######################################################
-echo map the reads to database to assign reads to corresponding genes.
-license=$dir/../../bin/novoalign.lic
-if [ $focus_exon_flag == 1 ];then
-  database_prefix=hla_gen.format.filter.extend.DRB.no26789
-else
-  database_prefix=hla_gen.format.filter.extend.DRB.no26789.v2
-fi
-if [ -f "$license" ];then
-    $bin/novoalign -d $db/ref/$database_prefix.ndx -f $fq1 $fq2 -F STDFQ -o SAM \
-    -o FullNW -r All 100000 --mCPU ${num_threads:-5} -c 10  -g 20 -x 3  | $bin/samtools view \
-    -Sb - | $bin/samtools sort -  > $outdir/$sample.map_database.bam
-else
-    bowtie2 --very-sensitive -p ${num_threads:-5} -k 30 -x $db/ref/$database_prefix.fasta -1 $fq1 -2 $fq2|\
-    $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
-fi
-$bin/samtools index $outdir/$sample.map_database.bam
-python3 $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir -d ${mini_score:-0.1} \
--b ${outdir}/${sample}.map_database.bam -nm ${nm:-2}
-# #############################################################################################################
 
 
 
-# ########### align the gene-specific reads to the corresponding gene reference################################
-$bin/bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 | $bin/samtools view -H  >$outdir/header.sam
-#hlas=(A B C)
-hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
-for hla in ${hlas[@]}; do
-        hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-        $bin/bwa mem -t ${num_threads:-5} -U 10000 -L 10000,10000 -R $group $hla_ref $outdir/$hla.R1.fq.gz $outdir/$hla.R2.fq.gz\
-         | $bin/samtools view -bS -F 0x800 -| $bin/samtools sort - >$outdir/$hla.bam
-        $bin/samtools index $outdir/$hla.bam
-done
-$bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.merge.bam $outdir/A.bam $outdir/B.bam $outdir/C.bam\
- $outdir/DPA1.bam $outdir/DPB1.bam $outdir/DQA1.bam $outdir/DQB1.bam $outdir/DRB1.bam
-$bin/samtools index $outdir/$sample.merge.bam
-# ###############################################################################################################
-
-
-# ################################### local assembly and realignment #################################
-echo start realignment...
-if [ $focus_exon_flag == 1 ];then #exon
-  assemble_region=$dir/select.region.exon.txt
-else # full length
-  assemble_region=$dir/select.region.txt
-fi
-sh $dir/../run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70 $assemble_region ${num_threads:-5}
-$bin/freebayes -a -f $hlaref -p 3 $outdir/$sample.realign.sort.bam > $outdir/$sample.realign.vcf && \
-rm -rf $outdir/$sample.realign.vcf.gz 
-bgzip -f $outdir/$sample.realign.vcf
-tabix -f $outdir/$sample.realign.vcf.gz
-zless $outdir/$sample.realign.vcf.gz |grep "#" > $outdir/$sample.realign.filter.vcf
-echo BAM and VCF are ready.
-if [ $focus_exon_flag == 1 ];then #exon
-    $bin/bcftools filter -R $dir/exon_extent.bed $outdir/$sample.realign.vcf.gz |grep -v "#"  >> $outdir/$sample.realign.filter.vcf  
-else # full length
-    $bin/bcftools filter\
-     -t HLA_A:1000-4503,HLA_B:1000-5081,HLA_C:1000-5304,HLA_DPA1:1000-10775,HLA_DPB1:1000-12468,HLA_DQA1:1000-7492,HLA_DQB1:1000-8480,HLA_DRB1:1000-12229\
-      $outdir/$sample.realign.vcf.gz |grep -v "#" >> $outdir/$sample.realign.filter.vcf  
-fi
-# #####################################################################################################
-
-
-# ################### assign long reads to gene ###################
-if [ ${tgs:-NA} != NA ];then
-    python3 $dir/../long_read_typing.py -r ${tgs} -n $sample -m 0 -o $outdir -j ${num_threads:-5} -a pacbio
-fi
-if [ ${nanopore_data:-NA} != NA ];then
-    python3 $dir/../long_read_typing.py -r ${nanopore_data} -n $sample -m 0 -o $outdir -j ${num_threads:-5} -a nanopore
-fi
-# !
-
-bam=$outdir/$sample.realign.sort.bam
-vcf=$outdir/$sample.realign.filter.vcf
-# ###################### mask low-depth region #############################################
-$bin/samtools depth -aa $bam>$bam.depth  
-if [ $focus_exon_flag == 1 ];then my_mask_exon=True; else my_mask_exon=${mask_exon:-False}; fi
-python3 $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d ${mask_depth:-5} -f $my_mask_exon
-
-
-# ###################### call long indel #############################################
-if [ ${long_indel:-False} == True ] && [ $focus_exon_flag != 1 ]; #don't call long indel for exon typing
-    then
-    port=$(date +%N|cut -c5-9)
-    bfile=$outdir/$sample.long.InDel.breakpoint.txt
-
-    if [ ${tgs:-NA} != NA ] # detect long Indel with pacbio
-        then
-        $bin/pbmm2 align -j ${num_threads:-5} $hlaref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --sample $sample --rg '@RG\tID:movie1'
-        $bin/samtools view -H $outdir/$sample.movie1.bam >$outdir/header.sam
-
-        hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
-        for hla in ${hlas[@]}; do
-                hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-                $bin/pbmm2 align -j ${num_threads:-5} $hla_ref $outdir/$sample/$hla.pacbio.fq.gz $outdir/$hla.gene.bam --sort --sample $sample --rg '@RG\tID:movie1'
-                $bin/samtools index $outdir/$hla.gene.bam
-        done
-        $bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.pacbio.bam $outdir/A.gene.bam $outdir/B.gene.bam $outdir/C.gene.bam\
-        $outdir/DPA1.gene.bam $outdir/DPB1.gene.bam $outdir/DQA1.gene.bam $outdir/DQB1.gene.bam $outdir/DRB1.gene.bam
-        $bin/samtools index $outdir/$sample.pacbio.bam
-
-
-        $bin/pbsv discover -l 100 $outdir/$sample.pacbio.bam $outdir/$sample.svsig.gz
-        $bin/pbsv call -t DEL,INS -m 150 -j ${num_threads:-5} $hlaref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
-        python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $outdir/$sample.tgs.breakpoint.txt
-        cat $outdir/$sample.tgs.breakpoint.txt >$bfile
-    else # detect long Indel with pair end data.
-        sh $dir/../ScanIndel/run_scanindel_sample.sh $sample $bam $outdir $port
-        cat $outdir/Scanindel/$sample.breakpoint.txt >$bfile
-    fi
-else
-    bfile=nothing
-fi
-if [ ${sv:-NA} != NA ]
-    then
-    bfile=$sv
-fi
-# #############################################################################################
-
-
-# ########### phase, link blocks, calculate haplotype ratio, give typing results ##############
-if [ "$maf" == "" ];then
-    if [ $focus_exon_flag != 1 ]; then
-        my_maf=0.05
-    else
-        my_maf=0.1
-    fi
-else
-    my_maf=$maf
-fi
-
-echo Minimum Minor Allele Frequency is $my_maf.
-hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
-# hlas=(A)
-for hla in ${hlas[@]}; do
-hla_ref=$db/ref/HLA_$hla.fa
-python3 $dir/../phase_variants.py \
-  -o $outdir \
-  -b $bam \
-  -s $bfile \
-  -v $vcf \
-  --fq1 $outdir/$hla.R1.fq.gz \
-  --fq2 $outdir/$hla.R2.fq.gz \
-  --gene HLA_$hla \
-  --freq_bias $my_maf \
-  --snp_qual ${snp_quality:-0.01} \
-  --snp_dp ${snp_dp:-5} \
-  --ref $hla_ref \
-  --tgs ${tgs:-NA} \
-  --nanopore ${nanopore_data:-NA} \
-  --hic_fwd ${hic_data_fwd:-NA} \
-  --hic_rev ${hic_data_rev:-NA} \
-  --tenx ${tenx_data:-NA} \
-  --sa $sample \
-  --weight_imb ${weight_imb:-0} \
-  --exon $focus_exon_flag \
-  --thread_num ${num_threads:-5} \
-  --use_database ${use_database:-1} \
-  --trio ${trio:-None}
-done
-# ##################################################################################################
-!
-
-# ############################ annotation ####################################
-echo start annotation...
-# perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop
-if [ $focus_exon_flag == 1 ];then #exon
-    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -g ${trans:-0} -r exon 
-else
-    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -g ${trans:-0} -r whole 
-fi
-# #############################################################################
 
 
 
-# sh $dir/../clear_output.sh $outdir/
 cat $outdir/hla.result.txt
 echo $sample is done.
