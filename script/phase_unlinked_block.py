@@ -1,3 +1,9 @@
+"""
+Link the unlinked blocks by mapping them to the database
+regard each sub-haplotype in the phase block as a node
+construct the linkage graph to link blocks
+"""
+
 import numpy as np
 from scipy.sparse.linalg import eigsh 
 import sys
@@ -120,21 +126,6 @@ def output(frag_list, hapotype, block_phase_file):
 
 
 if __name__ == "__main__":
-    # mat = [ [0,0,0.18,0.82,0,0],
-    #         [0,0,0.82,0.18,0,0],
-    #         [0.18,0.82,0,0,0.18,0.82],
-    #         [0.82,0.18,0,0,0.82,0.18],
-    #         [0,0,0.18,0.82,0,0],
-    #         [0,0,0.82,0.18,0,0]
-    #         ]
-    # mat = np.array(mat)
-    # freqs = [0.9, 0.3, 0.8, 0.4, 0.9]
-    # mat = constr_graph(freqs)
-    # print (mat)
-    # fiedler_vec = get_fiedler_vec(mat)
-    # hap = get_hap(fiedler_vec)
-    # print (fiedler_vec)
-    # print (hap)
     # score_file = "/mnt/d/HLAPro_backup/HLAPro/example/whole/output/HG00118/HLA_DQB1_break_points_score.txt"
     # block_phase_file = "/mnt/d/HLAPro_backup/HLAPro/example/whole/output/HG00118/HLA_DQB1_break_points_phased.txt"
     score_file = sys.argv[1]

@@ -1,10 +1,10 @@
 """
-calculate base error and gap percentage
+assess reconstructed sequences
 step1: map the sequence to the truth with blastn
 step2: get mapped intervals
 step3: get unique intervals
 step4: calculate the mismatch rate in the unique mapped region
-step5: calculate gap recall and gap precision
+step5: calculate sequence recall and sequence precision
 
 python cal_seq_accuracy.py hla_gen.format.filter.fasta simu_D100_L100_E0.truth.txt ./sample10 sample10
 
@@ -981,7 +981,7 @@ def eva_allele_imblance():
         for group in ["50_50", "48_52", "40_60", "30_70", "20_80"]:
             sample = "imbalance_%s_%s"%(group, i)
             outdir = "/mnt/d/HLAPro_backup/imbalance/output/" + sample + "/"
-            for weight in [0, 0.5, 1]:
+            for weight in [0, 0.25, 0.5, 0.75, 1]:
                 os.system("sh /mnt/d/HLAPro_backup//HLAPro/script/whole/test_SpecHLA.sh -n %s -1 x -2 x -w %s -o /mnt/d/HLAPro_backup/imbalance/output"%(sample,weight))
                 weight_base_error = []
                 for gene in gene_list:
@@ -1607,7 +1607,6 @@ class Assess_novel():
         f.close()
         return low_depth_dict
 
-
 def eva_simu_trio():
     truth_dir = "/mnt/d/HLAPro_backup/trio/simu_pedigree/data/truth/"
     data = []
@@ -1749,10 +1748,10 @@ if __name__ == "__main__":
 
     if len(sys.argv) == 1:
         print ("############")
-        nov = Assess_novel()
-        nov.main()
-        # ass = Assess_hgsvc2()
-        # ass.main()
+        # nov = Assess_novel()
+        # nov.main()
+        ass = Assess_hgsvc2()
+        ass.main()
         # ass.main_exon()
         # ass.test()
         # eva_simu_trio()

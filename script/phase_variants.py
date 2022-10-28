@@ -422,7 +422,7 @@ class MNP_linkage():
             if read.query_name in self.discard_reads:
                 continue
             if read.query_name not in self.read_quality_dict:
-                self.read_quality_dict[read.query_name] = int(read.mapping_quality * (1-args.weight_imb))
+                self.read_quality_dict[read.query_name] = int(read.mapping_quality)
             if int(first[1])-1 in read.get_reference_positions(full_length=True) and read.mapping_quality >1:   
                 
                 reads_index=read.get_reference_positions(full_length=True).index(int(first[1])-1)
@@ -1394,7 +1394,7 @@ def compute_allele_frequency(geno_set,beta_set):
     else:
         return [1, 0]
 
-def allele_imba(beta_set):
+def allele_imba_old(beta_set):
     """
     Utilizing allelic imbalance information to phase
     get the linkage info from allele frequencies at each variant locus
@@ -1425,12 +1425,30 @@ def allele_imba(beta_set):
 
     f.close()
 
+def allele_imba(beta_set):
+    """
+    Utilizing allelic imbalance information to phase
+    get the linkage info from allele frequencies at each variant locus
+    return the linkage matrix with a SpecHap acceptable format
+    """
+    f = open(outdir + '/fragment.imbalance.file', 'w')
+    locus_num = len(beta_set)
+    for i in range(locus_num - 1):
+        j = i + 1
+        same = max([ beta_set[i][0] *  beta_set[j][0], beta_set[i][1] *  beta_set[j][1] ])
+        reverse = max([ beta_set[i][0] *  beta_set[j][1], beta_set[i][1] *  beta_set[j][0] ])
+
+        edge_same = max(np.log(same/reverse), 0)
+        edge_reverse = max(np.log(reverse/same), 0)
+        print (j, i, edge_same, edge_reverse, edge_reverse, edge_same, file = f)
+    f.close()
+
 def run_SpecHap():
     mmp = MNP_linkage(bamfile,snp_list,snp_index_dict,outdir)
     mmp.for_each_locus() 
 
     allele_imba(beta_set) # linkage from allele imbalance
-    os.system('cat %s/fragment.read.file %s/fragment.imbalance.file>%s/fragment.all.file'%(outdir, outdir, outdir))   
+    os.system('cat %s/fragment.read.file >%s/fragment.all.file'%(outdir, outdir))   
 
     # the order to phase with only ngs data.
     order='%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/fragment.sorted.file --out \
