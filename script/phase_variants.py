@@ -1459,19 +1459,6 @@ def run_SpecHap():
 
     # integrate phase info from pacbio data if provided.
     if args.tgs != 'NA':
-        # command = """
-        # fq=%s
-        # outdir=%s
-        # bin=%s/../bin
-        # gene=%s
-        # ref=%s
-        # sample=pacbio
-        # $bin/minimap2 -t %s -a $ref %s > $outdir/$sample.tgs.sam
-        # $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
-        # $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
-        # $bin/ExtractHAIRs --triallelic 1 --pacbio 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.$sample.file
-        # cat $outdir/fragment.$sample.file >> $outdir/fragment.all.file
-        # """%(args.tgs, outdir, sys.path[0], gene.split("_")[1], hla_ref, args.thread_num, args.tgs, gene_vcf)
 
         command = """
         fq=%s
@@ -1488,8 +1475,9 @@ def run_SpecHap():
 
         print ('extract linkage info from pacbio data.')
         os.system(command)
-        order = '%s/../bin/SpecHap -P --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
-        --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
+        # order = '%s/../bin/SpecHap -P --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
+        # --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
+        order += " -P"
 
     # nanopore
     if args.nanopore != 'NA':
@@ -1508,8 +1496,9 @@ def run_SpecHap():
         """%(args.nanopore, hla_ref, outdir, sys.path[0], gene.split("_")[1], args.thread_num, args.sample_id, gene_vcf)
         print ('extract linkage info from nanopore TGS data.')
         os.system(command)
-        order = '%s/../bin/SpecHap -N --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
-        --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
+        # order = '%s/../bin/SpecHap -N --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
+        # --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
+        order += " -N"
 
     # hic 
     if args.hic_fwd != 'NA' and args.hic_rev != 'NA':
@@ -1533,9 +1522,9 @@ def run_SpecHap():
         print ('extract linkage info from HiC data.')
         os.system(command)
         os.system('cat %s/fragment.hic.file >> %s/fragment.all.file'%(outdir, outdir))
-        order = '%s/../bin/SpecHap -H --new_format --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
-        --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
-        print (order)
+        # order = '%s/../bin/SpecHap -H --new_format --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
+        # --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
+        order += " -H --new_format"
 
     # 10x genomics
     if args.tenx != 'NA':
@@ -1569,9 +1558,10 @@ def run_SpecHap():
         print ('align linked-reads with longranger and extract linkage info')
         os.system(command)
         
-        order = '%s/../bin/SpecHap -H  --new_format --window_size 15000 \
-        --vcf %s --frag %s/fragment.sorted.file\
-        --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
+        # order = '%s/../bin/SpecHap -T  --new_format --window_size 15000 \
+        # --vcf %s --frag %s/fragment.sorted.file\
+        # --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
+        order += " -T --new_format"
 
     if new_formate:
         os.system('sort -n -k6 %s/fragment.all.file >%s/fragment.sorted.file'%(outdir, outdir))
