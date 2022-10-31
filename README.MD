@@ -3,6 +3,7 @@
 ## Install  
 First, create the env with conda, and activate the env.
 ```
+git clone https://github.com/deepomicslab/SpecHLA.git --depth 1
 cd SpecHLA/
 conda env create --prefix=./spechla_env -f environment.yml
 conda activate ./spechla_env

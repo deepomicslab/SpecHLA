@@ -8,5 +8,6 @@ example/hic/output/
 example/tenx/output/
 example/nanopore/output/
 example/pacbio/output/
+spechla_env/
 *ndx
 *config.txt

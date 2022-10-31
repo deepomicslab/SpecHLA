@@ -977,18 +977,20 @@ def eva_allele_imblance():
     # outdir = "/mnt/d/HLAPro_backup/imbalance/output/" + sample + "/"
     truth_dir = "/mnt/d/HLAPro_backup/imbalance/data/truth/"
     data = []
-    for i in range(20):
-        for group in ["50_50", "48_52", "40_60", "30_70", "20_80"]:
+    for i in range(2):
+        # for group in ["50_50", "48_52", "40_60", "30_70", "20_80"]:
+        for group in ["50_50", "30_70", "20_80"]:
             sample = "imbalance_%s_%s"%(group, i)
             outdir = "/mnt/d/HLAPro_backup/imbalance/output/" + sample + "/"
             for weight in [0, 0.25, 0.5, 0.75, 1]:
-                os.system("sh /mnt/d/HLAPro_backup//HLAPro/script/whole/test_SpecHLA.sh -n %s -1 x -2 x -w %s -o /mnt/d/HLAPro_backup/imbalance/output"%(sample,weight))
+                # print ("bash /home/wangshuai/softwares/SpecHLA/script/whole/test_SpecHLA.sh -n %s -1 x -2 x -w %s -o /mnt/d/HLAPro_backup/imbalance/output"%(sample,weight))
+                os.system("bash /home/wangshuai/softwares/SpecHLA/script/whole/test_SpecHLA.sh -n %s -1 x -2 x -w %s -o /mnt/d/HLAPro_backup/imbalance/output"%(sample,weight))
                 weight_base_error = []
                 for gene in gene_list:
                     base_error, short_gap_error, gap_recall, gap_precision = each_simulated_sample(gene, outdir, sample, truth_dir)
                     data.append([sample, gene, base_error, short_gap_error, weight, group])
                     weight_base_error.append(base_error)
-                print ("################", weight, np.mean(weight_base_error))
+                print (sample, "#####", weight, np.mean(weight_base_error))
 
     df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "weight", "group"])
     df.to_csv('/mnt/d/HLAPro_backup/imbalance/haplo_assess.csv', sep=',')
@@ -1750,15 +1752,15 @@ if __name__ == "__main__":
         print ("############")
         # nov = Assess_novel()
         # nov.main()
-        ass = Assess_hgsvc2()
-        ass.main()
+        # ass = Assess_hgsvc2()
+        # ass.main()
         # ass.main_exon()
         # ass.test()
         # eva_simu_trio()
         # eva_real_trio()
         # eva_real_hybrid()
         # eva_data_types_spechla()
-        # eva_allele_imblance()
+        eva_allele_imblance()
         # eva_HG002_kourami()
         # eva_pedigree_spechla()
         # eva_HG002_spechla()

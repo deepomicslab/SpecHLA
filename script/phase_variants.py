@@ -1440,7 +1440,9 @@ def allele_imba(beta_set):
 
         edge_same = max(np.log(same/reverse), 0)
         edge_reverse = max(np.log(reverse/same), 0)
-        print (j, i, edge_same, edge_reverse, edge_reverse, edge_same, file = f)
+        first_locus = snp_index_dict[snp_list[i][1]] - 1 # 0 index
+        second_locus = snp_index_dict[snp_list[j][1]] - 1
+        print (second_locus, first_locus, edge_same, edge_reverse, edge_reverse, edge_same, file = f)
     f.close()
 
 def run_SpecHap():
@@ -1451,8 +1453,9 @@ def run_SpecHap():
     os.system('cat %s/fragment.read.file >%s/fragment.all.file'%(outdir, outdir))   
 
     # the order to phase with only ngs data.
-    order='%s/../bin/SpecHap --window_size 15000 --vcf %s --frag %s/fragment.sorted.file --out \
-    %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
+    order='%s/../bin/SpecHap --protocols ngs,matrix --weights %s,%s --window_size 15000 --vcf %s --frag %s/fragment.sorted.file,%s/fragment.imbalance.file --out \
+    %s/%s.specHap.phased.vcf'%(sys.path[0], 1-args.weight_imb, args.weight_imb, gene_vcf, outdir,outdir, outdir,gene)
+    # print (order)
 
     # integrate phase info from pacbio data if provided.
     if args.tgs != 'NA':

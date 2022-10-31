@@ -136,11 +136,11 @@ echo use ${num_threads:-5} threads.
 
 
 # ##############check if the input fastq is empty################
-if [[ ! -s $fq1 ]]; then
-echo "Input fastq file is empty! Please check the reads extraction!"
-echo "Note: use ExtractHLAread.sh to extract HLA-related reads with the raw reads mapped to hg38 or hg19."
-exit 1
-fi
+# if [[ ! -s $fq1 ]]; then
+# echo "Input fastq file is empty! Please check the reads extraction!"
+# echo "Note: use ExtractHLAread.sh to extract HLA-related reads with the raw reads mapped to hg38 or hg19."
+# exit 1
+# fi
 # ###############################################################
 
 
