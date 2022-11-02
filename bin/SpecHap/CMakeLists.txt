@@ -30,13 +30,13 @@ aux_source_directory(. SPEC_SRC)
 aux_source_directory(./barcode_extractor BARCODE_SRC)
 
 add_executable(SpecHap ${SPEC_SRC})
-add_executable(BarcodeExtract ${BARCODE_SRC})
+#add_executable(BarcodeExtract ${BARCODE_SRC})
 target_link_libraries(SpecHap -lhts -larpack)
-target_link_libraries(BarcodeExtract -lhts)
+#target_link_libraries(BarcodeExtract -lhts)
 
 #add_custom_target(extractHAIRS
 #        ALL COMMAND make
 #        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/hairs-src)
 
 install (TARGETS SpecHap DESTINATION bin)
-install (TARGETS BarcodeExtract DESTINATION bin)
+#install (TARGETS BarcodeExtract DESTINATION bin)
