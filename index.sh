@@ -31,7 +31,7 @@ ln -s $dir/spechla_env/lib/libtinfo.so.6 $dir/spechla_env/lib/libtinfo.so.5
 # install spechap
 mkdir $dir/bin/SpecHap/build
 cd $dir/bin/SpecHap/build
-cmake ..
+cmake .. -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
 make
 cd $dir
 
