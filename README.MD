@@ -12,8 +12,8 @@ Second, index the database and install the packages.
 ```
 bash index.sh
 ```
-Note: `Novoalign` requires a license in `bin/`, if not detected, SpecHLA uses `bowtie2` automatically. 
-License file of `Novoalign` should be put in `bin/` before index
+Note: `Novoalign` requires a license in `bin/`, if not detected, SpecHLA uses `bowtie2` as replacement automatically. 
+After putting the License file of `Novoalign` to the `bin/` folder, please run `bash index.sh` again to obtain the index for Novoalign.
 
 ## Test
 Please go to the `example/` folder, and run SpecHLA with different data types. 
