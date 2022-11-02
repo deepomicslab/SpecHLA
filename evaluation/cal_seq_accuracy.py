@@ -977,9 +977,9 @@ def eva_allele_imblance():
     # outdir = "/mnt/d/HLAPro_backup/imbalance/output/" + sample + "/"
     truth_dir = "/mnt/d/HLAPro_backup/imbalance/data/truth/"
     data = []
-    for i in range(2):
-        # for group in ["50_50", "48_52", "40_60", "30_70", "20_80"]:
-        for group in ["50_50", "30_70", "20_80"]:
+    for i in range(20):
+        for group in ["50_50", "48_52", "40_60", "30_70", "20_80"]:
+        # for group in ["50_50", "40_60", "30_70", "20_80"]:
             sample = "imbalance_%s_%s"%(group, i)
             outdir = "/mnt/d/HLAPro_backup/imbalance/output/" + sample + "/"
             for weight in [0, 0.25, 0.5, 0.75, 1]:

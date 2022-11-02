@@ -8,11 +8,7 @@ cd SpecHLA/
 conda env create --prefix=./spechla_env -f environment.yml
 conda activate ./spechla_env
 ```
-Second, make the softwares in `bin/` executable.
-```
-chmod +x -R bin/*
-```
-Third, index the database.
+Second, index the database and install the packages.
 ```
 bash index.sh
 ```
