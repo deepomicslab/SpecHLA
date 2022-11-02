@@ -7,14 +7,12 @@ dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_gnu
   - amply=0.1.5=pyhd8ed1ab_0
-  - arpack=3.7.0=hdefa2d7_2
+  - arpack=3.8.0=nompi_h0baa96a_101
   - biopython=1.79=py38h497a2fe_1
-  - blas=1.0=openblas
-  - bottleneck=1.3.5=py38h7deecbd_0
   - bowtie2=2.4.5=py38hfbc8389_2
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.18.1=h7f98852_0
-  - ca-certificates=2022.10.11=h06a4308_0
+  - ca-certificates=2022.9.24=ha878542_0
   - coin-or-cbc=2.10.8=h3786ebc_0
   - coin-or-cgl=0.60.6=he2f9439_0
   - coin-or-clp=1.17.6=h256e9bb_3
@@ -49,11 +47,9 @@ dependencies:
   - longshot=0.4.5=hc4ca7c3_0
   - lz4-c=1.9.3=h9c3ff4c_1
   - ncurses=6.3=h27087fc_1
-  - numexpr=2.8.3=py38hd2a5715_0
   - numpy=1.22.3=py38h99721a1_2
-  - openssl=1.1.1q=h7f8727e_0
-  - packaging=21.3=pyhd3eb1b0_0
-  - pandas=1.4.4=py38h6a678d5_0
+  - openssl=1.1.1s=h166bdaf_0
+  - pandas=1.2.5=py38h295c915_0
   - pbmm2=1.9.0=h9ee0642_0
   - perl=5.32.1=2_h7f98852_perl5
   - pip=22.0.4=pyhd8ed1ab_0

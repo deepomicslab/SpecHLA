@@ -28,4 +28,15 @@ fi
 ln -s $dir/spechla_env/lib/libncurses.so.6 $dir/spechla_env/lib/libncurses.so.5
 ln -s $dir/spechla_env/lib/libtinfo.so.6 $dir/spechla_env/lib/libtinfo.so.5
 
-echo The indexing process is finished! Please start using SpecHLA.
+# install spechap
+mkdir $dir/bin/SpecHap/build
+cd $dir/bin/SpecHap/build
+cmake ..
+make
+cd $dir
+
+echo " "
+echo " "
+echo " "
+echo The installation is finished! Please start using SpecHLA.
+echo "-------------------------------------"

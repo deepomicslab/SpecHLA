@@ -9,5 +9,6 @@ example/tenx/output/
 example/nanopore/output/
 example/pacbio/output/
 spechla_env/
+bin/SpecHap/build/
 *ndx
 *config.txt
