@@ -14,6 +14,7 @@
 
 Phaser::Phaser(const std::string &fnvcf, const std::string &fnout, std::vector<std::string> & fnfrags, const std::string &fnbed, std::vector<double> & fr_weights)
 {
+    frbed = nullptr;
     for (int i = 0; i < fnfrags.size(); i++) {
         auto item = fnfrags[i];
         frfrags.push_back(new FragmentReader(item.data()));
@@ -49,7 +50,8 @@ Phaser::~Phaser()
     frfrags.clear();
     frfrags.shrink_to_fit();
     delete spectral;
-    delete frbed;
+    if (frbed != nullptr)
+        delete frbed;
 }
 
 

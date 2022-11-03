@@ -274,7 +274,7 @@ def read_vcf(vcffile,outdir,snp_dp,bamfile,indel_len,gene,freq_bias,\
     in_vcf.close()
     md_vcf.close()
     os.system('tabix -f %s'%(gene_vcf))
-    print ("Num of small variant is %s in %s."%(len(snp_list), gene))
+    print ("Num of hete small variant is %s in %s."%(len(snp_list), gene))
 
     return snp_list, beta_set, snp_index_dict
 
@@ -1455,7 +1455,7 @@ def run_SpecHap():
     # the order to phase with only ngs data.
     order='%s/../bin/SpecHap/build/SpecHap --protocols ngs,matrix --weights %s,%s --window_size 15000 --vcf %s --frag %s/fragment.sorted.file,%s/fragment.imbalance.file --out \
     %s/%s.specHap.phased.vcf'%(sys.path[0], 1-args.weight_imb, args.weight_imb, gene_vcf, outdir,outdir, outdir,gene)
-    # print (order)
+    print (order)
 
     # integrate phase info from pacbio data if provided.
     if args.tgs != 'NA':
