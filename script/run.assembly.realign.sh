@@ -69,7 +69,7 @@ fi
 rm -rf $outdir/prefix2* $outdir/id.list
 done
 
-python3 $dir/realignblast.py -i $bam -o $outdir/$sample.realign.bam -r $outdir/rematch.total.read.format.txt
+$dir/../spechla_env/bin/python3 $dir/realignblast.py -i $bam -o $outdir/$sample.realign.bam -r $outdir/rematch.total.read.format.txt
 $sdir/samtools sort --threads $thread $outdir/$sample.realign.bam > $outdir/$sample.realign.sort.bam
 #java -jar $sdir/picard.jar FixMateInformation I=$outdir/$sample.realign.sort.bam O=$outdir/$sample.realign.sort.fixmate.bam
 $sdir/samtools index $outdir/$sample.realign.sort.bam

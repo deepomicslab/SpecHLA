@@ -1548,12 +1548,12 @@ def run_SpecHap():
             $bin/ExtractHAIRs --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam\
                  --VCF $vcf --out $outdir/fragment.raw.tenx.file
             gzip -f -d -k $vcf
-            python3 %s/link_fragment.py -b $bam -f $outdir/fragment.raw.tenx.file\
+            %s/../spechla_env/bin/python3 %s/link_fragment.py -b $bam -f $outdir/fragment.raw.tenx.file\
                  -v %s -o  $outdir/fragment.raw3.tenx.file
             awk '$0=$0" 1"' $outdir/fragment.raw3.tenx.file >$outdir/fragment.tenx.file
             cat $outdir/fragment.tenx.file >> $outdir/fragment.all.file
         
-        """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, gene_vcf,sys.path[0], args.thread_num, sys.path[0], gene_vcf[:-3])
+        """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, gene_vcf,sys.path[0], args.thread_num, sys.path[0],sys.path[0], gene_vcf[:-3])
         print ('align linked-reads with longranger and extract linkage info')
         os.system(command)
         
@@ -1661,12 +1661,12 @@ def link_blocks():
         update_seqlist = all_poss_block_link()
     else:
         if args.use_database == True:
-            reph='python3 %s/whole/map_block2_database.py %s %s'%(sys.path[0],gene,outdir)     
+            reph='%s/../spechla_env/bin/python3 %s/whole/map_block2_database.py %s %s'%(sys.path[0],sys.path[0],gene,outdir)     
             os.system(str(reph))
             # phase block with spectral graph theory
             print ("phase block with spectral graph theory")
-            spec_block = "python3 %s/phase_unlinked_block.py %s/%s_break_points_score.txt %s/%s_break_points_phased.txt"\
-                %(sys.path[0],outdir,gene,outdir,gene)
+            spec_block = "%s/../spechla_env/bin/python3 %s/phase_unlinked_block.py %s/%s_break_points_score.txt %s/%s_break_points_phased.txt"\
+                %(sys.path[0],sys.path[0],outdir,gene,outdir,gene)
             os.system(str(spec_block))       
             record_block_haps = read_block_hap()
         else:
@@ -1775,14 +1775,14 @@ class Pedigree():
         father=%s
         $bin/bcftools merge $workdir/$child/$gene.specHap.phased.refined.vcf.gz $workdir/$mother/$gene.specHap.phased.refined.vcf.gz $workdir/$father/$gene.specHap.phased.refined.vcf.gz -o $workdir/$child/$gene.trio.merge.vcf.gz -Oz -0
         tabix -f $workdir/$child/$gene.trio.merge.vcf.gz
-        python3 %s/pedhap/main.py --threshold1 0.6 --threshold2 0 -v $workdir/$child/$gene.trio.merge.vcf.gz -p $workdir/$child/trio.ped -o $workdir/$child/$gene.trio.rephase.vcf.gz
+        %s/../spechla_env/bin/python3 %s/pedhap/main.py --threshold1 0.6 --threshold2 0 -v $workdir/$child/$gene.trio.merge.vcf.gz -p $workdir/$child/trio.ped -o $workdir/$child/$gene.trio.rephase.vcf.gz
         file=$workdir/$child/$gene.trio.rephase.vcf.gz
         tabix -f $file
         for sample in `$bin/bcftools query -l $file`; do
             $bin/bcftools view -c1 -Oz -s $sample -o $workdir/$sample/trio/$sample.$gene.trio.vcf.gz $file
             tabix -f $workdir/$sample/trio/$sample.$gene.trio.vcf.gz
         done        
-        """%(sys.path[0],self.root_dir, gene, self.sample_list[0], self.sample_list[1], self.sample_list[2], sys.path[0])
+        """%(sys.path[0],self.root_dir, gene, self.sample_list[0], self.sample_list[1], self.sample_list[2], sys.path[0],sys.path[0])
         os.system(command)  
         print ("pedhap is done")  
 
