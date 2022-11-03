@@ -116,6 +116,7 @@ done
 
 dir=$(cd `dirname $0`; pwd)
 export LD_LIBRARY_PATH=$dir/../../spechla_env/lib
+python_bin=$dir/../../spechla_env/bin/python3
 bin=$dir/../../bin
 db=$dir/../../db
 hlaref=$db/ref/hla.ref.extend.fa
@@ -146,8 +147,8 @@ fi
 
 # :<<!
 # ################ remove the repeat read name #################
-python3 $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
-python3 $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
+$python_bin $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
+$python_bin $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
 fq1=$outdir/$sample.uniq.name.R1.gz
 fq2=$outdir/$sample.uniq.name.R2.gz
 # ###############################################################
@@ -171,7 +172,7 @@ else
     $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
 fi
 $bin/samtools index $outdir/$sample.map_database.bam
-python3 $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir -d ${mini_score:-0.1} \
+$python_bin $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir -d ${mini_score:-0.1} \
 -b ${outdir}/${sample}.map_database.bam -nm ${nm:-2}
 # #############################################################################################################
 
@@ -219,10 +220,10 @@ fi
 
 # ################### assign long reads to gene ###################
 if [ ${tgs:-NA} != NA ];then
-    python3 $dir/../long_read_typing.py -r ${tgs} -n $sample -m 0 -o $outdir -j ${num_threads:-5} -a pacbio
+    $python_bin $dir/../long_read_typing.py -r ${tgs} -n $sample -m 0 -o $outdir -j ${num_threads:-5} -a pacbio
 fi
 if [ ${nanopore_data:-NA} != NA ];then
-    python3 $dir/../long_read_typing.py -r ${nanopore_data} -n $sample -m 0 -o $outdir -j ${num_threads:-5} -a nanopore
+    $python_bin $dir/../long_read_typing.py -r ${nanopore_data} -n $sample -m 0 -o $outdir -j ${num_threads:-5} -a nanopore
 fi
 
 
@@ -231,7 +232,7 @@ vcf=$outdir/$sample.realign.filter.vcf
 # ###################### mask low-depth region #############################################
 $bin/samtools depth -a $bam>$bam.depth  
 if [ $focus_exon_flag == 1 ];then my_mask_exon=True; else my_mask_exon=${mask_exon:-False}; fi
-python3 $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d ${mask_depth:-5} -f $my_mask_exon
+$python_bin $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d ${mask_depth:-5} -f $my_mask_exon
 
 
 
@@ -259,7 +260,7 @@ if [ ${long_indel:-False} == True ] && [ $focus_exon_flag != 1 ]; #don't call lo
 
         $bin/pbsv discover -l 100 $outdir/$sample.pacbio.bam $outdir/$sample.svsig.gz
         $bin/pbsv call -t DEL,INS -m 150 -j ${num_threads:-5} $hlaref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
-        python3 $dir/vcf2bp.py $outdir/$sample.var.vcf $outdir/$sample.tgs.breakpoint.txt
+        $python_bin $dir/vcf2bp.py $outdir/$sample.var.vcf $outdir/$sample.tgs.breakpoint.txt
         cat $outdir/$sample.tgs.breakpoint.txt >$bfile
     else # detect long Indel with pair end data.
         bash $dir/../ScanIndel/run_scanindel_sample.sh $sample $bam $outdir $port
@@ -291,7 +292,7 @@ hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 # hlas=(A)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
-python3 $dir/../phase_variants.py \
+$python_bin $dir/../phase_variants.py \
   -o $outdir \
   -b $bam \
   -s $bfile \

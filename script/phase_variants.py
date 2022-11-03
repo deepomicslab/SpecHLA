@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from argparse import ArgumentParser
 from argparse import ArgumentTypeError
 import time
