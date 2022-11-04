@@ -1,7 +1,0 @@
-/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/CMakeFiles/install/strip.dir
-/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/CMakeFiles/install/local.dir
-/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/CMakeFiles/install.dir
-/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/CMakeFiles/list_install_components.dir
-/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/CMakeFiles/rebuild_cache.dir
-/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/CMakeFiles/edit_cache.dir
-/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/CMakeFiles/SpecHap.dir
