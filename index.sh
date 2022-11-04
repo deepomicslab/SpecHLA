@@ -3,6 +3,8 @@
 # construct config file for ScanIndel
 HLAs=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 dir=$(cd `dirname $0`; pwd)
+
+# :<<!
 for hla in ${HLAs[@]}; do
     config_file=$dir/db/HLA/HLA_${hla}.config.txt
     echo bwa=$dir/db/HLA/HLA_${hla}/HLA_${hla}.fa >$config_file
@@ -27,10 +29,12 @@ fi
 # the lib required by samtools
 ln -s $dir/spechla_env/lib/libncurses.so.6 $dir/spechla_env/lib/libncurses.so.5
 ln -s $dir/spechla_env/lib/libtinfo.so.6 $dir/spechla_env/lib/libtinfo.so.5
+# !
 
 # install spechap
 mkdir $dir/bin/SpecHap/build
 cd $dir/bin/SpecHap/build
+
 cmake .. -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
 make
 cd $dir

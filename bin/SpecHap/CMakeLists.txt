@@ -31,7 +31,7 @@ aux_source_directory(. SPEC_SRC)
 
 add_executable(SpecHap ${SPEC_SRC})
 # target_link_libraries(SpecHap -lhts -larpack)
-target_link_libraries(SpecHap $ENV{CONDA_PREFIX}/lib/libhts.so $ENV{CONDA_PREFIX}/lib/libarpack.so)
+target_link_libraries(SpecHap ${HTSlib_LIBRARIES} ${ARPACK_LIBRARIES})
 
 
 

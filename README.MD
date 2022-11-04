@@ -10,6 +10,7 @@ conda activate ./spechla_env
 ```
 Second, index the database and install the packages.
 ```
+unset LD_LIBRARY_PATH && unset LIBRARY_PATH 
 bash index.sh
 ```
 Note: SpecHLA requires a license of `Novoalign` in `bin/`, if not detected, it uses `bowtie2` as replacement automatically. 
