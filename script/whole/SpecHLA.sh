@@ -165,7 +165,7 @@ else
 fi
 if [ -f "$license" ];then
     echo "Detect novoalign license, use novoalign."
-    if [ !-f "$db/ref/$database_prefix.ndx" ];then
+    if [ ! -f "$db/ref/$database_prefix.ndx" ];then
         echo "Can't find ref index for novoalign, please run *bash index.sh* again."
         exit 1
     fi
