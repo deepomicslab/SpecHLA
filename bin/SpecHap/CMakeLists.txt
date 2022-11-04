@@ -22,7 +22,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(EXTRACTOR_SRC "${CMAKE_SOURCE_DIR}/barcode_extractor")
 set(HAIRS_SRC "${CMAKE_SOURCE_DIR}/hairs-src")
 
-find_package(htslib REQUIRED)
+find_package(htslib 1.15 EXACT REQUIRED)
 find_package(arpack REQUIRED)
 include_directories(${HTSlib_INCLUDE_DIRS} ${ARPACK_INCLUDE_DIRS})
 

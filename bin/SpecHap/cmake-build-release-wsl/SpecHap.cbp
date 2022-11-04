@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="SpecHap"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\cmake\;CMake Files\cmake\Modules\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/strip">
+				<Option working_dir="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 install/strip"/>
+					<CompileFile command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/local">
+				<Option working_dir="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 install/local"/>
+					<CompileFile command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install">
+				<Option working_dir="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 install"/>
+					<CompileFile command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="list_install_components">
+				<Option working_dir="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 list_install_components"/>
+					<CompileFile command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="SpecHap">
+				<Option output="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/SpecHap" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-D_GLIBCXX_USE_CXX11_ABI=0"/>
+					<Add directory="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl"/>
+					<Add directory="/home/wangshuai/softwares/SpecHLA/bin/SpecHap"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 SpecHap"/>
+					<CompileFile command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="SpecHap/fast">
+				<Option output="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/SpecHap" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-D_GLIBCXX_USE_CXX11_ABI=0"/>
+					<Add directory="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl"/>
+					<Add directory="/home/wangshuai/softwares/SpecHLA/bin/SpecHap"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 SpecHap/fast"/>
+					<CompileFile command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j20 -f &quot;/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake-build-release-wsl/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/frag_io.cpp">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/frag_io.h">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/graph.cpp">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/graph.h">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/hic_util.cpp">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/hic_util.h">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/main.cpp">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/phaser.cpp">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/phaser.h">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/results.cpp">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/results.h">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/spectral.cpp">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/spectral.h">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/tenx_util.cpp">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/tenx_util.h">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/type.cpp">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/type.h">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/util.cpp">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/util.h">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/vcf_io.cpp">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/vcf_io.h">
+			<Option target="SpecHap"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake/Modules/Findarpack.cmake">
+			<Option virtualFolder="CMake Files\cmake\Modules\"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake/Modules/Findhtslib.cmake">
+			<Option virtualFolder="CMake Files\cmake\Modules\"/>
+		</Unit>
+		<Unit filename="/home/wangshuai/softwares/SpecHLA/bin/SpecHap/cmake/Modules/LibFindMacros.cmake">
+			<Option virtualFolder="CMake Files\cmake\Modules\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

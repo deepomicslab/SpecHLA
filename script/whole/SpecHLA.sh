@@ -24,8 +24,8 @@
 ###   -d        rev hi-c fastq file.
 ###   -x        Path of folder created by 10x demultiplexing. Prefix of the filenames of FASTQs
 ###             should be the same as Sample ID. Please install Longranger in the system env.
-###   -w        How to use linkage info from allele imbalance [0, 0.5, 1], default is 0 that means 
-###             not use, 0.5 means use both reads and imbalance info, 1 means only use imbalance info.
+###   -w        The weight to use linkage info from genotype frequency [0-1], default is 0 that means 
+###             not use, 1 means only use imbalance info, other values integrate use both.
 ###   -j        Number of threads [5]
 ###   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
 ###             is 2. It should be set larger to infer novel alleles.
