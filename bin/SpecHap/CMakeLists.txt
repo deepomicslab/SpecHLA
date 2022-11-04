@@ -19,24 +19,20 @@ set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 ")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-set(EXTRACTOR_SRC "${CMAKE_SOURCE_DIR}/barcode_extractor")
-set(HAIRS_SRC "${CMAKE_SOURCE_DIR}/hairs-src")
+#set(EXTRACTOR_SRC "${CMAKE_SOURCE_DIR}/barcode_extractor")
+#set(HAIRS_SRC "${CMAKE_SOURCE_DIR}/hairs-src")
 
-find_package(htslib 1.15 EXACT REQUIRED)
+find_package(htslib REQUIRED)
 find_package(arpack REQUIRED)
 include_directories(${HTSlib_INCLUDE_DIRS} ${ARPACK_INCLUDE_DIRS})
 
 aux_source_directory(. SPEC_SRC)
-aux_source_directory(./barcode_extractor BARCODE_SRC)
+#aux_source_directory(./barcode_extractor BARCODE_SRC)
 
 add_executable(SpecHap ${SPEC_SRC})
-#add_executable(BarcodeExtract ${BARCODE_SRC})
-target_link_libraries(SpecHap -lhts -larpack)
-#target_link_libraries(BarcodeExtract -lhts)
+# target_link_libraries(SpecHap -lhts -larpack)
+target_link_libraries(SpecHap $ENV{CONDA_PREFIX}/lib/libhts.so $ENV{CONDA_PREFIX}/lib/libarpack.so)
 
-#add_custom_target(extractHAIRS
-#        ALL COMMAND make
-#        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/hairs-src)
+
 
 install (TARGETS SpecHap DESTINATION bin)
-#install (TARGETS BarcodeExtract DESTINATION bin)

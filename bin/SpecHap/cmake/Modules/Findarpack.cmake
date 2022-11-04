@@ -7,10 +7,7 @@
 
 set(ARPACK_SEARCH_DIRS
         ${ARPACK_SEARCH_DIRS}
-        $ENV{HOME}/local
-        $ENV{HOME}/.local
-        /usr
-        /usr/local
+	$ENV{CONDA_PREFIX}
         )
 
 set(_arpack_ver_path "arpack-${ARPACK_FIND_VERSION}")
@@ -30,7 +27,7 @@ find_path(ARPACK_INCLUDE_DIR
 # Finally the library itself
 find_library(ARPACK_LIBRARY
         NAMES arpack libarpack.a
-        PATHS ${ARPACK_INCLUDE_DIR} ${ARPACK_SEARCH_DIRS}
+        PATHS ${ARPACK_SEARCH_DIRS}
         NO_DEFAULT_PATH
         PATH_SUFFIXES lib lib64 ${_arpack_ver_path}
         )

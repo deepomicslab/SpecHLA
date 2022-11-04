@@ -7,11 +7,7 @@
 
 set(HTSLIB_SEARCH_DIRS
         ${HTSLIB_SEARCH_DIRS}
-        $ENV{HTLSIB_ROOT}
-        $ENV{HOME}/local
-        $ENV{HOME}/.local
-        /usr
-        /usr/local
+	$ENV{CONDA_PREFIX}
         )
 
 set(_htslib_ver_path "htslib-${htslib_FIND_VERSION}")
@@ -32,7 +28,7 @@ find_path(HTSlib_INCLUDE_DIR
 # Finally the library itself
 find_library(HTSlib_LIBRARY
         NAMES hts libhts.a hts.a
-        PATHS ${HTSlib_INCLUDE_DIR} ${HTSLIB_SEARCH_DIRS}
+        PATHS ${HTSLIB_SEARCH_DIRS}
         NO_DEFAULT_PATH
         PATH_SUFFIXES lib lib64 ${_htslib_ver_path}
         HINTS ENV HTSLIB_ROOT
