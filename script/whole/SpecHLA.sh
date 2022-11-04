@@ -164,10 +164,16 @@ else
   database_prefix=hla_gen.format.filter.extend.DRB.no26789.v2
 fi
 if [ -f "$license" ];then
+    echo "Detect novoalign license, use novoalign."
+    if [ !-f "$db/ref/$database_prefix.ndx" ];then
+        echo "Can't find ref index for novoalign, please run *bash index.sh* again."
+        exit 1
+    fi
     $bin/novoalign -d $db/ref/$database_prefix.ndx -f $fq1 $fq2 -F STDFQ -o SAM \
     -o FullNW -r All 100000 --mCPU ${num_threads:-5} -c 10  -g 20 -x 3  | $bin/samtools view \
     -Sb - | $bin/samtools sort -  > $outdir/$sample.map_database.bam
 else
+    echo "Can't detect novoalign license, use bowtie2." 
     bowtie2 --very-sensitive -p ${num_threads:-5} -k 30 -x $db/ref/$database_prefix.fasta -1 $fq1 -2 $fq2|\
     $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
 fi
