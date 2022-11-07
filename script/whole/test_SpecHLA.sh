@@ -230,7 +230,7 @@ fi
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
 # ###################### mask low-depth region #############################################
-$bin/samtools depth -a $bam>$bam.depth  
+$bin/samtools depth -aa $bam>$bam.depth  
 if [ $focus_exon_flag == 1 ];then my_mask_exon=True; else my_mask_exon=${mask_exon:-False}; fi
 $python_bin $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d ${mask_depth:-5} -f $my_mask_exon
 
@@ -318,7 +318,7 @@ $python_bin $dir/../phase_variants.py \
 done
 # ##################################################################################################
 
-
+# !
 # ############################ annotation ####################################
 echo start annotation...
 # perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop

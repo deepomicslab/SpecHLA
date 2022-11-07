@@ -59,6 +59,7 @@ class Mask_low():
                         mask_region.append([mask_start, mask_end])
                 mask_flag = False
         if mask_flag == True:
+            mask_region.append([mask_start, win_end])
             if len(mask_region) > 0 and mask_start < mask_region[-1][1]:
                 mask_region[-1][1] = mask_end
             else:
