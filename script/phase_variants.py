@@ -1365,7 +1365,7 @@ def phase_insertion(gene, outdir, hla_ref, shdir):
     sort -n -k3 $outdir/$sample.fragment.file >$outdir/$sample.fragment.sorted.file
     bgzip -f $outdir/filter_newref_insertion.freebayes.vcf
     tabix -f $outdir/filter_newref_insertion.freebayes.vcf.gz
-    %s/../bin/SpecHap/build/SpecHap --window_size 15000 -N --vcf $outdir/filter_newref_insertion.freebayes.vcf.gz --frag $outdir/$sample.fragment.sorted.file --out $outdir/$sample.insertion.phased.raw.vcf
+    %s/../bin/SpecHap/build/SpecHap --ncs --window_size 15000 -N --vcf $outdir/filter_newref_insertion.freebayes.vcf.gz --frag $outdir/$sample.fragment.sorted.file --out $outdir/$sample.insertion.phased.raw.vcf
     cat $outdir/$sample.insertion.phased.raw.vcf| sed -e 's/1\/1/1\|1/g'>$outdir/$sample.insertion.phased.vcf
     bgzip -f $outdir/$sample.insertion.phased.vcf
     tabix -f $outdir/$sample.insertion.phased.vcf.gz
@@ -1452,7 +1452,7 @@ def run_SpecHap():
     os.system('cat %s/fragment.read.file >%s/fragment.all.file'%(outdir, outdir))   
 
     # the order to phase with only ngs data.
-    order='%s/../bin/SpecHap/build/SpecHap --protocols ngs,matrix --weights %s,%s --window_size 15000 --vcf %s --frag %s/fragment.sorted.file,%s/fragment.imbalance.file --out \
+    order='%s/../bin/SpecHap/build/SpecHap --ncs --protocols ngs,matrix --weights %s,%s --window_size 15000 --vcf %s --frag %s/fragment.sorted.file,%s/fragment.imbalance.file --out \
     %s/%s.specHap.phased.vcf'%(sys.path[0], 1-args.weight_imb, args.weight_imb, gene_vcf, outdir,outdir, outdir,gene)
     print (order)
 
@@ -1474,7 +1474,7 @@ def run_SpecHap():
 
         print ('extract linkage info from pacbio data.')
         os.system(command)
-        # order = '%s/../bin/SpecHap/build/SpecHap -P --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
+        # order = '%s/../bin/SpecHap/build/SpecHap --ncs -P --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
         # --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
         order += " -P"
 
@@ -1495,7 +1495,7 @@ def run_SpecHap():
         """%(args.nanopore, hla_ref, outdir, sys.path[0], gene.split("_")[1], args.thread_num, args.sample_id, gene_vcf)
         print ('extract linkage info from nanopore TGS data.')
         os.system(command)
-        # order = '%s/../bin/SpecHap/build/SpecHap -N --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
+        # order = '%s/../bin/SpecHap/build/SpecHap --ncs -N --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
         # --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
         order += " -N"
 
@@ -1521,7 +1521,7 @@ def run_SpecHap():
         print ('extract linkage info from HiC data.')
         os.system(command)
         os.system('cat %s/fragment.hic.file >> %s/fragment.all.file'%(outdir, outdir))
-        # order = '%s/../bin/SpecHap/build/SpecHap -H --new_format --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
+        # order = '%s/../bin/SpecHap/build/SpecHap --ncs -H --new_format --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
         # --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
         order += " -H --new_format"
 
@@ -1557,7 +1557,7 @@ def run_SpecHap():
         print ('align linked-reads with longranger and extract linkage info')
         os.system(command)
         
-        # order = '%s/../bin/SpecHap/build/SpecHap -T  --new_format --window_size 15000 \
+        # order = '%s/../bin/SpecHap/build/SpecHap --ncs -T  --new_format --window_size 15000 \
         # --vcf %s --frag %s/fragment.sorted.file\
         # --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
         order += " -T --new_format"

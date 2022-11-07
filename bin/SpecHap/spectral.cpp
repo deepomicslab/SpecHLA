@@ -717,13 +717,14 @@ void Spectral::solver()
         auto tm3 = this->adjacency_matrix(2 * k, 2 * j + 1);
         double score = this->adjacency_matrix(2 * k, 2 * j) - this->adjacency_matrix(2 * k, 2 * j + 1);
 
-        if (((score > 0 && score < 6) || (score < 0 && score > -6))) {
-//                split_phased_blk(i);
-//                auto blk_no = chromo_phaser->variant_to_block_id
-            auto break_idx = this->phasing_window->mat_idx2var_idx(j);
-            this->setBlkIdx(break_idx);
-        }
-//        }
+        if (CHECK_SCORE) {
+            if (((score > 0 && score < 6) || (score < 0 && score > -6))) {
+    //                split_phased_blk(i);
+    //                auto blk_no = chromo_phaser->variant_to_block_id
+                auto break_idx = this->phasing_window->mat_idx2var_idx(j);
+                this->setBlkIdx(break_idx);
+            }
+       }
     }
     for (auto i : phasing_window->current_window_idxes)
     {
