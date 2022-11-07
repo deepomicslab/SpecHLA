@@ -144,6 +144,12 @@ exit 1
 fi
 # ###############################################################
 
+# ##############check if read1 and read2 files are same ################
+if [[ $fq1 == $fq2 ]]; then
+echo "Error: Input read1 and read2 fastq files are the same! Please check the input files!"
+exit 1
+fi
+# ###############################################################
 
 # :<<!
 # ################ remove the repeat read name #################
