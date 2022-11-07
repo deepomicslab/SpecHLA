@@ -43,7 +43,7 @@
 ###             Set 0 to avoid masking.
 ###   -z        Whether only mask exon region, True or False, default is False.
 ###   -f        The trio infromation; child:parent_1:parent_2 [Example: NA12878:NA12891:NA12892]. 
-###             Note: this parameter should be used after performing SpecHLA once.
+###             Note: this parameter should be used after performing SpecHLA already.
 ###   -b        Whether use database for phasing [1|0], default is 1.
 ###   -h        Show this message.
 

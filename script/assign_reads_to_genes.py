@@ -21,22 +21,26 @@ def get_names():
     return n
 
 def count_alignment(alignment):
-    match_num = 0
+    """
+    given alignment record
+    get mapped length, check soft-clipped base num, and the mismatch num
+    """
+    match_num = 0 # matched base num
     soft_num = 0
     all_num = 0
     for ci in alignment.cigar:
-        if ci[0] == 0:
+        if ci[0] == 0: #M	BAM_CMATCH	0
             match_num += ci[1]
-        elif ci[0] == 4:
+        elif ci[0] == 4: #S	BAM_CSOFT_CLIP	4
             soft_num += ci[1]
         all_num += ci[1]
 
     mis_NM = 0
     for ta in alignment.get_tags():
         if ta[0] == 'NM':
-            match_num -= ta[1]
+            match_num -= ta[1] # delete mismatch
             mis_NM += ta[1]
-    focus_len = all_num - soft_num
+    focus_len = all_num - soft_num # mapped length
 
     return mis_NM, soft_num, match_num, focus_len
 
@@ -44,7 +48,7 @@ def check_score(dict, options, name, pair_dict):
     gene_dict = {}
     for align in dict.keys():
         # print (l)
-        if pair_dict[align] < 2:
+        if pair_dict[align] < 2: #make sure the reads is paired mapped.
             dict[align] = 0
         gene = align.split('*')[0]
         if gene not in gene_dict.keys():
@@ -53,7 +57,7 @@ def check_score(dict, options, name, pair_dict):
             if gene_dict[gene] < dict[align]:
                 gene_dict[gene] = dict[align]
     new_l = sorted(gene_dict.items(), key=lambda gene_dict:gene_dict[1], reverse = True)
-    if float(new_l[0][1]) < 0.1:
+    if float(new_l[0][1]) < 0.1: # the identity is too low
         #if new_l[0][0] == 'DRB1':
         #    print (new_l[0][0], name, 'too much mismatch', new_l[0][1])
         return 'REMOVE'
@@ -73,9 +77,10 @@ class Each_read():
     """
 
     def __init__(self):
-        self.dict = {}
-        self.pair_dict = {}
-        self.len_dict = {}    
+        # use the dict to get the alignment info for both ends of each paired-end read
+        self.dict = {} # record matched base number
+        self.pair_dict = {} # record ends num
+        self.len_dict = {}  # record total mapped length  
         self.read_name = ''   
 
     def add_one_alignment(self, alignment):
@@ -112,7 +117,7 @@ class Each_read():
             flag = False
         for key in self.dict.keys():
             # print (len_dict[key])
-            if self.len_dict[key] < 0:  #make sure the reads is paired mapped.
+            if self.len_dict[key] < 0:  
                 self.dict[key] = 0
             else:
                 self.dict[key] = float(self.dict[key])/self.len_dict[key]
@@ -205,7 +210,7 @@ if __name__ == "__main__":
     parser.add_argument('-n', '--bin_dir', help='bin dir', required=True)  
     parser.add_argument('-nm', '--max_nm', help='MAX NM', required=False, default = 2, type=int)
     parser.add_argument('-d', '--diff_score', help='The score for the best gene must be at least this higher\
-         than the second gene', required=False, default = 0.5, type=float)
+         than the second gene', required=True, default = 0.1, type=float)
     options = parser.parse_args()
 
     main()
