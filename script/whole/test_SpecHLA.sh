@@ -331,6 +331,6 @@ fi
 
 
 
-# sh $dir/../clear_output.sh $outdir/
+bash $dir/../clear_output.sh $outdir/
 cat $outdir/hla.result.txt
 echo $sample is done.

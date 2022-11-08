@@ -17,8 +17,7 @@ Note: 1) SpecHLA requires a license of `Novoalign` in `bin/`, if not detected, i
 The License file of `Novoalign` should be put in the `bin/` folder `before` running `bash index.sh`. 2) SpecHLA now supports Linux and Windows WSL.
 
 ## Test
-Please go to the `example/` folder, and run SpecHLA with different data types. 
-If we install successfully, we will find results in the `output/`.
+Please go to the `example/` folder, run SpecHLA with given scripts, and find results in the `output/`.
 
 ## Basic Usage  
 ### Extract HLA-related reads
