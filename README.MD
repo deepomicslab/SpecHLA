@@ -13,8 +13,8 @@ Second, index the database and install the packages.
 unset LD_LIBRARY_PATH && unset LIBRARY_PATH 
 bash index.sh
 ```
-Note: SpecHLA requires a license of `Novoalign` in `bin/`, if not detected, it uses `bowtie2` as replacement automatically. 
-The License file of `Novoalign` should be put in the `bin/` folder `before` running `bash index.sh`. 
+Note: 1) SpecHLA requires a license of `Novoalign` in `bin/`, if not detected, it uses `bowtie2` as replacement automatically. 
+The License file of `Novoalign` should be put in the `bin/` folder `before` running `bash index.sh`. 2) SpecHLA now supports Linux and Windows WSL.
 
 ## Test
 Please go to the `example/` folder, and run SpecHLA with different data types. 
