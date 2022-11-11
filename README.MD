@@ -13,7 +13,7 @@ Second, index the database and install the packages.
 unset LD_LIBRARY_PATH && unset LIBRARY_PATH 
 bash index.sh
 ```
-Note: 1) SpecHLA requires a license of [Novoalign](https://www.novocraft.com/buy-now/) in `bin/`, if not detected, it uses `bowtie2` as replacement automatically. 
+Note: 1) SpecHLA requires a License of [Novoalign](https://www.novocraft.com/buy-now/) in `bin/`, if not detected, it uses `bowtie2` as replacement automatically. 
 The License file of `Novoalign` should be put in the `bin/` folder `before` running `bash index.sh`. 2) SpecHLA now supports Linux and Windows WSL.
 
 ## Test
@@ -110,18 +110,21 @@ hla.allele.2.HLA_A.fasta 0.468
 
 
 ## Dependencies 
+
+### Systematic requirement
+SpecHLA requires `conda 4.12.0` and `GCC 11.3.0` for environment construction and installation.
+
 ### Programming 
 * python=3.8.12 or above  
 * Python libraries: numpy=1.22.3, pulp=2.6.0, pysam=0.19.0, scipy=1.8.0, and biopython=1.79. 
 * Perl 5 or above
 
 ### Third party packages
-The softwares in the `/bin` folder can also be installed by yourself, please remind link the executable file to the `bin/` folder.
-Please apply Novoalign, and put the novoalign.lic (license file) in the `bin/` folder.
+SpecHLA enables automatic installation of these third party packages. 
+Also, users can install the softwares by themselves, please remind link the executable file to the `bin/` folder.
+To apply [Novoalign](https://www.novocraft.com/buy-now/), please put the novoalign.lic (License file) in the `bin/` folder.
 
 * Third party packages:
-    * conda 4.12.0 
-    * GCC 11.3.0
     * SamTools-1.3
     * bamutil Version: 1.0.14
     * picard-tools-2.1.0 (java 11.0.1)
@@ -141,6 +144,7 @@ Please apply Novoalign, and put the novoalign.lic (license file) in the `bin/` f
     * pbsv Version 2.6.2
     * Bowtie 2 version 2.3.4.1
     * longshot-0.4.5
+   
 
 ## Getting help
 Should you have any queries, please feel free to contact us, we will reply as soon as possible (swang66-c@my.cityu.edu.hk).
