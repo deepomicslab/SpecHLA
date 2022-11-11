@@ -1,5 +1,5 @@
 ## Simulation
-# The scripts to generated simulated data are in this folder.
+The scripts to generated simulated data are in this folder.
 To simulate paired-end data, run `simu.hla.sh` like:
 ```
 Simulation HLA capture reads for HLA Typing
