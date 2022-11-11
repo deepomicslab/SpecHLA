@@ -21,7 +21,7 @@ Please go to the `example/` folder, run SpecHLA with given scripts, and find res
 
 ## Basic Usage  
 ### Extract HLA-related reads
-We should first extract HLA reads with enrichment-free data. Please map the reads to `hg19` or `hg38`, then use the `ExtractHLAread.sh` in `script/` folder to extract HLA-related reads. We use the script of Kourami with minor revision for this step. 
+We should first extract HLA reads with enrichment-free data. Please map the reads to `hg19` or `hg38`, then use the `ExtractHLAread.sh` in `script/` folder to extract HLA-related reads. We use the script of [Kourami](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-018-1388-2) with minor revision for this step. 
 Extract HLA-related reads by
 ```
 sh ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome>
@@ -121,6 +121,7 @@ Please apply Novoalign, and put the novoalign.lic (license file) in the `bin/` f
 
 * Third party packages:
     * conda 4.12.0 
+    * GCC 11.3.0
     * SamTools-1.3
     * bamutil Version: 1.0.14
     * picard-tools-2.1.0 (java 11.0.1)
