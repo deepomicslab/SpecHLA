@@ -193,7 +193,7 @@ $bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.merge.bam $outdir/A
 $bin/samtools index $outdir/$sample.merge.bam
 # ###############################################################################################################
 
-
+!
 # ################################### local assembly and realignment #################################
 echo start realignment...
 if [ $focus_exon_flag == 1 ];then #exon
@@ -225,7 +225,7 @@ fi
 if [ ${nanopore_data:-NA} != NA ];then
     $python_bin $dir/../long_read_typing.py -r ${nanopore_data} -n $sample -m 0 -o $outdir -j ${num_threads:-5} -a nanopore
 fi
-!
+# !
 
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
@@ -331,6 +331,6 @@ fi
 
 
 
-bash $dir/../clear_output.sh $outdir/
+# bash $dir/../clear_output.sh $outdir/
 cat $outdir/hla.result.txt
 echo $sample is done.

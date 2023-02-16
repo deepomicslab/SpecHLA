@@ -1745,6 +1745,233 @@ def eva_real_hybrid():
     df = pd.DataFrame(data, columns = ["sample", "gene", "base_error", "short_gap_error", "map_len", "gap_precision", "Methods"])
     df.to_csv('/mnt/d/HLAPro_backup/hybrid/real_hybrid/real_hybrid_haplo_assess.csv', sep=',')
 
+
+def get_reverse_complement_seq(sequence):
+    sequence = sequence[::-1]
+    trantab = str.maketrans('ACGTacgtRYMKrymkVBHDvbhd', 'TGCAtgcaYRKMyrkmBVDHbvdh')
+    string = sequence.translate(trantab)
+    return string
+
+class Assess_hgsvc2_edit_distance():
+
+    def __init__(self):
+        self.record_truth_file_dict = {}
+        self.work_dir = "/mnt/d/HLAPro_backup/haplotype_v2/"
+        self.result_dir = "/mnt/d/HLAPro_backup/minor_rev/"
+        self.spechla_dir = self.work_dir + "/spechla/"
+        self.hisat_dir = self.work_dir + "/shell/Hisat/"
+        self.kourami_dir = self.work_dir + "/shell/Kourami/"
+        self.hisat_gene_count = {}
+        self.spechla_gene_count = {}
+        self.kourami_gene_count = {}
+        self.kourami_exon_accuracy = {}
+        self.spechla_exon_accuracy = {}
+        self.record_hisat_output = {} # record whether hisat reconstruct the seq
+        self.N_ratio_cutoff = Min_N_ratio
+        self.true_hgsvc2_alleles_dict = read_hgsvc2_true_alleles() 
+
+    def count_N_ratio(self, sequence):
+        nCount = str(sequence).lower().count('n')
+        total_length = len(sequence)
+        return round(nCount/total_length, 2)
+
+
+    def main(self):
+        data = []
+        record_used_samples = []
+        sample_num = 0
+        print ("number of samples with phased assembly", len(self.record_truth_file_dict))
+        for sample in self.true_hgsvc2_alleles_dict.keys():
+            if not os.path.isfile(self.spechla_dir + f"/{sample}/hla.allele.1.HLA_A.fasta"):
+                continue
+            # if sample != "HG03732":
+            #     continue
+            record_used_samples.append([sample, "h1", "h2"])
+            print (sample)
+            sample_num += 1
+            self.spechla_dir = self.work_dir + "/spechla_sv_unmasked/"
+
+            data = self.for_hisat(sample, data)
+            data = self.for_spechla(sample, data, "SpecHLA")
+            # break
+            
+            # self.spechla_dir = self.work_dir + "/spechla_sv/"
+            # data = self.for_spechla(sample, data, "SpecHLA-SV")
+        # print ("total sample number:", sample_num)
+        df = pd.DataFrame(data, columns = ["sample", "gene", "edit_distance", "Methods"])
+        df.to_csv(self.result_dir + '/hgsvc_haplo_assess_edit_dist.csv', sep=',')
+        # print ("reconstructed gene num of hisat", self.hisat_gene_count)
+        # print ("gene num of spechla with < %s N"%(self.N_ratio_cutoff), self.spechla_gene_count)
+        # data = []
+        # for gene in gene_list:
+        #     gene = "HLA_" + gene
+        #     if gene in self.hisat_gene_count:
+        #         allele_num = self.hisat_gene_count[gene]
+        #     else:
+        #         allele_num = 0
+        #     data.append([allele_num, "HISAT", gene])
+        #     data.append([self.spechla_gene_count[gene], "SpecHLA", gene])
+        # df = pd.DataFrame(data, columns = ["Allele_num", "Methods", "gene"])
+        # df.to_csv(self.result_dir + '/hgsvc_haplo_assess_allele_num.csv', sep=',')
+        # df = pd.DataFrame(record_used_samples, columns = ["Sample", "Haplotype1", "Haplotype2"])
+        # df.to_csv(self.result_dir + '/hgsvc_used_samples.csv', sep=',')
+
+    def compare_seq(self, sample, infer_file):
+        infer_dict = {}
+        hap_index_dict = {"0":"h1", "1":"h2"}
+        for record in SeqIO.parse(infer_file, "fasta"):
+            array = record.id.split("_")
+            gene_name = "HLA-" + array[1]
+            if gene_name not in infer_dict:
+                infer_dict[gene_name] = {}
+            hap_index = hap_index_dict[str(array[2])]
+            infer_dict[gene_name][hap_index] = str(record.seq)
+
+        edit_result_dict = {}
+        N_ratio_dict = {}
+        # output_handle = open("/mnt/d/HLAPro_backup/minor_rev/test.fasta", "w")               
+        for gene_name in infer_dict:
+            my_infer = infer_dict[gene_name]
+            if "h2" not in my_infer:
+                my_infer["h2"] = my_infer["h1"]
+            true_seqs = self.true_hgsvc2_alleles_dict[sample][gene_name]
+
+            N_ratio_dict[gene_name] = self.count_N_ratio(my_infer["h1"])
+
+            # print (len(my_infer["h1"]), len(my_infer["h2"]), len(true_seqs["h1"]), len(true_seqs["h2"]))
+            h1_h1 = self.cal_edit_dist(my_infer["h1"], true_seqs["h1"])
+            h2_h2 = self.cal_edit_dist(my_infer["h2"], true_seqs["h2"])
+            h1_h2 = self.cal_edit_dist(my_infer["h1"], true_seqs["h2"])
+            h2_h1 = self.cal_edit_dist(my_infer["h2"], true_seqs["h1"])
+
+            if h1_h1 + h2_h2 < h1_h2 + h2_h1:
+                edit_result_dict[gene_name] = (h1_h1 + h2_h2)/2
+            else:
+                edit_result_dict[gene_name] = (h1_h2 + h2_h1)/2
+            # print (gene_name, h1_h1, h2_h2, h1_h2, h2_h1)
+
+            # print (">true_h1\n" +  true_seqs["h1"], file = output_handle)
+            # print (">true_h2\n" +  true_seqs["h2"], file = output_handle)
+            # print (">infer_h1\n" +  my_infer["h1"], file = output_handle)
+            # print (">infer_h2\n" +  my_infer["h2"], file = output_handle)
+            # break
+        
+        return edit_result_dict, N_ratio_dict
+
+    def cal_edit_dist(self, seq1, seq2):
+        forward = edlib.align(seq1, seq2)
+        reverse = edlib.align(seq1, get_reverse_complement_seq(seq2))
+        if forward["editDistance"] < reverse["editDistance"]:
+            return forward["editDistance"]
+        else:
+            return reverse["editDistance"]
+            
+
+    def for_spechla(self, sample, data, Method):
+        outdir = self.spechla_dir + "/" + sample
+        low_depth_dict = self.get_low_depth_bed(sample)
+        infer_file = outdir + "/hla.allele.all.fasta"
+        os.system("cat %s/hla.allele.*.HLA_*.fasta>%s"%(outdir, infer_file))
+        print (infer_file)
+   
+        edit_result_dict, N_ratio_dict = self.compare_seq(sample, infer_file)
+        for gene in edit_result_dict:
+            edit_dis = edit_result_dict[gene]
+            N_ratio = N_ratio_dict[gene]
+            if N_ratio < self.N_ratio_cutoff:
+                if gene not in self.spechla_gene_count:
+                    self.spechla_gene_count[gene] = 0
+                self.spechla_gene_count[gene] += 1
+                print (sample, gene, edit_dis, Method, N_ratio)
+                data.append([sample, gene, edit_dis, Method])
+        #     else:
+        #         print (sample, gene, base_error, short_gap_error, map_len, gap_precision, Method, N_ratio)
+        # print (data)
+        return data
+
+    def for_hisat(self, sample, data):
+        if sample not in self.record_hisat_output:
+            self.record_hisat_output[sample] = {}
+
+        outdir = self.hisat_dir + "/" + sample
+        report_file = outdir + "/assembly_graph-hla.%s_final_extract_1_fq_gz-hla-extracted-1_fq.report"%(sample)
+        hisat_fasta = outdir + "/assembly_graph-hla.%s_final_extract_1_fq_gz-hla-extracted-1_fq.fasta"%(sample)
+        if not os.path.isfile(hisat_fasta):
+            print ("no", hisat_fasta)
+            return data
+        contig_gene = self.contig2gene(report_file)
+        # print (contig_gene)
+
+        with open(hisat_fasta) as handle:
+            for record in SeqIO.parse(handle, "fasta"):
+                if record.id[1] == "0":
+                    hap_index = int(record.id[3]) + 1
+                    gene = contig_gene[record.id]
+                    record.id = "HLA_%s_%s"%(gene, hap_index-1)
+                    infer_file1 = outdir + "/hisat.hla.allele.%s.HLA_%s.fasta"%(hap_index, gene)
+                    with open(infer_file1, "w") as output_handle:
+                        SeqIO.write(record, output_handle, "fasta")
+
+        infer_file = outdir + "/hisat.hla.allele.all.fasta"
+        os.system("cat %s/hisat.hla.allele.*.HLA_*.fasta>%s"%(outdir, infer_file))
+
+        edit_result_dict, N_ratio_dict = self.compare_seq(sample, infer_file)
+        for gene in edit_result_dict:
+            edit_dis = edit_result_dict[gene]
+            N_ratio = N_ratio_dict[gene]
+            if N_ratio < self.N_ratio_cutoff:
+                if gene not in self.spechla_gene_count:
+                    self.spechla_gene_count[gene] = 0
+                self.spechla_gene_count[gene] += 1
+                print (sample, gene, edit_dis, "HISAT", N_ratio)
+                data.append([sample, gene, edit_dis, "HISAT"])
+        return data             
+
+    def contig2gene(self, report_file):
+        contig_gene = {}
+        f = open(report_file, "r")
+        for line in f:
+            line = line.strip()
+            if re.search("Node", line):
+                contig_name = line.split()[-1].strip() 
+            elif re.search("vs", line):
+                array = line.split()
+                gene = array[-1].split("*")[0]
+                # if contig_name[:5] == "(0-0)" or contig_name[:5] == "(0-1)":
+                contig_gene[contig_name] = gene
+            else:
+                continue
+        return contig_gene
+
+    def get_low_depth_bed(self, sample):
+        low_depth_dict = {}
+        low_bed = self.spechla_dir + sample + "/low_depth.bed" 
+        f = open(low_bed, 'r')
+        for line in f:
+            array = line.strip().split()
+            gene = array[0]
+            low_depth_dict[gene] = 1
+        f.close()
+        return low_depth_dict
+
+def read_hgsvc2_true_alleles():
+    true_hgsvc2_alleles_dict = {}
+    fasta_file = "/mnt/d/HLAPro_backup/haplotype_v2/merge.hla.allele.seq.fa"
+    # Parse the FASTA file and store the sequences in the dictionary
+    for record in SeqIO.parse(fasta_file, "fasta"):
+        array = record.id.split(".")
+        sample_name = array[0]
+        hap_index = array[1]
+        gene = array[2]
+        if sample_name not in true_hgsvc2_alleles_dict:
+            true_hgsvc2_alleles_dict[sample_name] = {}
+        if gene not in true_hgsvc2_alleles_dict[sample_name]:
+            true_hgsvc2_alleles_dict[sample_name][gene] = {}
+        true_hgsvc2_alleles_dict[sample_name][gene][hap_index] = str(record.seq)
+    return true_hgsvc2_alleles_dict
+
+
+
 if __name__ == "__main__":
     Min_N_ratio = 0.3
 
