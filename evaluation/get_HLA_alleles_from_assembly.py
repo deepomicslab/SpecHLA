@@ -131,15 +131,6 @@ def ana_sam(input_sam, gene, sample):
         select_allele_list = align_dict[select_allele]
     
     else:
-        print ("check to determine use highest identity or match length in person.")
-        for allele_info in match_sorted_list[:5]:
-            print(allele_info)
-        print ("match bases**************************")
-
-        
-        for allele_info in identity_sorted_list[:5]:
-            print(allele_info)
-        print ("identity **************************")
         select_allele_list = compare_match_len_and_identity(match_sorted_list, identity_sorted_list, truth_alleles)
     print (select_allele_list)
     return select_allele_list
@@ -184,12 +175,14 @@ def compare_match_len_and_identity(match_sorted_list, identity_sorted_list, trut
     identity_diff_ratio = (max_identity - identiy_with_max_match_len) / identiy_with_max_match_len
 
     print ("match_len_diff_ratio", match_len_diff_ratio, "identity_diff_ratio", identity_diff_ratio, "1000G truth", truth_alleles)
+    get_help_from_1000G = False
 
     if extract_four_digits(match_sorted_list[0][0]) in truth_alleles and extract_four_digits(identity_sorted_list[0][0]) not in truth_alleles:
         select_allele_list = match_sorted_list[0]
+        get_help_from_1000G = True
     elif extract_four_digits(match_sorted_list[0][0]) not in truth_alleles and extract_four_digits(identity_sorted_list[0][0]) in truth_alleles:
         select_allele_list = identity_sorted_list[0]
-
+        get_help_from_1000G = True
     elif identiy_with_max_match_len < 0.999:
         select_allele_list = identity_sorted_list[0]
     elif match_len_diff_ratio < identity_diff_ratio:
@@ -198,6 +191,16 @@ def compare_match_len_and_identity(match_sorted_list, identity_sorted_list, trut
         select_allele_list = match_sorted_list[0]
     else:
         print (" no determine")
+    if get_help_from_1000G == False:
+        print ("check to determine use highest identity or match length in person.")
+        for allele_info in match_sorted_list[:5]:
+            print(allele_info)
+        print ("match bases**************************")
+
+        
+        for allele_info in identity_sorted_list[:5]:
+            print(allele_info)
+        print ("identity **************************")
     
     print ("selected allele is ", select_allele_list[0])
     return select_allele_list
@@ -260,10 +263,7 @@ def read_sam_line(line):
     # break
     return [allele_name, match_length, block_length, match_identity, Target_sequence_name, target_start, target_end]
 
-def extract_seq(select_allele_list, assembly_file, hap_index, sample, gene, out_fasta):
-
-    # open the input FASTA file
-    in_fasta = pysam.FastaFile(assembly_file)
+def extract_seq(select_allele_list, assembly_file, hap_index, sample, gene, out_fasta, in_fasta):
 
     # define the segment name, start position, and end position
     segment_name = select_allele_list[4]
@@ -277,7 +277,7 @@ def extract_seq(select_allele_list, assembly_file, hap_index, sample, gene, out_
     out_fasta.write(f'>{sample}.h{hap_index+1}.HLA-{gene}\t{segment_name}:{start_pos}-{end_pos}\t{select_allele_list[0]}\n{sequence}\n')
 
     # close the input and output files
-    in_fasta.close()
+    
     
 
 if __name__ == "__main__":
@@ -296,8 +296,11 @@ if __name__ == "__main__":
     # print (record_truth_file_dict.keys())
     # 
 
+    # open the input FASTA file
+    in_fasta = pysam.FastaFile(assembly_file)
     # create an output file for the extracted segment
     out_fasta = open(result_path + "/extracted_HLA_alleles.fasta", 'w')
+
 
     for sample in samples_list:
         print (sample)
@@ -310,10 +313,8 @@ if __name__ == "__main__":
                 # ana_paf(input_paf, gene, sample)
                 select_allele_list = ana_sam(input_sam, gene, sample)
                 # print (assembly_file)
-                extract_seq(select_allele_list, assembly_file, hap_index, sample, gene, out_fasta)
+                extract_seq(select_allele_list, assembly_file, hap_index, sample, gene, out_fasta, in_fasta)
         #         break
         # break
     out_fasta.close()
-
-    # read_sam()
-    # ana_sam(input_sam, gene, sample)
+    in_fasta.close()

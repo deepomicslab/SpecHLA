@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ###
-### SpecHLA: Full resolution HLA typing with paired-end, PacBio, Nanopore,
-### Hi-C, and 10X data. Supports WGS, WES, and RNASeq.
+### SpecHLA: Full-resolution HLA typing from paired-end, PacBio, Nanopore,
+### Hi-C, and 10X sequencing. Supports WGS, WES, and RNASeq data.
 ### 
 ###
 ### Usage:
@@ -24,8 +24,8 @@
 ###   -d        rev hi-c fastq file.
 ###   -x        Path of folder created by 10x demultiplexing. Prefix of the filenames of FASTQs
 ###             should be the same as Sample ID. Please install Longranger in the system env.
-###   -w        How to use linkage info from allele imbalance [0, 0.5, 1], default is 0 that means 
-###             not use, 0.5 means use both reads and imbalance info, 1 means only use imbalance info.
+###   -w        The weight to use linkage info from genotype frequency [0-1], default is 0 that means 
+###             not use, 1 means only use imbalance info, other values integrate use both.
 ###   -j        Number of threads [5]
 ###   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
 ###             is 2. It should be set larger to infer novel alleles.
@@ -43,8 +43,8 @@
 ###             Set 0 to avoid masking.
 ###   -z        Whether only mask exon region, True or False, default is False.
 ###   -f        The trio infromation; child:parent_1:parent_2 [Example: NA12878:NA12891:NA12892]. 
-###             Note: this parameter should be used after performing SpecHLA once.
-###   -b        Whether use database for phasing [1|0], default is 1.
+###             Note: this parameter should be used after performing SpecHLA already.
+###   -b        Whether use database for unlinked block phasing [1|0], default is 1.
 ###   -h        Show this message.
 
 help() {
@@ -137,13 +137,19 @@ echo use ${num_threads:-5} threads.
 
 
 # ##############check if the input fastq is empty################
-# if [[ ! -s $fq1 ]]; then
-# echo "Input fastq file is empty! Please check the reads extraction!"
-# echo "Note: use ExtractHLAread.sh to extract HLA-related reads with the raw reads mapped to hg38 or hg19."
-# exit 1
-# fi
+if [[ ! -s $fq1 ]]; then
+echo "Input fastq file is empty! Please check the reads extraction!"
+echo "Note: use ExtractHLAread.sh to extract HLA-related reads with the raw reads mapped to hg38 or hg19."
+exit 1
+fi
 # ###############################################################
 
+# ##############check if read1 and read2 files are same ################
+if [[ $fq1 == $fq2 ]]; then
+echo "Error: Input read1 and read2 fastq files are the same! Please check the input files!"
+exit 1
+fi
+# ###############################################################
 
 :<<!
 # ################ remove the repeat read name #################
@@ -164,10 +170,16 @@ else
   database_prefix=hla_gen.format.filter.extend.DRB.no26789.v2
 fi
 if [ -f "$license" ];then
+    echo "Detect novoalign license, use novoalign."
+    if [ ! -f "$db/ref/$database_prefix.ndx" ];then
+        echo "Can't find ref index for novoalign, please run *bash index.sh* again."
+        exit 1
+    fi
     $bin/novoalign -d $db/ref/$database_prefix.ndx -f $fq1 $fq2 -F STDFQ -o SAM \
     -o FullNW -r All 100000 --mCPU ${num_threads:-5} -c 10  -g 20 -x 3  | $bin/samtools view \
     -Sb - | $bin/samtools sort -  > $outdir/$sample.map_database.bam
 else
+    echo "Can't detect novoalign license, use bowtie2." 
     bowtie2 --very-sensitive -p ${num_threads:-5} -k 30 -x $db/ref/$database_prefix.fasta -1 $fq1 -2 $fq2|\
     $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
 fi
@@ -192,6 +204,7 @@ $bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.merge.bam $outdir/A
  $outdir/DPA1.bam $outdir/DPB1.bam $outdir/DQA1.bam $outdir/DQB1.bam $outdir/DRB1.bam
 $bin/samtools index $outdir/$sample.merge.bam
 # ###############################################################################################################
+
 
 # ################################### local assembly and realignment #################################
 echo start realignment...
@@ -288,7 +301,7 @@ fi
 
 echo Minimum Minor Allele Frequency is $my_maf.
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
-# hlas=(B)
+# hlas=(A)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
 $python_bin $dir/../phase_variants.py \
@@ -317,7 +330,7 @@ $python_bin $dir/../phase_variants.py \
 done
 # ##################################################################################################
 
-# !
+
 # ############################ annotation ####################################
 echo start annotation...
 # perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop
@@ -330,6 +343,6 @@ fi
 
 
 
-# bash $dir/../clear_output.sh $outdir/
+bash $dir/../clear_output.sh $outdir/
 cat $outdir/hla.result.txt
 echo $sample is done.
