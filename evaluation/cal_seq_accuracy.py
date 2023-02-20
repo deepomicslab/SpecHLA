@@ -20,6 +20,7 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 import numpy as np
 import re
+import edlib
 
 gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
 # gene_list = ['DQA1', 'DQB1', 'DRB1']
@@ -1014,7 +1015,7 @@ class Assess_hgsvc2():
        
     def get_phased_assemblies(self):
         record_truth_file_dict = {}
-        inpath = "/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/"
+        inpath = "/mnt/d/my_HLA/assembly/"
         for file in os.listdir(inpath):
             if file[-5:] != "fasta":
                 continue
@@ -1982,12 +1983,14 @@ if __name__ == "__main__":
         # ass = Assess_hgsvc2()
         # ass.main()
         # ass.main_exon()
+        ass = Assess_hgsvc2_edit_distance()
+        ass.main()
         # ass.test()
         # eva_simu_trio()
         # eva_real_trio()
         # eva_real_hybrid()
         # eva_data_types_spechla()
-        eva_allele_imblance()
+        # eva_allele_imblance()
         # eva_HG002_kourami()
         # eva_pedigree_spechla()
         # eva_HG002_spechla()
