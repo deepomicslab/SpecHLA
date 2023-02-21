@@ -594,18 +594,21 @@ def get_sim_true_allele(record_true_file):
 def split_hisat_fasta(outdir, sample_name):
     # hisat_fasta = "%s/assembly_graph-hla.%s_read1_fastq_gz-hla-extracted-1_fq.fasta"%(outdir, sample_name)   
     hisat_fasta = "%s/assembly_graph-hla.simu_read1_fastq_gz-hla-extracted-1_fq.fasta"%(outdir)  
-    record_dict = {}
-    with open(hisat_fasta) as handle:
-        for record in SeqIO.parse(handle, "fasta"):
-            gene_name = record.id.split("_")[0].split(")")[1]
-            if gene_name not in record_dict:
-                record_dict[gene_name] = 0
-            record_dict[gene_name] += 1
-            if record_dict[gene_name] > 2:
-                continue
-            infer_file = outdir + "/hisat.hla.allele.%s.HLA_%s.fasta"%(record_dict[gene_name], gene_name)
-            with open(infer_file, "w") as output_handle:
-                SeqIO.write(record, output_handle, "fasta")
+    if os.path.isfile(hisat_fasta):
+        record_dict = {}
+        with open(hisat_fasta) as handle:
+            for record in SeqIO.parse(handle, "fasta"):
+                gene_name = record.id.split("_")[0].split(")")[1]
+                if gene_name not in record_dict:
+                    record_dict[gene_name] = 0
+                record_dict[gene_name] += 1
+                if record_dict[gene_name] > 2:
+                    continue
+                infer_file = outdir + "/hisat.hla.allele.%s.HLA_%s.fasta"%(record_dict[gene_name], gene_name)
+                with open(infer_file, "w") as output_handle:
+                    SeqIO.write(record, output_handle, "fasta")
+    else:
+        print ("sequence not detected for", sample_name)
 
 def split_kourami_fasta(outdir, sample_name):
     record_dict = {}

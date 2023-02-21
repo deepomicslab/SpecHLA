@@ -1,6 +1,6 @@
 """
-Calculate typing accuracy in simulated data
-at the four digits
+Calculate typing accuracy of HLA*LA and SpecHLA at the G group level
+in seven HGSVC2 samples with both NGS and Pacbio data 
 
 wangshuai July 11, 2022
 """
@@ -10,6 +10,7 @@ import os
 import sys
 import re
 import pandas as pd
+import numpy as np
 
 gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
 
@@ -142,27 +143,9 @@ class Eva_typing():
 
     def main_real(self): 
         data = []   
-        # self.sample_list = []
-        # all_sample_true_dict = {}
-        # for line in open("/mnt/d/HLAPro_backup/compare_hlala/merge.anno.out", "r"):
-        #     array = line.strip().split()
-        #     sample = array[0][:-3]
-        #     if sample not in self.sample_list:
-        #         self.sample_list.append(sample)
-        #     gene = array[1]
-        #     if sample not in all_sample_true_dict:
-        #         all_sample_true_dict[sample] = {}
-        #     array[2] = re.sub(":","_",array[2])
-        #     array[2] = re.sub("\*","_",array[2])
-        #     # print (array)
-        #     if gene not in all_sample_true_dict[sample]:
-        #         all_sample_true_dict[sample][gene] = []
-        #     all_sample_true_dict[sample][gene] += [array[2]]
-        # print ("###############", self.sample_list)
-
         self.sample_list = ['HG00514', 'HG00731', 'HG00732', 'HG00733', 'NA19238', 'NA19239', 'NA19240']
         all_sample_true_dict = self.get_truth_allele()
-        print (all_sample_true_dict["HG00514"])
+        # print (all_sample_true_dict["HG00514"])
 
         # self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/hifi_hlala/HLA-LA.merge.result.txt"
         # hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
@@ -173,15 +156,15 @@ class Eva_typing():
         # hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
         # data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PE")
 
-        # self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/pacbio/"
-        # self.get_spechla_merge_result()
-        # spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
-        # data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PacBio")
-
-        self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/spechla_no_pac/"
+        self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/pacbio/"
         self.get_spechla_merge_result()
         spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
-        data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PE")
+        data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PacBio")
+
+        # self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/spechla_no_pac/"
+        # self.get_spechla_merge_result()
+        # spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
+        # data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PE")
 
         # self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/spechla_with_pac/"
         # self.get_spechla_merge_result()
@@ -208,10 +191,14 @@ class Eva_typing():
                 gene_count[gene]["all"] += 2
                 if right_num != 2:
                     print (sample, gene, true_alleles, infer_alleles)
+        accuracy_list = []
         for gene in gene_list:
-            print (gene, gene_count[gene]["right"], gene_count[gene]["all"], gene_count[gene]["right"]/gene_count[gene]["all"])
+            print (method, gene, gene_count[gene]["right"], gene_count[gene]["all"], gene_count[gene]["right"]/gene_count[gene]["all"])
             accuracy = gene_count[gene]["right"]/gene_count[gene]["all"]
+            accuracy_list.append(accuracy)
             data.append([accuracy, gene, method])
+        print (np.mean(accuracy_list))
+        print ("\n")
         return data
     
     def compare_allele(self, my_true_alleles, my_infer_alleles):
