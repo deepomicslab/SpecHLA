@@ -651,6 +651,8 @@ def eva_simu(database, record_true_file, outdir, sample_name):
         if not os.path.isfile(infer_file1):
             print ("there is no %s."%(infer_file1))
             continue
+        elif not os.path.isfile(infer_file2):
+            os.system("cp %s %s"%(infer_file1, infer_file2))
 
         truth_file1 = outdir + ".true.%s.1.fasta"%(gene)
         truth_file2 = outdir + ".true.%s.2.fasta"%(gene)
