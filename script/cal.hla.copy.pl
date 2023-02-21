@@ -17,6 +17,25 @@ GetOptions(
 	   "h"         =>      \$Help
 );
 
+my $usage = <<USE;
+Usage:
+description: Calculte the copy number of HLA alleles
+author:wangmengyao
+usage:  perl $0 [Options] -S <samplename> -C <5> -purity <Purity> -ploidy <Ploidy> -F <filelist> -T <hla.result.txt> -O <outdir>
+        
+        OPTIONS:                                                                             
+        -purity  [f]  the purity of tumor sample. <required>
+        -ploidy  [f]  the ploidy of tumor sample in HLA gene region. <required> 
+        -S       [s]  sample name <required>
+        -C       [f]  the cutoff of heterogeneous snp number. <required>
+        -F       [s]  the filelist. <required>     Format, separated by table: ./HLA_A_freq.txt
+        -T       [s]  the hla typing result file of Spechla <required>
+        -O       [s]  the output dir. <required>
+        
+
+USE
+die $usage unless ($purity && $ploidy && $sample && $filelist && $tfile && $outdir);
+$het_cutoff ||= 5;
 
 my @hlas = ("A","B","C","DPA1","DPB1","DQA1","DQB1","DRB1");
 my %hasha;
@@ -83,35 +102,4 @@ while(<IN>){
 close IN;
 close OUT;
 
-sub para_alert{
-	my $alert;
-	if($Help){
-		$alert = 1;
-	}
-	elsif(!$purity || !$ploidy || !$sample || !$het_cutoff){
-		$alert = 1;
-	}
-	elsif(!$filelist || !-e $filelist){
-		$alert = 1;
-	}
-        elsif(!$tfile || !-e $tfile){
-                $alert = 1;
-        }
-	elsif(!$outdir || !-e $outdir){
-                $alert = 1;
-        }
-        die "
-	USAGE:
-	perl $0 [Options] -S <samplename> -C <5> -purity <Purity> -ploidy <Ploidy> -F <filelist> -T <hla.result.txt> -O <outdir>
-	
-	OPTIONS:									     
-     	-purity  [f]  the purity of tumor sample. <required>
-        -ploidy  [f]  the ploidy of tumor sample in HLA gene region. <required>	
-	-S       [s]  sample name <required>
-	-C       [f]  the cutoff of heterogeneous snp number. <required>
-	-F       [s]  the filelist. <required>     Format, separated by table: ./HLA_A_freq.txt
-	-T       [s]  the hla typing result file of Spechla <required>
-        -O       [s]  the output dir. <required>
-       	\n" if($alert);
-}
 

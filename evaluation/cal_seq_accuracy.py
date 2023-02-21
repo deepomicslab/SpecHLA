@@ -1595,11 +1595,9 @@ class Assess_hgsvc2_seq_recall():
             data = self.for_spechla(sample, data, "SpecHLA")
             # break
             
-            self.spechla_dir = self.work_dir + "/spechla_sv_unmasked/"
-            data = self.for_spechla(sample, data, "SpecHLA-SV-U")
+            # self.spechla_dir = self.work_dir + "/spechla_unmasked/"
+            # data = self.for_spechla(sample, data, "SpecHLA-U")
 
-            self.spechla_dir = self.work_dir + "/spechla_sv/"
-            data = self.for_spechla(sample, data, "SpecHLA-SV")
 
         print ("total sample number:", sample_num)
         df = pd.DataFrame(data, columns = ["sample", "gene", "mismatch_rate", "gap_rate", "map_len", "sequence_precision", "sequence_recall", "edit_distance", "Methods"])

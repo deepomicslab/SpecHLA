@@ -191,6 +191,7 @@ def compare_match_len_and_identity(match_sorted_list, identity_sorted_list, trut
         select_allele_list = match_sorted_list[0]
     else:
         print (" no determine")
+        
     if get_help_from_1000G == False:
         print ("check to determine use highest identity or match length in person.")
         for allele_info in match_sorted_list[:5]:
