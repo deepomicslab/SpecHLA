@@ -68,21 +68,30 @@ class Score_Obj():
         f = open(assign_file, 'w')
         # print (len(self.loci_score))
         for read_name in self.loci_score: # for each read
+            assigned_locus = []
             gene_score = sorted(self.loci_score[read_name].items(), key=lambda item: item[1], reverse = True)
-            # if gene_score[0][0] == "B" or gene_score[0][0] == "C" or gene_score[0][0] == "A":
+            # if len(gene_score) > 1 and (gene_score[0][0] == "DPA1" or gene_score[1][0] == "DPA1"):
             #     print (read_name, gene_score)
             if gene_score[0][1] < Min_score:
                 continue
             if len(gene_score) == 1: # mapped to only one gene, directly assign to that gene
-                assigned_locus = gene_score[0][0]
+                assigned_locus = [gene_score[0][0]]
             else:
+                # real-data based adjustment
+                if gene_score[0][0] in ["Y", "U", "H", "T"] and gene_score[1][0] == "A":
+                    assigned_locus = ["A"]
+                elif gene_score[0][0] == 'DPB2' and gene_score[1][0] == "DPA1":
+                    assigned_locus = ["DPA1"]
+                elif gene_score[0][0] in ['DPB1', "DPA1"] and gene_score[1][0] in ['DPB1', "DPA1"]:
+                    assigned_locus = ['DPB1', "DPA1"]
                 # map to more than one gene, check the score difference
-                if gene_score[0][1] - gene_score[1][1] >= Min_diff:
-                    assigned_locus = gene_score[0][0]
+                elif gene_score[0][1] - gene_score[1][1] >= Min_diff:
+                    assigned_locus = [gene_score[0][0]]
                 # score diff too small, can not determine which gene to assign
                 # discard this read
                 else:
                     continue
+            # print ("assigned locus", assigned_locus)
             print (read_name, assigned_locus, file = f)
             self.read_loci[read_name] = assigned_locus
         f.close()
@@ -143,7 +152,7 @@ class Pacbio_Binning():
             line = line.strip()
             if i % 4 == 0:
                 read_name = line.split()[0][1:]
-                if read_name in dict.keys() and dict[read_name] == gene:
+                if read_name in dict.keys() and gene in dict[read_name]:
                     flag = True
                     num = 1
                     print (line, file = out)
