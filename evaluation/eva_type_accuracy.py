@@ -186,6 +186,7 @@ class Eva_typing():
             for gene in all_sample_true_dict[sample]:
                 true_alleles = all_sample_true_dict[sample][gene]
                 infer_alleles = infer_all_sample_infer_dict[sample][gene]
+                # print (sample, gene, infer_alleles, "true:", true_alleles)
                 right_num = self.compare_allele(true_alleles, infer_alleles)
                 gene_count[gene]["right"] += right_num
                 gene_count[gene]["all"] += 2

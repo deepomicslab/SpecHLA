@@ -192,16 +192,16 @@ def compare_match_len_and_identity(match_sorted_list, identity_sorted_list, trut
     else:
         print (" no determine")
         
-    if get_help_from_1000G == False:
-        print ("check to determine use highest identity or match length in person.")
-        for allele_info in match_sorted_list[:5]:
-            print(allele_info)
-        print ("match bases**************************")
+    # if get_help_from_1000G == False:
+    print ("check to determine use highest identity or match length in person.")
+    for allele_info in match_sorted_list[:5]:
+        print(allele_info)
+    print ("match bases**************************")
 
-        
-        for allele_info in identity_sorted_list[:5]:
-            print(allele_info)
-        print ("identity **************************")
+    
+    for allele_info in identity_sorted_list[:5]:
+        print(allele_info)
+    print ("identity **************************")
     
     print ("selected allele is ", select_allele_list[0])
     return select_allele_list
@@ -279,7 +279,15 @@ def extract_seq(select_allele_list, assembly_file, hap_index, sample, gene, out_
 
     # close the input and output files
     
-    
+def check_trio_consistency(record_best_match):
+    for gene in gene_list:
+        child_alleles = record_best_match["NA19240"][gene]
+        parent1_alleles = record_best_match["NA19238"][gene]
+        parent2_alleles = record_best_match["NA19239"][gene]
+        if (child_alleles[0] in parent1_alleles and child_alleles[1] in parent2_alleles) or (child_alleles[1] in parent1_alleles and child_alleles[0] in parent2_alleles):
+            print ("consistency", gene)
+        else:
+            print ("not consistency", gene, child_alleles,parent1_alleles,  parent2_alleles)
 
 if __name__ == "__main__":
     # sample = "HG00096"
@@ -291,31 +299,41 @@ if __name__ == "__main__":
     # change_allele_name(raw_HLA_data, HLA_data)
     result_path = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/"
     samples_list = ['HG00096', 'HG00171', 'HG00512', 'HG00513', 'HG00514', 'HG00731', 'HG00732', 'HG00733', 'HG00864', 'HG01114', 'HG01505', 'HG01596', 'HG02011', 'HG02492', 'HG02587', 'HG02818', 'HG03009', 'HG03065', 'HG03125', 'HG03371', 'HG03486', 'HG03683', 'HG03732', 'NA12878', 'NA18534', 'NA18939', 'NA19238', 'NA19239', 'NA19240', 'NA19650', 'NA19983', 'NA20509', 'NA20847', 'NA24385']
-
+    trio_list = ["NA19238", "NA19239", "NA19240"]
+    gene_list = ["A", "B", "C", "DPA1", "DPB1", "DQA1", "DQB1", "DRB1"]
+    # gene_list = ["DQA1"]
     record_truth_file_dict = get_phased_assemblies()
     truth_1000_dict = read_1000G_truth()
     # print (record_truth_file_dict.keys())
     # 
 
-    # open the input FASTA file
-    in_fasta = pysam.FastaFile(assembly_file)
+
     # create an output file for the extracted segment
     out_fasta = open(result_path + "/extracted_HLA_alleles.fasta", 'w')
 
-
+    record_best_match = {}
     for sample in samples_list:
+    # for sample in trio_list:
+    # for sample in ["NA19240"]:
         print (sample)
+        record_best_match[sample] = {}
         for hap_index in range(2):
             # minimap(sample, hap_index)
             # input_paf = f"/mnt/d/HLAPro_backup/minor_rev/extract_alleles/{sample}.h{hap_index+1}.paf"
             input_sam = f"/mnt/d/HLAPro_backup/minor_rev/extract_alleles/{sample}.h{hap_index+1}.sam"
             assembly_file = record_truth_file_dict[sample][hap_index]
-            for gene in ["A", "B", "C", "DPA1", "DPB1", "DQA1", "DQB1", "DRB1"]:
-                # ana_paf(input_paf, gene, sample)
+            # open the input FASTA file
+            in_fasta = pysam.FastaFile(assembly_file)
+            for gene in gene_list:
+                if gene not in record_best_match[sample]:
+                    record_best_match[sample][gene] = []
                 select_allele_list = ana_sam(input_sam, gene, sample)
+                record_best_match[sample][gene].append(select_allele_list[0])
                 # print (assembly_file)
                 extract_seq(select_allele_list, assembly_file, hap_index, sample, gene, out_fasta, in_fasta)
         #         break
+            in_fasta.close()
         # break
     out_fasta.close()
-    in_fasta.close()
+    check_trio_consistency(record_best_match)
+
