@@ -10,13 +10,15 @@ num_processors=2
 me=`basename $0`
 function usage {
     echo "HLA-related reads extractor for HLA Typing"
-    echo "USAGE: <PATH-TO>/$me -s <sample_id> -b <bamfile> -r <refGenome>"
+    echo "USAGE: <PATH-TO>/$me -s <sample_id> -b <bamfile> -r <refGenome> -o <outdir>"
     echo
     echo " -s          : desired sample name (ex: NA12878) [required]"
     echo
     echo " -b          : sorted and indexed bam (ex: NA12878.bam) [required]"
     echo
     echo " -r          : hg38 or hg19"
+    echo
+    echo " -o          : folder to save extracted reads [required]"
     echo
     exit 1
 }
@@ -30,23 +32,24 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
 	exit 1
 fi
 
-while getopts ":s:b:r:" opt; do
+while getopts ":s:b:r:o:" opt; do
 	   case $opt in
-	    s) sampleid="$OPTARG"
+	    s) id="$OPTARG"
 		 ;;
-            b) bam_path="$OPTARG"
+        b) bam_path="$OPTARG"
 		 ;;
 	    r) ref="$OPTARG"
+		 ;;
+	    o) outdir="$OPTARG"
 		 ;;
 	    \?) echo "Invalid option -$OPTARG" >&2
 		 ;;
  esac
 done
 
+mkdir -p $outdir
+sampleid=$outdir/$id
 
-#sampleid=$1
-#bam_path=$2
-#ref=$3
 dir=$(cd `dirname $0`; pwd)
 
 samtools_bin=$dir/../bin/samtools

@@ -24,58 +24,124 @@ Please go to the `example/` folder, run SpecHLA with given scripts, and find res
 We should first extract HLA reads with enrichment-free data. Please map the reads to `hg19` or `hg38`, then use the `ExtractHLAread.sh` in `script/` folder to extract HLA-related reads. We use the script of [Kourami](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-018-1388-2) with minor revision for this step. 
 Extract HLA-related reads by
 ```
-sh ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome>
+USAGE: bash script/ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome> -o <outdir>
+
+ -s          : desired sample name (ex: NA12878) [required]
+
+ -b          : sorted and indexed bam (ex: NA12878.bam) [required]
+
+ -r          : hg38 or hg19
+
+ -o          : folder to save extracted reads [required]
 ```
 
-### Typing 
+### HLA Typing 
 Full-resolution and exon HLA typing with paired-end reads. SpecHLA can use PacBio, Nanopore, Hi-C, and 10X data to improve the phasing performance if provided. 
 
 Perform full-resolution HLA typing with `paired-end` reads by
 ```
-sh SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/
+sh script/whole/SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/
 ```
 Perform exon HLA typing with paired-end reads by
 ```
-sh SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ -u 1
+sh script/whole/SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ -u 1
 ```
 Perform full-resolution HLA typing with `paired-end` reads and `PacBio` reads by
 ```
-sh SpecHLA.sh -n <sample> -t <sample.pacbio.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
+sh script/whole/SpecHLA.sh -n <sample> -t <sample.pacbio.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
 Perform full-resolution HLA typing with `paired-end` reads and `Nanopore` reads by
 ```
-sh SpecHLA.sh -n <sample> -e <sample.nanopore.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
+sh script/whole/SpecHLA.sh -n <sample> -e <sample.nanopore.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
 Perform full-resolution HLA typing with `paired-end` reads and `Hi-C` reads by
 ```
-sh SpecHLA.sh -n <sample> -c <sample.hic.fwd.fq.gz> -d <sample.hic.rev.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
+sh script/whole/SpecHLA.sh -n <sample> -c <sample.hic.fwd.fq.gz> -d <sample.hic.rev.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
 Perform full-resolution HLA typing with `paired-end` reads and `10X` linked reads by (LongRanger should be installed in system env)
 ```
-sh SpecHLA.sh -n <sample> -x <sample.10x.read.folder> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
+sh script/whole/SpecHLA.sh -n <sample> -x <sample.10x.read.folder> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
 Consider `long Indels` and use `population information` for annotation by
 ```
-sh SpecHLA.sh -n <sample> -v True -p <Asia> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
+sh script/whole/SpecHLA.sh -n <sample> -v True -p <Asia> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
 Perform full-resolution HLA typing only with `long reads` by 
 ```
-python3 long_read_typing.py -n <sample> -r <Pacbio or Nanopore reads> -o outdir/ 
+python3 script/long_read_typing.py -n <sample> -r <Pacbio or Nanopore reads> -o outdir/ 
+```
+
+### Full arguments
+```
+SpecHLA: Full-resolution HLA typing from paired-end, PacBio, Nanopore,
+Hi-C, and 10X sequencing. Supports WGS, WES, and RNASeq data.
+
+
+Usage:
+  sh SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
+
+Options:
+  -n        Sample ID. <required>
+  -1        The first fastq file. <required>
+  -2        The second fastq file. <required>
+  -o        The output folder to store the typing results.
+  -u        Choose full-length or exon typing. 0 indicates full-length, 1 means exon,
+            default is to perform full-length typing.
+  -p        The population of the sample [Asian, Black, Caucasian, Unknown, nonuse].
+            Default is Unknown, meaning use mean frequency. nonuse indicates only adopting
+            mapping score and considering alleles with frequency as zero.
+  -t        Pacbio fastq file.
+  -e        Nanopore fastq file.
+  -c        fwd hi-c fastq file.
+  -d        rev hi-c fastq file.
+  -x        Path of folder created by 10x demultiplexing. Prefix of the filenames of FASTQs
+            should be the same as Sample ID. Please install Longranger in the system env.
+  -w        The weight to use linkage info from genotype frequency [0-1], default is 0 that means
+            not use, 1 means only use imbalance info, other values integrate use both.
+  -j        Number of threads [5]
+  -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
+            is 2. It should be set larger to infer novel alleles.
+  -y        The minimum different mapping score between the best- and second-best aligned gene.
+            Discard the read if the score is lower than this value. Deault is 0.1.
+  -v        True or False. Consider long InDels if True, else only consider short variants.
+            Default is False.
+  -q        Minimum variant quality. Default is 0.01. Set it larger in high quality samples.
+  -s        Minimum variant depth. Default is 5.
+  -a        Use this long InDel file if provided.
+  -r        The minimum Minor Allele Frequency (MAF), default is 0.05 for full length and
+            0.1 for exon typing.
+  -g        Whether use G-translate in annotation [1|0], default is 0.
+  -k        The mean depth in a window lower than this value will be masked by N, default is 5.
+            Set 0 to avoid masking.
+  -z        Whether only mask exon region, True or False, default is False.
+  -f        The trio infromation; child:parent_1:parent_2 [Example: NA12878:NA12891:NA12892].
+            Note: this parameter should be used after performing SpecHLA already.
+  -b        Whether use database for unlinked block phasing [1|0], default is 1.
+  -h        Show this message.
 ```
 
 ### Pedigree phasing
 After performing HLA typing, we can afford trio information to update the results of child by
 ```
-sh SpecHLA.sh -n <child> -1 <child.fq.1.gz> -2 <child.fq.2.gz> -o outdir/ --trio child:parent1:parent2
+sh script/SpecHLA.sh -n <child> -1 <child.fq.1.gz> -2 <child.fq.2.gz> -o outdir/ --trio child:parent1:parent2
 ```
 The fresh results can be found in the trio/ folder inside the original result folder.
 
 ### Detect HLA LOH in cancer samples
 If the purity of cancer sample and the ploidy of HLA region are known, we can infer HLA LOH event by
 ```
-perl cal.hla.copy.pl -purity <Purity> -ploidy <Ploidy> -F <freq.file.list> -O <outdir>
+usage:  perl script/cal.hla.copy.pl [Options] -S <samplename> -C <5> -purity <Purity> -ploidy <Ploidy> -F <filelist> -T <hla.result.txt> -O <outdir>
+
+        OPTIONS:
+        -purity  [f]  the purity of tumor sample. <required>
+        -ploidy  [f]  the ploidy of tumor sample in HLA gene region. <required>
+        -S       [s]  sample name <required>
+        -C       [f]  the cutoff of heterogeneous snp number. <required>
+        -F       [s]  the filelist. <required>     Format, separated by table: ./HLA_A_freq.txt
+        -T       [s]  the hla typing result file of Spechla <required>
+        -O       [s]  the output dir. <required>
 ```
-Use `ls output/*/*_freq.txt >freq.list` to generate `freq.file.list`.
+Use `ls typing_result_dir/*_freq.txt >freq.list` to generate the file required by `-F`.
 
 ## Interpret output
 In the denoted outdir, the results of each sample are saved in a folder named as the sample ID.  
@@ -106,6 +172,19 @@ An example for "HLA_*_freq.txt" is as below:
 hla.allele.1.HLA_A.fasta 0.532
 hla.allele.2.HLA_A.fasta 0.468
 # The number of heterozygous variant is 30
+```
+
+An example for HLA LOH result is as below:
+```
+Sample	HLA	Allele1	Allele2	copyratio	KeptHLA	LossHLA
+DNA_CRL-2314_p3_s6	A	A*03:01:01:01	A*02:05:01:01	2:0	A*03:01:01:01	A*02:05:01:01
+DNA_CRL-2314_p3_s6	B	B*35:03:01:01	B*49:01:01:01	2:0	B*35:03:01:01	B*49:01:01:01
+DNA_CRL-2314_p3_s6	C	C*12:03:01:01	C*07:01:01:01	2:0	C*12:03:01:01	C*07:01:01:01
+DNA_CRL-2314_p3_s6	DPA1	DPA1*01:03:01:01	DPA1*01:03:01:01	2:0	DPA1*01:03:01:01	homogeneous
+DNA_CRL-2314_p3_s6	DPB1	DPB1*15:01:01:01	DPB1*04:01:01:01	0:2	DPB1*04:01:01:01	DPB1*15:01:01:01
+DNA_CRL-2314_p3_s6	DQA1	DQA1*01:02:01:01	DQA1*05:05:01:01	2:0	DQA1*01:02:01:01	DQA1*05:05:01:01
+DNA_CRL-2314_p3_s6	DQB1	DQB1*06:02:01:01	DQB1*03:19:01:01	2:0	DQB1*06:02:01:01	DQB1*03:19:01:01
+DNA_CRL-2314_p3_s6	DRB1	DRB1*11:02:01:01	DRB1*15:01:01:01	0:2	DRB1*15:01:01:01	DRB1*11:02:01:01
 ```
 
 
