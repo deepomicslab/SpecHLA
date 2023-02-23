@@ -55,10 +55,10 @@ dir=$(cd `dirname $0`; pwd)
 samtools_bin=samtools
 bamUtil=bam
 
-if [ ! -x "$samtools_bin" ]  || [ ! -x "$bamUtil" ];then
-    echo "Please make sure samtools and bamUtil are installed"
-    exit 1
-fi
+# if [ ! -x "$samtools_bin" ]  || [ ! -x "$bamUtil" ];then
+#     echo "Please make sure samtools and bamUtil are installed"
+#     exit 1
+# fi
 
 $samtools_bin index $bam_path
 if [ $ref == "hg38" ]; then
