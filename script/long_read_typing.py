@@ -261,7 +261,7 @@ if __name__ == "__main__":
     optional.add_argument("-d", type=float, help="Minimum score difference to assign a read to a gene.", metavar="\b", default=0.001)
     optional.add_argument("-m", type=int, help="1 represents typing, 0 means only read assignment", metavar="\b", default=1)
     optional.add_argument("-a", type=str, help="prefix of filtered fastq file.", metavar="\b", default="long_read")
-    optional.add_argument("-g", type=int, help="Whether use G-translate in annotation [1|0], default is 0.", metavar="\b", default=1)
+    optional.add_argument("-g", type=int, help="Whether use G-translate in annotation [1|0], default is 0.", metavar="\b", default=0)
     # optional.add_argument("-u", type=str, help="Choose full-length or exon typing. 0 indicates full-length, 1 means exon.", metavar="\b", default="0")
     optional.add_argument("-h", "--help", action="help")
     args = vars(parser.parse_args()) 
