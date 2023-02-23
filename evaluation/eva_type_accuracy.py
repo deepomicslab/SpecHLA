@@ -123,7 +123,7 @@ class Eva_typing():
 
     def get_truth_allele(self):
         all_sample_true_dict = {}
-        matched_allele_file = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/extracted_HLA_alleles.fasta"
+        
         for line in open(matched_allele_file):
             if line[0] == ">":
                 array = line[1:].split()
@@ -141,6 +141,33 @@ class Eva_typing():
                     allele = G_annotation_dict[allele]
                 all_sample_true_dict[sample][gene] += [allele]
         return all_sample_true_dict
+
+    def print_truth(self):
+        # for supplementary Table S29
+        file = "/mnt/d/HLAPro_backup/hybrid/hgsvc2_G_group_truth.csv"
+        f = open(file, 'w')
+        print ("sample,haplotype,gene,HLA type,G-group", file = f)
+        all_sample_true_dict = {}
+        for line in open(matched_allele_file):
+            if line[0] == ">":
+                array = line[1:].split()
+                raw_allele = array[2]
+                array[2] = re.sub(":","_",array[2])
+                array[2] = re.sub("\*","_",array[2])
+                allele = array[2]
+                sample = array[0].split(".")[0]
+                gene = array[0].split("-")[1]
+
+                if sample not in all_sample_true_dict:
+                    all_sample_true_dict[sample] = {}
+                if gene not in all_sample_true_dict[sample]:
+                    all_sample_true_dict[sample][gene] = []
+                if allele in G_annotation_dict:
+                    allele = G_annotation_dict[allele]
+                all_sample_true_dict[sample][gene] += [allele]
+                print (sample, len(all_sample_true_dict[sample][gene]), gene, raw_allele,allele, sep = "," , file = f)
+        f.close()
+                
 
     def main_real(self): 
         data = []   
@@ -282,8 +309,10 @@ def read_G_annotation():
 if __name__ == "__main__":
     # for gene in ['A', 'B', 'C', 'DQB1','DRB1']:
     #     single(gene)
+    matched_allele_file = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/extracted_HLA_alleles.fasta"
     G_annotation_dict = read_G_annotation()
     digit = 6
     typ = Eva_typing()
-    typ.main_real()
+    # typ.main_real()
+    typ.print_truth() # save g-group truth in a table
     

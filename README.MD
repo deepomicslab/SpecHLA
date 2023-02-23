@@ -13,15 +13,35 @@ Second, index the database and install the packages.
 unset LD_LIBRARY_PATH && unset LIBRARY_PATH 
 bash index.sh
 ```
-Note: 1) SpecHLA requires a License of [Novoalign](https://www.novocraft.com/buy-now/) in `bin/`, if not detected, it uses `bowtie2` as replacement automatically. 
-The License file of `Novoalign` should be put in the `bin/` folder `before` running `bash index.sh`. 2) SpecHLA now supports Linux and Windows WSL.
+Perform SpecHLA with
+```
+bash script/whole/SpecHLA.sh -h
+```
+
+Note:
+<ul> 
+<li> SpecHLA requires a License of [Novoalign](https://www.novocraft.com/buy-now/) in `bin/`, if not detected, it uses `bowtie2` as replacement automatically. 
+The License file of `Novoalign` should be put in the `bin/` folder `before` running `bash index.sh`. </li>
+<li> SpecHLA now supports Linux and Windows WSL.</li>
+<li> SpecHLA does not accept short single-end reads.</li>
+</ul>
 
 ## Test
 Please go to the `example/` folder, run SpecHLA with given scripts, and find results in the `output/`.
 
 ## Basic Usage  
+
+### Main functions
+| Output | Description |
+| --- | --- |
+|script/ExtractHLAread.sh| Extract HLA reads.|
+|script/whole/SpecHLA.sh| HLA typing with paired-end (PE), PE+long-reads, PE+HiC, or PE+10X data.  |
+|script/long_read_typing.py|HLA typing with only long-read data.|
+|script/cal.hla.copy.pl|Detect HLA LOH events based on typing SpecHLA's results.|
+
+
 ### Extract HLA-related reads
-We should first extract HLA reads with enrichment-free data. Please map the reads to `hg19` or `hg38`, then use the `ExtractHLAread.sh` in `script/` folder to extract HLA-related reads. We use the script of [Kourami](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-018-1388-2) with minor revision for this step. 
+First extract HLA reads with enrichment-free data. Otherwise, HLA typing would be slow. Map reads to `hg19` or `hg38`, then use `script/ExtractHLAread.sh` to extract HLA-related reads. We use the script of [Kourami](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-018-1388-2) with minor revision for this step. 
 Extract HLA-related reads by
 ```
 USAGE: bash script/ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome> -o <outdir>
@@ -36,94 +56,118 @@ USAGE: bash script/ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome> 
 ```
 
 ### HLA Typing 
-Full-resolution and exon HLA typing with paired-end reads. SpecHLA can use PacBio, Nanopore, Hi-C, and 10X data to improve the phasing performance if provided. 
+Full-resolution and exon HLA typing using SpecHLA. With WES or RNASeq data, must perform exon typing.
 
 Perform full-resolution HLA typing with `paired-end` reads by
 ```
-sh script/whole/SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/
+bash script/whole/SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/
 ```
-Perform exon HLA typing with paired-end reads by
+Perform exon HLA typing with `paired-end` reads by
 ```
-sh script/whole/SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ -u 1
+bash script/whole/SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ -u 1
 ```
 Perform full-resolution HLA typing with `paired-end` reads and `PacBio` reads by
 ```
-sh script/whole/SpecHLA.sh -n <sample> -t <sample.pacbio.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
+bash script/whole/SpecHLA.sh -n <sample> -t <sample.pacbio.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
 Perform full-resolution HLA typing with `paired-end` reads and `Nanopore` reads by
 ```
-sh script/whole/SpecHLA.sh -n <sample> -e <sample.nanopore.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
+bash script/whole/SpecHLA.sh -n <sample> -e <sample.nanopore.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
 Perform full-resolution HLA typing with `paired-end` reads and `Hi-C` reads by
 ```
-sh script/whole/SpecHLA.sh -n <sample> -c <sample.hic.fwd.fq.gz> -d <sample.hic.rev.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
+bash script/whole/SpecHLA.sh -n <sample> -c <sample.hic.fwd.fq.gz> -d <sample.hic.rev.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
 Perform full-resolution HLA typing with `paired-end` reads and `10X` linked reads by (LongRanger should be installed in system env)
 ```
-sh script/whole/SpecHLA.sh -n <sample> -x <sample.10x.read.folder> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
+bash script/whole/SpecHLA.sh -n <sample> -x <sample.10x.read.folder> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
 Consider `long Indels` and use `population information` for annotation by
 ```
-sh script/whole/SpecHLA.sh -n <sample> -v True -p <Asia> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
-```
-Perform full-resolution HLA typing only with `long reads` by 
-```
-python3 script/long_read_typing.py -n <sample> -r <Pacbio or Nanopore reads> -o outdir/ 
+bash script/whole/SpecHLA.sh -n <sample> -v True -p <Asia> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
 
-### Full arguments
+Full arguments can be seen in
 ```
-SpecHLA: Full-resolution HLA typing from paired-end, PacBio, Nanopore,
-Hi-C, and 10X sequencing. Supports WGS, WES, and RNASeq data.
+SpecHLA: Full-resolution HLA typing from paired-end, PacBio, Nanopore, Hi-C, and 10X data.
+WGS, WES, and RNASeq data are supported.
 
+Note:
+  1) Use HLA reads only, otherwise, it would be slow. Use ExtractHLAread.sh to extract HLA reads first.
+  2) With WES or RNASeq data, must select exon typing  (-u 0).
+  3) Short single-end read data are not supported.
 
 Usage:
-  sh SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
+  bash SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o <outdir>
 
 Options:
   -n        Sample ID. <required>
-  -1        The first fastq file. <required>
-  -2        The second fastq file. <required>
-  -o        The output folder to store the typing results.
-  -u        Choose full-length or exon typing. 0 indicates full-length, 1 means exon,
-            default is to perform full-length typing.
-  -p        The population of the sample [Asian, Black, Caucasian, Unknown, nonuse].
-            Default is Unknown, meaning use mean frequency. nonuse indicates only adopting
-            mapping score and considering alleles with frequency as zero.
+  -1        The first fastq file of paired-end data. <required>
+  -2        The second fastq file of paired-end data. <required>
+  -o        The output folder to store the typing results. Default is ./output
+  -u        Choose full-length or exon typing [0|1]. 0 indicates full-length, 1 means exon,
+            default is 0. With Exome or RNA data, must select 1 (i.e., exon typing).
+  -p        The population of the sample [Asian, Black, Caucasian, Unknown, nonuse] for annotation.
+            Default is Unknown, meaning use mean allele frequency in all populations. nonuse indicates
+            only adopting mapping score and considering zero-frequency alleles.
+  -j        Number of threads [5].
   -t        Pacbio fastq file.
   -e        Nanopore fastq file.
   -c        fwd hi-c fastq file.
   -d        rev hi-c fastq file.
   -x        Path of folder created by 10x demultiplexing. Prefix of the filenames of FASTQs
             should be the same as Sample ID. Please install Longranger in the system env.
-  -w        The weight to use linkage info from genotype frequency [0-1], default is 0 that means
-            not use, 1 means only use imbalance info, other values integrate use both.
-  -j        Number of threads [5]
+  -w        The weight to use allele imbalance info for phasing [0-1]. Default is 0 that means
+            not use. 1 means only use imbalance info; other values integrate reads and allele imbalance info.
   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
             is 2. It should be set larger to infer novel alleles.
-  -y        The minimum different mapping score between the best- and second-best aligned gene.
+  -y        The minimum different mapping score between the best and second-best aligned genes.
             Discard the read if the score is lower than this value. Deault is 0.1.
-  -v        True or False. Consider long InDels if True, else only consider short variants.
+  -v        True or False. Consider long InDels if True, else only consider small variants.
             Default is False.
   -q        Minimum variant quality. Default is 0.01. Set it larger in high quality samples.
   -s        Minimum variant depth. Default is 5.
   -a        Use this long InDel file if provided.
   -r        The minimum Minor Allele Frequency (MAF), default is 0.05 for full length and
             0.1 for exon typing.
-  -g        Whether use G-translate in annotation [1|0], default is 0.
+  -g        Whether use G group resolution annotation [0|1], default is 0 (i.e., not use).
   -k        The mean depth in a window lower than this value will be masked by N, default is 5.
             Set 0 to avoid masking.
   -z        Whether only mask exon region, True or False, default is False.
-  -f        The trio infromation; child:parent_1:parent_2 [Example: NA12878:NA12891:NA12892].
-            Note: this parameter should be used after performing SpecHLA already.
-  -b        Whether use database for unlinked block phasing [1|0], default is 1.
+  -f        The trio infromation; child:parent_1:parent_2 [Example: NA12878:NA12891:NA12892]. If provided,
+            use trio info to improve typing. Note: use it after performing SpecHLA once already.
+  -b        Whether use database for unlinked block phasing [0|1], default is 1 (i.e., use).
   -h        Show this message.
+```
+
+### HLA typing with long-read data alone
+Perform HLA typing only with `long reads` by 
+```
+usage: python3 script/long_read_typing.py -h
+
+HLA Typing with only long-read data.
+
+Required arguments:
+  -r        Long-read fastq file. PacBio or Nanopore. (default: None)
+  -n        Sample ID (default: None)
+  -o        The output folder to store the typing results. (default: ./output)
+
+Optional arguments:
+  -p        The population of the sample [Asian, Black, Caucasian, Unknown, nonuse] for annotation. Unknown means
+              use mean allele frequency in all populations. nonuse indicates only adopting mapping score and
+              considering zero-frequency alleles. (default: Unknown)
+  -j        Number of threads. (default: 5)
+  -d        Minimum score difference to assign a read to a gene. (default: 0.001)
+  -g        Whether use G group resolution annotation [0|1]. (default: 0)
+  -m        1 represents typing, 0 means only read assignment (default: 1)
+  -a        Prefix of filtered fastq file. (default: long_read)
+  -h, --help
 ```
 
 ### Pedigree phasing
 After performing HLA typing, we can afford trio information to update the results of child by
 ```
-sh script/SpecHLA.sh -n <child> -1 <child.fq.1.gz> -2 <child.fq.2.gz> -o outdir/ --trio child:parent1:parent2
+bash script/SpecHLA.sh -n <child> -1 <child.fq.1.gz> -2 <child.fq.2.gz> -o outdir/ --trio child:parent1:parent2
 ```
 The fresh results can be found in the trio/ folder inside the original result folder.
 

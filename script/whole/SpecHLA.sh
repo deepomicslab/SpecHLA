@@ -1,50 +1,54 @@
 #!/bin/bash
 
 ###
-### SpecHLA: Full-resolution HLA typing from paired-end, PacBio, Nanopore,
-### Hi-C, and 10X sequencing. Supports WGS, WES, and RNASeq data.
+### SpecHLA: Full-resolution HLA typing from paired-end, PacBio, Nanopore, Hi-C, and 10X data.
+### WGS, WES, and RNASeq data are supported. 
 ### 
+### Note: 
+###   1) Use HLA reads only, otherwise, it would be slow. Use ExtractHLAread.sh to extract HLA reads first.
+###   2) With WES or RNASeq data, must select exon typing  (-u 0).
+###   3) Short single-end read data are not supported.
 ###
 ### Usage:
-###   sh SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
+###   bash SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o <outdir>
 ###
 ### Options:
 ###   -n        Sample ID. <required>
-###   -1        The first fastq file. <required>
-###   -2        The second fastq file. <required>
-###   -o        The output folder to store the typing results.
-###   -u        Choose full-length or exon typing. 0 indicates full-length, 1 means exon, 
-###             default is to perform full-length typing.
-###   -p        The population of the sample [Asian, Black, Caucasian, Unknown, nonuse]. 
-###             Default is Unknown, meaning use mean frequency. nonuse indicates only adopting 
-###             mapping score and considering alleles with frequency as zero. 
+###   -1        The first fastq file of paired-end data. <required> 
+###   -2        The second fastq file of paired-end data. <required>
+###   -o        The output folder to store the typing results. Default is ./output
+###   -u        Choose full-length or exon typing [0|1]. 0 indicates full-length, 1 means exon, 
+###             default is 0. With Exome or RNA data, must select 1 (i.e., exon typing).
+###   -p        The population of the sample [Asian, Black, Caucasian, Unknown, nonuse] for annotation. 
+###             Default is Unknown, meaning use mean allele frequency in all populations. nonuse indicates  
+###             only adopting mapping score and considering zero-frequency alleles. 
+###   -j        Number of threads [5].
 ###   -t        Pacbio fastq file.
 ###   -e        Nanopore fastq file.
 ###   -c        fwd hi-c fastq file.
 ###   -d        rev hi-c fastq file.
 ###   -x        Path of folder created by 10x demultiplexing. Prefix of the filenames of FASTQs
 ###             should be the same as Sample ID. Please install Longranger in the system env.
-###   -w        The weight to use linkage info from genotype frequency [0-1], default is 0 that means 
-###             not use, 1 means only use imbalance info, other values integrate use both.
-###   -j        Number of threads [5]
+###   -w        The weight to use allele imbalance info for phasing [0-1]. Default is 0 that means 
+###             not use. 1 means only use imbalance info; other values integrate reads and allele imbalance info.
 ###   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
 ###             is 2. It should be set larger to infer novel alleles.
-###   -y        The minimum different mapping score between the best- and second-best aligned gene. 
+###   -y        The minimum different mapping score between the best and second-best aligned genes. 
 ###             Discard the read if the score is lower than this value. Deault is 0.1. 
-###   -v        True or False. Consider long InDels if True, else only consider short variants. 
+###   -v        True or False. Consider long InDels if True, else only consider small variants. 
 ###             Default is False. 
 ###   -q        Minimum variant quality. Default is 0.01. Set it larger in high quality samples.
 ###   -s        Minimum variant depth. Default is 5.
 ###   -a        Use this long InDel file if provided.
 ###   -r        The minimum Minor Allele Frequency (MAF), default is 0.05 for full length and
 ###             0.1 for exon typing.
-###   -g        Whether use G-translate in annotation [1|0], default is 0.
+###   -g        Whether use G group resolution annotation [0|1], default is 0 (i.e., not use).
 ###   -k        The mean depth in a window lower than this value will be masked by N, default is 5.
 ###             Set 0 to avoid masking.
 ###   -z        Whether only mask exon region, True or False, default is False.
-###   -f        The trio infromation; child:parent_1:parent_2 [Example: NA12878:NA12891:NA12892]. 
-###             Note: this parameter should be used after performing SpecHLA already.
-###   -b        Whether use database for unlinked block phasing [1|0], default is 1.
+###   -f        The trio infromation; child:parent_1:parent_2 [Example: NA12878:NA12891:NA12892]. If provided, 
+###             use trio info to improve typing. Note: use it after performing SpecHLA once already.
+###   -b        Whether use database for unlinked block phasing [0|1], default is 1 (i.e., use).
 ###   -h        Show this message.
 
 help() {

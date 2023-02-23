@@ -307,7 +307,7 @@ def check_trio_consistency(record_best_match, trio_list):
 
 if __name__ == "__main__":
     # sample = "HG00096"
-    minimap_path = "~/softwares/SpecHLA/bin/minimap2"
+    minimap_path = "minimap2"
     # https://github.com/ANHIG/IMGTHLA/blob/Latest/fasta/hla_gen.fasta
     raw_HLA_data = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/hla_gen.fasta"
     HLA_data = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/hla_gen.rename.fasta"

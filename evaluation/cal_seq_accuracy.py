@@ -248,14 +248,14 @@ class Seq_error_accelerate():
             # blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7
             # """
             # if not os.path.isfile(f"{self.truth_hap_file}.nhr"):
-            os.system(f"/home/wangshuai/softwares/SpecHLA/bin/makeblastdb -in {self.truth_hap_file} -dbtype nucl -out {self.truth_hap_file}")
+            os.system(f"makeblastdb -in {self.truth_hap_file} -dbtype nucl -out {self.truth_hap_file}")
             command = f"""
-            /home/wangshuai/softwares/SpecHLA/bin/blastn -query {self.infer_hap_file} -out {self.blast_file} -db {self.truth_hap_file} -outfmt 7 -num_threads 10
+            blastn -query {self.infer_hap_file} -out {self.blast_file} -db {self.truth_hap_file} -outfmt 7 -num_threads 10
             """
         elif flag == "somewhat":
             # Somewhat similar sequences (blastn) in https://blast.ncbi.nlm.nih.gov/Blast.cgi
             command = f"""
-            /home/wangshuai/softwares/SpecHLA/bin/blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 -evalue 0.05 \
+            blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 -evalue 0.05 \
                 -word_size 11 -reward 2 -penalty -3 -gapopen 5 -gapextend 2 
             """
         print (command)
