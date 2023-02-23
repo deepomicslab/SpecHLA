@@ -204,10 +204,10 @@ Also, users can install the softwares by themselves, please remind link the exec
 To apply [Novoalign](https://www.novocraft.com/buy-now/), please put the novoalign.lic (License file) in the `bin/` folder.
 
 * Third party packages:
-    * SamTools-1.3
+    * SamTools-1.3.1
     * bamutil Version: 1.0.14
     * BWA-0.7.17-r1188
-    * blast 2.3.0
+    * blast 2.12.0
     * BLAT v. 36x2
     * bedtools-v2.26.0
     * bcftools-Version: 1.9

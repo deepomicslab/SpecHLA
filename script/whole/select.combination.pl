@@ -113,7 +113,7 @@ while(my $file=<TE>){
         }
         close TE;
         close OUT;
-        `$bin/blastn -query $dir/$class.total.fasta -out $dir/$class.blast.out1 -db $ref -outfmt 6 -num_threads 4 -max_target_seqs 10 `;
+        `blastn -query $dir/$class.total.fasta -out $dir/$class.blast.out1 -db $ref -outfmt 6 -num_threads 4 -max_target_seqs 10 `;
         open BIN, "$dir/$class.blast.out1" or die "$!\n";
         my (%hash1, %hash2,%hash3, %hashas, %hashhk, %hash4);
         while(<BIN>){

@@ -104,7 +104,7 @@ sub exon_blast{
                 `echo ">$class.$i" >$workdir/$class.$i.temp.fasta`;
                 `less $fa |grep -v ">" >>$workdir/$class.$i.temp.fasta`;
                 my $seq = `less $fa|grep -v ">"`; chomp $seq; $seq=~s/\s+//g;
-                system("$bin/blastn -query $workdir/$class.$i.temp.fasta -out $workdir/$class.$i.blast.out1 -db $ref -outfmt 6 -num_threads 4 -max_target_seqs 6000") ;           
+                system("blastn -query $workdir/$class.$i.temp.fasta -out $workdir/$class.$i.blast.out1 -db $ref -outfmt 6 -num_threads 4 -max_target_seqs 6000") ;           
      ## Read blast result
                 open BIN, "$workdir/$class.$i.blast.out1" or die "$!\n";
                 my (%hash1, %hash2,%hash3, %hashas, %hashhk, %hash4);
@@ -200,7 +200,7 @@ sub whole_blast{
                        $fa = "$fadir/$class.temp.fasta";
                }
                my $tag = "$class"."_"."$i";
-               system("$bin/blastn -query $fa -out $workdir/$tag.blast.out1 -db $ref -outfmt 7 -num_threads 4 -max_target_seqs 6000 ");
+               system("blastn -query $fa -out $workdir/$tag.blast.out1 -db $ref -outfmt 7 -num_threads 4 -max_target_seqs 6000 ");
                my (%hash_max,%hash11,%hash12, %hash21, %hash22,$gene,$score);
                ## read blast score
                open IN1, "$workdir/$tag.blast.out1" or die "$!\n";

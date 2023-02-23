@@ -18,8 +18,8 @@ def blast_map(fragment1):
     samtools faidx {hla_ref} {fragment1}  | $bin/bcftools consensus -H 1 {vcf} >{outdir}/{fragment1}_hap1.fasta
     samtools faidx {hla_ref} {fragment1}  | $bin/bcftools consensus -H 2 {vcf} >{outdir}/{fragment1}_hap2.fasta
 
-    $bin/blastn -query {outdir}/{fragment1}_hap1.fasta -out {outdir}/{fragment1}_hap1.fasta.out -subject {gene_db} -outfmt 6 -max_target_seqs 10000 -strand plus
-    $bin/blastn -query {outdir}/{fragment1}_hap2.fasta -out {outdir}/{fragment1}_hap2.fasta.out -subject {gene_db} -outfmt 6 -max_target_seqs 10000 -strand plus
+    blastn -query {outdir}/{fragment1}_hap1.fasta -out {outdir}/{fragment1}_hap1.fasta.out -subject {gene_db} -outfmt 6 -max_target_seqs 10000 -strand plus
+    blastn -query {outdir}/{fragment1}_hap2.fasta -out {outdir}/{fragment1}_hap2.fasta.out -subject {gene_db} -outfmt 6 -max_target_seqs 10000 -strand plus
 
     """
     os.system(command)

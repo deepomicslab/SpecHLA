@@ -1165,10 +1165,10 @@ def dup_region_type(outdir, strainsNum, bamfile):
         ref=%s/../db/ref/DRB1_dup_extract_ref.fasta
         samtools view -f 64 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##1 "$2,$3}' > $outdir/extract.fa
         samtools view -f 128 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##2 "$2,$3}' >> $outdir/extract.fa
-        %s/../bin/blastn -query $outdir/extract.fa -out $outdir/extract.read.blast -db $ref -outfmt 6 -strand plus  -penalty -1 -reward 1 -gapopen 4 -gapextend 1
+        blastn -query $outdir/extract.fa -out $outdir/extract.read.blast -db $ref -outfmt 6 -strand plus  -penalty -1 -reward 1 -gapopen 4 -gapextend 1
         perl %s/count.read.pl $outdir
         less $outdir/DRB1.hla.count| sort -k3,3nr -k4,4nr | head -n $k |awk '$3>0.7'|awk '$4>5' >$outdir/select.DRB1.seq.txt
-        """%(bamfile, outdir, strainsNum, sys.path[0], sys.path[0], sys.path[0])
+        """%(bamfile, outdir, strainsNum, sys.path[0], sys.path[0])
     os.system(order)
 
 def long_InDel_breakpoints(bfile):

@@ -11,6 +11,7 @@ dependencies:
   - bamutil=1.0.14=h8b12597_5
   - bedtools=2.26.0=0
   - biopython=1.79=py38h497a2fe_1
+  - blast=2.12.0=hf3cf87c_4
   - blat=35=2
   - bowtie2=2.4.5=py38hfbc8389_2
   - bwa=0.7.17=h7132678_9
@@ -26,7 +27,9 @@ dependencies:
   - curl=7.83.1=h7bff187_0
   - docutils=0.18.1=py38h578d9bd_1
   - edlib=1.3.9=py38h43d8883_2
+  - entrez-direct=16.2=he881be0_1
   - freebayes=1.3.2=py38h40864fe_2
+  - gettext=0.21.1=h27087fc_0
   - htslib=1.15.1=h9753748_0
   - k8=0.2.5=hd03093a_2
   - keyutils=1.6.1=h166bdaf_0
@@ -44,14 +47,16 @@ dependencies:
   - libgfortran-ng=12.1.0=h69a702a_16
   - libgfortran5=12.1.0=hdcd56e2_16
   - libgomp=12.1.0=h8d9b700_16
+  - libidn2=2.3.4=h166bdaf_0
   - liblapack=3.9.0=14_linux64_openblas
   - liblapacke=3.9.0=14_linux64_openblas
   - libnghttp2=1.47.0=h727a467_0
   - libnsl=2.0.0=h7f98852_0
   - libopenblas=0.3.20=pthreads_h78a6416_0
-  - libpng=1.6.34=ha92aebf_2
+  - libpng=1.6.37=h21135ba_2
   - libssh2=1.10.0=ha56f1ee_2
   - libstdcxx-ng=12.1.0=ha89aaad_16
+  - libunistring=0.9.10=h7f98852_0
   - libzlib=1.2.11=h166bdaf_1014
   - longshot=0.4.5=hc4ca7c3_0
   - lz4-c=1.9.3=h9c3ff4c_1
@@ -63,7 +68,28 @@ dependencies:
   - parallel=20230122=ha770c72_0
   - pbmm2=1.9.0=h9ee0642_0
   - pbsv=2.6.2=h9ee0642_0
+  - pcre=8.45=h9c3ff4c_0
   - perl=5.32.1=2_h7f98852_perl5
+  - perl-archive-tar=2.40=pl5321hdfd78af_0
+  - perl-carp=1.50=pl5321hd8ed1ab_0
+  - perl-common-sense=3.75=pl5321hd8ed1ab_0
+  - perl-compress-raw-bzip2=2.201=pl5321h166bdaf_0
+  - perl-compress-raw-zlib=2.202=pl5321h166bdaf_0
+  - perl-encode=3.19=pl5321h166bdaf_0
+  - perl-exporter=5.74=pl5321hd8ed1ab_0
+  - perl-exporter-tiny=1.002002=pl5321hd8ed1ab_0
+  - perl-extutils-makemaker=7.66=pl5321hd8ed1ab_0
+  - perl-io-compress=2.201=pl5321h87f3376_0
+  - perl-io-zlib=1.14=pl5321hdfd78af_0
+  - perl-json=4.10=pl5321hdfd78af_0
+  - perl-json-xs=2.34=pl5321h9f5acd7_5
+  - perl-list-moreutils=0.430=pl5321hdfd78af_0
+  - perl-list-moreutils-xs=0.430=pl5321hec16e2b_1
+  - perl-parent=0.241=pl5321hd8ed1ab_0
+  - perl-pathtools=3.75=pl5321h166bdaf_0
+  - perl-scalar-list-utils=1.63=pl5321h166bdaf_0
+  - perl-storable=3.15=pl5321h166bdaf_0
+  - perl-types-serialiser=1.01=pl5321hdfd78af_0
   - pip=22.0.4=pyhd8ed1ab_0
   - pulp=2.6.0=py38h578d9bd_1
   - pyparsing=3.0.9=pyhd8ed1ab_0
@@ -81,6 +107,7 @@ dependencies:
   - sqlite=3.38.5=h4ff8645_0
   - tbb=2020.2=h4bd325d_4
   - tk=8.6.12=h27826a3_0
+  - wget=1.20.3=ha56f1ee_1
   - wheel=0.37.1=pyhd8ed1ab_0
   - xz=5.2.5=h516909a_1
   - zlib=1.2.11=h166bdaf_1014
