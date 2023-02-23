@@ -20,7 +20,7 @@ bash script/whole/SpecHLA.sh -h
 
 Note:
 <ul> 
-<li> SpecHLA requires a License of [Novoalign](https://www.novocraft.com/buy-now/) in `bin/`, if not detected, it uses `bowtie2` as replacement automatically. 
+<li> SpecHLA requires a License of <a href="https://www.novocraft.com/buy-now/">Novoalign</a> in `bin/`, if not detected, it uses `bowtie2` as replacement automatically. 
 The License file of `Novoalign` should be put in the `bin/` folder `before` running `bash index.sh`. </li>
 <li> SpecHLA now supports Linux and Windows WSL.</li>
 <li> SpecHLA does not accept short single-end reads.</li>
@@ -32,7 +32,7 @@ Please go to the `example/` folder, run SpecHLA with given scripts, and find res
 ## Basic Usage  
 
 ### Main functions
-| Output | Description |
+| Scripts | Description |
 | --- | --- |
 |script/ExtractHLAread.sh| Extract HLA reads.|
 |script/whole/SpecHLA.sh| HLA typing with paired-end (PE), PE+long-reads, PE+HiC, or PE+10X data.  |
