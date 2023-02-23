@@ -19,12 +19,12 @@ bash script/whole/SpecHLA.sh -h
 ```
 
 Note:
-<ul> 
-<li> SpecHLA requires a License of <a href="https://www.novocraft.com/buy-now/">Novoalign</a> in `bin/`, if not detected, it uses `bowtie2` as replacement automatically. 
-The License file of `Novoalign` should be put in the `bin/` folder `before` running `bash index.sh`. </li>
-<li> SpecHLA now supports Linux and Windows WSL.</li>
-<li> SpecHLA does not accept short single-end reads.</li>
-</ul>
+
+- SpecHLA requires a License of [Novoalign](https://www.novocraft.com/buy-now/) in `bin/`. If not detected, it uses `bowtie2` as replacement automatically. 
+The License file of `Novoalign` should be put in the `bin/` folder `before` running `bash index.sh`. 
+- SpecHLA now supports Linux and Windows WSL.
+- SpecHLA does not accept short single-end reads.
+
 
 ## Test
 Please go to the `example/` folder, run SpecHLA with given scripts, and find results in the `output/`.
