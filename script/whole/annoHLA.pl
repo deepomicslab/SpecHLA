@@ -160,43 +160,43 @@ sub whole_blast{
                #extract the diversity region for annotation
                if($class eq "HLA_DQB1"){
                        my $j = $i -1;
-                       `$bin/samtools faidx $fa $class\_$j:500-2400 $class\_$j:5200-7300 >$fadir/$class.temp.fasta`;
+                       `samtools faidx $fa $class\_$j:500-2400 $class\_$j:5200-7300 >$fadir/$class.temp.fasta`;
                        $fa = "$fadir/$class.temp.fasta";
                }
                if($class eq "HLA_DQA1"){
                        my $j = $i -1;
-                       `$bin/samtools faidx $fa $class\_$j:500-900 $class\_$j:4600-6100 >$fadir/$class.temp.fasta`;
+                       `samtools faidx $fa $class\_$j:500-900 $class\_$j:4600-6100 >$fadir/$class.temp.fasta`;
                        $fa = "$fadir/$class.temp.fasta";
                }
                if($class eq "HLA_DPA1"){
                        my $j = $i -1;
-                       `$bin/samtools faidx $fa $class\_$j:400-700 $class\_$j:4200-5500 >$fadir/$class.temp.fasta`;
+                       `samtools faidx $fa $class\_$j:400-700 $class\_$j:4200-5500 >$fadir/$class.temp.fasta`;
                        $fa = "$fadir/$class.temp.fasta";
                }
                if($class eq "HLA_DPB1"){
                        my $j = $i -1;
-                       `$bin/samtools faidx $fa $class\_$j:300-600 $class\_$j:5000-5300 $class\_$j:9200-10600 >$fadir/$class.temp.fasta`;
+                       `samtools faidx $fa $class\_$j:300-600 $class\_$j:5000-5300 $class\_$j:9200-10600 >$fadir/$class.temp.fasta`;
                        $fa = "$fadir/$class.temp.fasta";
                }
                if($class eq "HLA_DRB1"){
                        my $j = $i -1;
-                       `$bin/samtools faidx $fa $class\_$j:100-11000 >$fadir/$class.temp.fasta`;
+                       `samtools faidx $fa $class\_$j:100-11000 >$fadir/$class.temp.fasta`;
                        $fa = "$fadir/$class.temp.fasta";
                }
                if($class eq "HLA_A"){
                        my $j = $i -1;
-                       `$bin/samtools faidx $fa $class\_$j:100-3300 >$fadir/$class.temp.fasta`;
+                       `samtools faidx $fa $class\_$j:100-3300 >$fadir/$class.temp.fasta`;
                        $fa = "$fadir/$class.temp.fasta";
                }
 
                if($class eq "HLA_B"){
                        my $j = $i -1;
-                       `$bin/samtools faidx $fa $class\_$j:150-4000 >$fadir/$class.temp.fasta`;
+                       `samtools faidx $fa $class\_$j:150-4000 >$fadir/$class.temp.fasta`;
                        $fa = "$fadir/$class.temp.fasta";
                }
                  if($class eq "HLA_C"){
                        my $j = $i -1;
-                       `$bin/samtools faidx $fa $class\_$j:400-3500 >$fadir/$class.temp.fasta`;
+                       `samtools faidx $fa $class\_$j:400-3500 >$fadir/$class.temp.fasta`;
                        $fa = "$fadir/$class.temp.fasta";
                }
                my $tag = "$class"."_"."$i";
@@ -272,7 +272,7 @@ foreach my $hla(@hlas){
                  $score = sprintf "%.3f", $score;
                  #DRB1*14:01 and DRB1*14:54 differ in HLA_DRB1:9519
                  if($allele =~ /DRB1\*14:01/){
-                          system("$bin/samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf");
+                          system("samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf");
                           open TE, "$workdir/snp.vcf" or die "$!\n";
                           while(<TE>){
                                  chomp;
@@ -284,7 +284,7 @@ foreach my $hla(@hlas){
                  }
                  #C*07:01 and C*07:18 differ in HLA_C:4061
                  if($allele =~ /C\*07:01/ && $wxs eq "exon"){
-                          system("$bin/samtools  mpileup -r HLA_C:4061-4061 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf");
+                          system("samtools  mpileup -r HLA_C:4061-4061 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf");
                           open TE, "$workdir/snp.vcf" or die "$!\n";
                           while(<TE>){
                                  chomp;

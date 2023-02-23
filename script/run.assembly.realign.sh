@@ -21,8 +21,8 @@ do
 hla=`echo $pos|cut -d ":" -f 1`
 ref=$db/HLA/$hla/$hla
 
-$sdir/samtools view --threads $thread -f 64 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##1 "$2,$3}' > $outdir/extract.fa
-$sdir/samtools view --threads $thread -f 128 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##2 "$2,$3}' >> $outdir/extract.fa
+samtools view --threads $thread -f 64 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##1 "$2,$3}' > $outdir/extract.fa
+samtools view --threads $thread -f 128 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##2 "$2,$3}' >> $outdir/extract.fa
 
 if [ ! -f "$outdir/extract.fa" ]
 then
@@ -46,19 +46,19 @@ if [ ! -f "$outdir/id.list" ]
 then
 	echo "$pos bad contig"
 else
-        $sdir/samtools faidx $outdir/prefix2.mag.fa 
+        samtools faidx $outdir/prefix2.mag.fa 
         rm -rf $outdir/assembly.fa
         for id in `cat $outdir/id.list`
         do
-	     $sdir/samtools faidx $outdir/prefix2.mag.fa $id >> $outdir/assembly.fa
+	     samtools faidx $outdir/prefix2.mag.fa $id >> $outdir/assembly.fa
         done
 
         $sdir/blastn -num_threads $thread -query $outdir/assembly.fa -out $outdir/assembly.blast -db $ref -strand plus -penalty -1 -reward 1 -gapopen 4 -gapextend 1 -line_length 700
         perl $sdir/blast2sam.pl $outdir/assembly.blast > $outdir/assembly.blast.sam
 
-        $sdir/bwa index $outdir/assembly.fa
-        $sdir/bwa mem -t $thread -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 $outdir/assembly.fa $outdir/extract.fa | $sdir/samtools view --threads $thread -Sb -F 4 - | $sdir/samtools sort --threads $thread - > $outdir/rematch.bam
-        $sdir/samtools view --threads $thread -F 0x800 $outdir/rematch.bam|cut -f 1,3,4,6 > $outdir/rematch.bam.txt
+        bwa index $outdir/assembly.fa
+        bwa mem -t $thread -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 $outdir/assembly.fa $outdir/extract.fa | samtools view --threads $thread -Sb -F 4 - | samtools sort --threads $thread - > $outdir/rematch.bam
+        samtools view --threads $thread -F 0x800 $outdir/rematch.bam|cut -f 1,3,4,6 > $outdir/rematch.bam.txt
         perl $dir/rematchblast.pl $outdir/assembly.blast.sam $outdir/extract.fa $outdir/rematch.bam.txt $outdir/rematch.read.format.txt 30
         cat $outdir/rematch.read.format.txt >>$outdir/rematch.total.read.format.txt
        
@@ -70,7 +70,7 @@ rm -rf $outdir/prefix2* $outdir/id.list
 done
 
 $dir/../spechla_env/bin/python3 $dir/realignblast.py -i $bam -o $outdir/$sample.realign.bam -r $outdir/rematch.total.read.format.txt
-$sdir/samtools sort --threads $thread $outdir/$sample.realign.bam > $outdir/$sample.realign.sort.bam
+samtools sort --threads $thread $outdir/$sample.realign.bam > $outdir/$sample.realign.sort.bam
 #java -jar $sdir/picard.jar FixMateInformation I=$outdir/$sample.realign.sort.bam O=$outdir/$sample.realign.sort.fixmate.bam
-$sdir/samtools index $outdir/$sample.realign.sort.bam
+samtools index $outdir/$sample.realign.sort.bam
 

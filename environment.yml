@@ -1,18 +1,22 @@
 name: /home/wangshuai/softwares/SpecHLA/spechla_env
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_gnu
   - amply=0.1.5=pyhd8ed1ab_0
   - arpack=3.8.0=nompi_h0baa96a_101
+  - bamutil=1.0.14=h8b12597_5
+  - bedtools=2.26.0=0
   - biopython=1.79=py38h497a2fe_1
+  - blat=35=2
   - bowtie2=2.4.5=py38hfbc8389_2
+  - bwa=0.7.17=h7132678_9
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.18.1=h7f98852_0
-  - ca-certificates=2022.9.24=ha878542_0
+  - ca-certificates=2022.12.7=ha878542_0
   - coin-or-cbc=2.10.8=h3786ebc_0
   - coin-or-cgl=0.60.6=he2f9439_0
   - coin-or-clp=1.17.6=h256e9bb_3
@@ -21,7 +25,10 @@ dependencies:
   - coincbc=2.10.8=0_metapackage
   - curl=7.83.1=h7bff187_0
   - docutils=0.18.1=py38h578d9bd_1
+  - edlib=1.3.9=py38h43d8883_2
+  - freebayes=1.3.2=py38h40864fe_2
   - htslib=1.15.1=h9753748_0
+  - k8=0.2.5=hd03093a_2
   - keyutils=1.6.1=h166bdaf_0
   - krb5=1.19.3=h3790be6_0
   - ld_impl_linux-64=2.36.1=hea4e1c9_2
@@ -32,6 +39,7 @@ dependencies:
   - libedit=3.1.20191231=he28a2e2_2
   - libev=4.33=h516909a_1
   - libffi=3.4.2=h7f98852_5
+  - libgcc=7.2.0=h69d50b8_2
   - libgcc-ng=12.1.0=h8d9b700_16
   - libgfortran-ng=12.1.0=h69a702a_16
   - libgfortran5=12.1.0=hdcd56e2_16
@@ -41,16 +49,20 @@ dependencies:
   - libnghttp2=1.47.0=h727a467_0
   - libnsl=2.0.0=h7f98852_0
   - libopenblas=0.3.20=pthreads_h78a6416_0
+  - libpng=1.6.34=ha92aebf_2
   - libssh2=1.10.0=ha56f1ee_2
   - libstdcxx-ng=12.1.0=ha89aaad_16
   - libzlib=1.2.11=h166bdaf_1014
   - longshot=0.4.5=hc4ca7c3_0
   - lz4-c=1.9.3=h9c3ff4c_1
+  - minimap2=2.17=h5bf99c6_4
   - ncurses=6.3=h27087fc_1
   - numpy=1.22.3=py38h99721a1_2
-  - openssl=1.1.1s=h166bdaf_0
+  - openssl=1.1.1t=h0b41bf4_0
   - pandas=1.2.5=py38h295c915_0
+  - parallel=20230122=ha770c72_0
   - pbmm2=1.9.0=h9ee0642_0
+  - pbsv=2.6.2=h9ee0642_0
   - perl=5.32.1=2_h7f98852_perl5
   - pip=22.0.4=pyhd8ed1ab_0
   - pulp=2.6.0=py38h578d9bd_1
@@ -62,6 +74,7 @@ dependencies:
   - pytz=2022.1=py38h06a4308_0
   - pyvcf=0.6.8=py38h32f6830_1002
   - readline=8.1=h46c0cb4_0
+  - samtools=1.3.1=h9071d68_10
   - scipy=1.8.0=py38h56a6a73_1
   - setuptools=62.3.2=py38h578d9bd_0
   - six=1.16.0=pyhd3eb1b0_1

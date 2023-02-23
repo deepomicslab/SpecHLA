@@ -6,7 +6,7 @@ outdir = sys.argv[1]
 detail_anno = outdir + "/hla.result.details.txt"
 top_allele_fasta = outdir + "/top_allele.fasta"
 top_allele_fastq = outdir + "/top_allele.fastq"
-samtools = sys.path[0] + "/../../bin/samtools"
+samtools = sys.path[0] + "samtools"
 db_dir = sys.path[0] + "/../../db/HLA/whole/"
 f=open(top_allele_fasta, 'w')
 f.close()

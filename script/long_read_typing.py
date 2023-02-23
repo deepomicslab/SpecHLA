@@ -122,7 +122,7 @@ class Pacbio_Binning():
         outdir={parameter.outdir}
         bin={sys.path[0]}/../bin
         sample={parameter.sample}
-        $bin/minimap2 -t {parameter.threads} -p 0.1 -N 100000 -a $ref $fq > $outdir/$sample.db.sam
+        minimap2 -t {parameter.threads} -p 0.1 -N 100000 -a $ref $fq > $outdir/$sample.db.sam
         echo alignment done.
         """
         os.system(alignDB_order)
@@ -204,8 +204,8 @@ class Fasta():
             i=%s
             j=%s
             hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-            $bin/minimap2 -t %s -a $hla_ref $outdir/$hla.%s.fq.gz | $bin/samtools view -bS -F 0x800 -| $bin/samtools sort - >$outdir/$hla.bam
-            $bin/samtools index $outdir/$hla.bam
+            minimap2 -t %s -a $hla_ref $outdir/$hla.%s.fq.gz | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
+            samtools index $outdir/$hla.bam
 
 
             longshot -F  --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
@@ -216,11 +216,11 @@ class Fasta():
             bgzip -f $outdir/$sample.$hla.phased.vcf
             tabix -f $outdir/$sample.$hla.phased.vcf.gz
 
-            $bin/samtools faidx $hla_ref %s |$bin/bcftools consensus -H $i $outdir/$sample.$hla.phased.vcf.gz >$outdir/hla.allele.$i.HLA_$hla.raw.fasta
+            samtools faidx $hla_ref %s |$bin/bcftools consensus -H $i $outdir/$sample.$hla.phased.vcf.gz >$outdir/hla.allele.$i.HLA_$hla.raw.fasta
             echo ">HLA_%s_$j" >$outdir/hla.allele.$i.HLA_$hla.fasta
             cat $outdir/hla.allele.$i.HLA_$hla.raw.fasta|grep -v ">" >>$outdir/hla.allele.$i.HLA_$hla.fasta
             
-            $bin/samtools faidx $outdir/hla.allele.$i.HLA_$hla.fasta        
+            samtools faidx $outdir/hla.allele.$i.HLA_$hla.fasta        
             """%(parameter.sample, parameter.bin, parameter.db, parameter.outdir, gene, index+1, index,parameter.threads, args["a"], interval_dict[gene], gene)
             os.system(order)
             # -S -A -Q 10 -E 0.3 -e 5

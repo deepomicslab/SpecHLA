@@ -176,14 +176,14 @@ if [ -f "$license" ];then
         exit 1
     fi
     $bin/novoalign -d $db/ref/$database_prefix.ndx -f $fq1 $fq2 -F STDFQ -o SAM \
-    -o FullNW -r All 100000 --mCPU ${num_threads:-5} -c 10  -g 20 -x 3  | $bin/samtools view \
-    -Sb - | $bin/samtools sort -  > $outdir/$sample.map_database.bam
+    -o FullNW -r All 100000 --mCPU ${num_threads:-5} -c 10  -g 20 -x 3  | samtools view \
+    -Sb - | samtools sort -  > $outdir/$sample.map_database.bam
 else
     echo "Can't detect novoalign license, use bowtie2." 
     bowtie2 --very-sensitive -p ${num_threads:-5} -k 30 -x $db/ref/$database_prefix.fasta -1 $fq1 -2 $fq2|\
-    $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
+    samtools view -bS -| samtools sort - >$outdir/$sample.map_database.bam
 fi
-$bin/samtools index $outdir/$sample.map_database.bam
+samtools index $outdir/$sample.map_database.bam
 $python_bin $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir -d ${mini_score:-0.1} \
 -b ${outdir}/${sample}.map_database.bam -nm ${nm:-2}
 # #############################################################################################################
@@ -191,18 +191,18 @@ $python_bin $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir 
 
 
 # ########### align the gene-specific reads to the corresponding gene reference################################
-$bin/bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 | $bin/samtools view -H  >$outdir/header.sam
+bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 | samtools view -H  >$outdir/header.sam
 #hlas=(A B C)
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
         hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-        $bin/bwa mem -t ${num_threads:-5} -U 10000 -L 10000,10000 -R $group $hla_ref $outdir/$hla.R1.fq.gz $outdir/$hla.R2.fq.gz\
-         | $bin/samtools view -bS -F 0x800 -| $bin/samtools sort - >$outdir/$hla.bam
-        $bin/samtools index $outdir/$hla.bam
+        bwa mem -t ${num_threads:-5} -U 10000 -L 10000,10000 -R $group $hla_ref $outdir/$hla.R1.fq.gz $outdir/$hla.R2.fq.gz\
+         | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
+        samtools index $outdir/$hla.bam
 done
-$bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.merge.bam $outdir/A.bam $outdir/B.bam $outdir/C.bam\
+samtools merge -f -h $outdir/header.sam $outdir/$sample.merge.bam $outdir/A.bam $outdir/B.bam $outdir/C.bam\
  $outdir/DPA1.bam $outdir/DPB1.bam $outdir/DQA1.bam $outdir/DQB1.bam $outdir/DRB1.bam
-$bin/samtools index $outdir/$sample.merge.bam
+samtools index $outdir/$sample.merge.bam
 # ###############################################################################################################
 
 
@@ -214,7 +214,7 @@ else # full length
   assemble_region=$dir/select.region.txt
 fi
 sh $dir/../run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70 $assemble_region ${num_threads:-5}
-$bin/freebayes -a -f $hlaref -p 3 $outdir/$sample.realign.sort.bam > $outdir/$sample.realign.vcf && \
+freebayes -a -f $hlaref -p 3 $outdir/$sample.realign.sort.bam > $outdir/$sample.realign.vcf && \
 rm -rf $outdir/$sample.realign.vcf.gz 
 bgzip -f $outdir/$sample.realign.vcf
 tabix -f $outdir/$sample.realign.vcf.gz
@@ -242,7 +242,7 @@ fi
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
 # ###################### mask low-depth region #############################################
-$bin/samtools depth -aa $bam>$bam.depth  
+samtools depth -aa $bam>$bam.depth  
 if [ $focus_exon_flag == 1 ];then my_mask_exon=True; else my_mask_exon=${mask_exon:-False}; fi
 $python_bin $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d ${mask_depth:-5} -f $my_mask_exon
 
@@ -256,22 +256,22 @@ if [ ${long_indel:-False} == True ] && [ $focus_exon_flag != 1 ]; #don't call lo
 
     if [ ${tgs:-NA} != NA ] # detect long Indel with pacbio
         then
-        $bin/pbmm2 align -j ${num_threads:-5} $hlaref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --sample $sample --rg '@RG\tID:movie1'
-        $bin/samtools view -H $outdir/$sample.movie1.bam >$outdir/header.sam
+        pbmm2 align -j ${num_threads:-5} $hlaref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --sample $sample --rg '@RG\tID:movie1'
+        samtools view -H $outdir/$sample.movie1.bam >$outdir/header.sam
 
         hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
         for hla in ${hlas[@]}; do
                 hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-                $bin/pbmm2 align -j ${num_threads:-5} $hla_ref $outdir/$sample/$hla.pacbio.fq.gz $outdir/$hla.gene.bam --sort --sample $sample --rg '@RG\tID:movie1'
-                $bin/samtools index $outdir/$hla.gene.bam
+                pbmm2 align -j ${num_threads:-5} $hla_ref $outdir/$sample/$hla.pacbio.fq.gz $outdir/$hla.gene.bam --sort --sample $sample --rg '@RG\tID:movie1'
+                samtools index $outdir/$hla.gene.bam
         done
-        $bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.pacbio.bam $outdir/A.gene.bam $outdir/B.gene.bam $outdir/C.gene.bam\
+        samtools merge -f -h $outdir/header.sam $outdir/$sample.pacbio.bam $outdir/A.gene.bam $outdir/B.gene.bam $outdir/C.gene.bam\
         $outdir/DPA1.gene.bam $outdir/DPB1.gene.bam $outdir/DQA1.gene.bam $outdir/DQB1.gene.bam $outdir/DRB1.gene.bam
-        $bin/samtools index $outdir/$sample.pacbio.bam
+        samtools index $outdir/$sample.pacbio.bam
 
 
-        $bin/pbsv discover -l 100 $outdir/$sample.pacbio.bam $outdir/$sample.svsig.gz
-        $bin/pbsv call -t DEL,INS -m 150 -j ${num_threads:-5} $hlaref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
+        pbsv discover -l 100 $outdir/$sample.pacbio.bam $outdir/$sample.svsig.gz
+        pbsv call -t DEL,INS -m 150 -j ${num_threads:-5} $hlaref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
         $python_bin $dir/vcf2bp.py $outdir/$sample.var.vcf $outdir/$sample.tgs.breakpoint.txt
         cat $outdir/$sample.tgs.breakpoint.txt >$bfile
     else # detect long Indel with pair end data.

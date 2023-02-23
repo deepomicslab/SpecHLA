@@ -17,9 +17,8 @@ HLAs=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 perl $pdir/merge_breakpoint.pl $dir/$sample.realign.filter.vcf $outdir/$sample.breakpoint.txt $outdir/$sample.ins.fa          
 for hla in ${HLAs[@]}; do
         hfqfile=$outdir/scanindel.fq.HLA_$hla.list
-        #samtools view -h $bam HLA_$hla | samtools sort -n - |samtools fastq - -1 $outdir/$sample.$hla.1.fastq.gz -2 $outdir/$sample.$hla.2.fastq.gz
         echo "$sample.$hla $dir/$hla.R1.fq.gz $dir/$hla.R2.fq.gz" >$hfqfile
-        $bin/gfServer stop localhost $port
+        gfServer stop localhost $port
         python $pdir/ScanIndel.py -F 0 -p $db/HLA/HLA_$hla.config.txt -i $outdir/scanindel.fq.HLA_$hla.list\
          -o $outdir/ --gfServer_port $port
         if [ -f "$outdir/$sample.$hla.merged.indel.vcf" ];then

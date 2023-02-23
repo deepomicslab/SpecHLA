@@ -206,7 +206,6 @@ To apply [Novoalign](https://www.novocraft.com/buy-now/), please put the novoali
 * Third party packages:
     * SamTools-1.3
     * bamutil Version: 1.0.14
-    * picard-tools-2.1.0 (java 11.0.1)
     * BWA-0.7.17-r1188
     * blast 2.3.0
     * BLAT v. 36x2
@@ -214,7 +213,6 @@ To apply [Novoalign](https://www.novocraft.com/buy-now/), please put the novoali
     * bcftools-Version: 1.9
     * Freebayes-v1.2.0-2-g29c4002
     * Novoalign V4.02.01
-    * Tabix-Version: 1.9
     * ScanIndel v1.3
     * Fermikit-0.13
     * SpecHap v1.0.1 and ExtractHAIRs

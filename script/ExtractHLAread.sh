@@ -52,8 +52,8 @@ sampleid=$outdir/$id
 
 dir=$(cd `dirname $0`; pwd)
 
-samtools_bin=$dir/../bin/samtools
-bamUtil=$dir/../bin/bam
+samtools_bin=samtools
+bamUtil=bam
 
 if [ ! -x "$samtools_bin" ]  || [ ! -x "$bamUtil" ];then
     echo "Please make sure samtools and bamUtil are installed"

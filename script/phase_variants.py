@@ -808,9 +808,9 @@ class Share_reads():
                 id_name[seg_region.strip()] = str(seg[0]) + '_' + str(seg[1]) 
             gap += seg_region
         for i in range(self.strainsNum):
-            order='%s/../bin/samtools faidx %s/../db/ref/hla.ref.extend.fa\
+            order='samtools faidx %s/../db/ref/hla.ref.extend.fa\
                 %s |%s/../bin/bcftools consensus --mask %s -H %s %s/%s.rephase.vcf.gz\
-                      >%s/%s_%s_seg.fa'%(sys.path[0],sys.path[0],gap,sys.path[0],mask_bed,i+1,self.outdir,\
+                      >%s/%s_%s_seg.fa'%(sys.path[0],gap,sys.path[0],mask_bed,i+1,self.outdir,\
                 self.gene,self.outdir,self.gene,i)
             os.system(order)
             fa_file = '%s/%s_%s_seg.fa'%(self.outdir,self.gene,i)
@@ -908,8 +908,8 @@ class Share_reads():
         fastq_seq = []
         for i in range(2):
             order = """
-            %s/../bin/samtools faidx %s/newref_insertion.fa %s|%s/../bin/bcftools consensus -H %s %s  >%s/seq_%s_%s.fa
-            """%(sys.path[0], self.outdir, insertion_seg, sys.path[0], i+1, self.vcf, self.outdir, i, insertion_seg)
+            samtools faidx %s/newref_insertion.fa %s|%s/../bin/bcftools consensus -H %s %s  >%s/seq_%s_%s.fa
+            """%(self.outdir, insertion_seg, sys.path[0], i+1, self.vcf, self.outdir, i, insertion_seg)
             os.system(order)
             fastq_seq.append(read_fasta('%s/seq_%s_%s.fa'%(self.outdir, i, insertion_seg)))
         print ('link long indel supporting reads', r00, r01)
@@ -920,8 +920,8 @@ class Share_reads():
 
     def consensus_insertion(self, insertion_seg):
         order = """
-        %s/../bin/samtools faidx %s/newref_insertion.fa %s|%s/../bin/bcftools consensus -H %s %s  >%s/seq
-        """%(sys.path[0], self.outdir, insertion_seg, sys.path[0], 1, self.vcf, self.outdir)
+        samtools faidx %s/newref_insertion.fa %s|%s/../bin/bcftools consensus -H %s %s  >%s/seq
+        """%(self.outdir, insertion_seg, sys.path[0], 1, self.vcf, self.outdir)
         os.system(order)
         cons_seq = read_fasta('%s/seq'%(self.outdir))
         return cons_seq
@@ -967,14 +967,13 @@ def segment_mapping_pre(fq1, fq2, ins_seq, outdir, gene, gene_ref):
         bindir=%s/../bin/
         outdir=%s/ 
         sample='newref_insertion' 
-        $bindir/samtools faidx %s 
-        $bindir/bwa index %s
+        samtools faidx %s 
+        bwa index %s
         group='@RG\\tID:sample\\tSM:sample'  #only -B 1
-        $bindir/bwa mem -t %s -B 1 -O 1,1 -L 1,1 -U 1 -R $group -Y %s %s %s | $bindir/samtools view -q 1 -F 4 -Sb | $bindir/samtools sort > $outdir/$sample.sort.bam
-        java -jar  $bindir/picard.jar MarkDuplicates INPUT=$outdir/$sample.sort.bam OUTPUT=$outdir/$sample.bam METRICS_FILE=$outdir/metrics.txt
-        rm -rf $outdir/$sample.sort.bam 
-        $bindir/samtools index $outdir/$sample.bam 
-        $bindir/freebayes -f %s -p 2 $outdir/$sample.bam > $outdir/$sample.freebayes.1.vcf 
+        bwa mem -t %s -B 1 -O 1,1 -L 1,1 -U 1 -R $group -Y %s %s %s | samtools view -q 1 -F 4 -Sb | samtools sort > $outdir/$sample.sort.bam
+        mv $outdir/$sample.sort.bam $outdir/$sample.bam
+        samtools index $outdir/$sample.bam 
+        freebayes -f %s -p 2 $outdir/$sample.bam > $outdir/$sample.freebayes.1.vcf 
         cat $outdir/$sample.freebayes.1.vcf| sed -e 's/\//\|/g'>$outdir/$sample.freebayes.vcf 
         bgzip -f $outdir/$sample.freebayes.vcf 
         tabix -f $outdir/$sample.freebayes.vcf.gz
@@ -982,8 +981,8 @@ def segment_mapping_pre(fq1, fq2, ins_seq, outdir, gene, gene_ref):
     os.system(map_call)
     # print (ins_seq)
     for ins in ins_seq.keys():
-        ins_call = """%s/../bin/samtools faidx %s/newref_insertion.fa %s_%s |%s/../bin/bcftools consensus -H 1 %s/newref_insertion.freebayes.vcf.gz  >%s/fresh_ins.fa
-        """%(sys.path[0],outdir,gene,int(ins),sys.path[0],outdir,outdir)
+        ins_call = """samtools faidx %s/newref_insertion.fa %s_%s |%s/../bin/bcftools consensus -H 1 %s/newref_insertion.freebayes.vcf.gz  >%s/fresh_ins.fa
+        """%(outdir,gene,int(ins),sys.path[0],outdir,outdir)
         # print ('#####################', ins, ins_call)
         os.system(ins_call)
         ins_seq[ins] = read_fasta('%s/fresh_ins.fa'%(outdir))
@@ -1004,14 +1003,13 @@ def segment_mapping(fq1, fq2, ins_seq, outdir, gene, gene_ref):
         bindir=%s/../bin/
         outdir=%s/ 
         sample='newref_insertion' 
-        $bindir/samtools faidx %s 
-        $bindir/bwa index %s
+        samtools faidx %s 
+        bwa index %s
         group='@RG\\tID:sample\\tSM:sample'  #only -B 1
-        $bindir/bwa mem -t %s -B 1 -O 1,1 -L 1,1 -U 1 -R $group -Y %s %s %s | $bindir/samtools view -q 1 -F 4 -Sb | $bindir/samtools sort > $outdir/$sample.sort.bam
-        java -jar  $bindir/picard.jar MarkDuplicates INPUT=$outdir/$sample.sort.bam OUTPUT=$outdir/$sample.bam METRICS_FILE=$outdir/metrics.txt
-        rm -rf $outdir/$sample.sort.bam 
-        $bindir/samtools index $outdir/$sample.bam 
-        $bindir/freebayes -f %s -p 2 $outdir/$sample.bam > $outdir/$sample.freebayes.vcf 
+        bwa mem -t %s -B 1 -O 1,1 -L 1,1 -U 1 -R $group -Y %s %s %s | samtools view -q 1 -F 4 -Sb | samtools sort > $outdir/$sample.sort.bam
+        mv $outdir/$sample.sort.bam $outdir/$sample.bam 
+        samtools index $outdir/$sample.bam 
+        freebayes -f %s -p 2 $outdir/$sample.bam > $outdir/$sample.freebayes.vcf 
         """%(sys.path[0], outdir, newref, newref, args.thread_num, newref, fq1, fq2, newref)
     os.system(map_call)
 
@@ -1027,12 +1025,12 @@ def get_insertion_linkage(ins_seq):
     else:
         # os.system('cp %s/%s.bam %s/newref_insertion.bam'%(outdir, gene.split('_')[-1], outdir))
         os.system('cp %s %s/newref_insertion.bam'%(bamfile, outdir))
-        os.system('%s/../bin/samtools index %s/newref_insertion.bam'%(sys.path[0], outdir))
+        os.system('samtools index %s/newref_insertion.bam'%(outdir))
         os.system('zcat %s > %s/newref_insertion.freebayes.vcf'%(gene_vcf, outdir))
     return ins_seq
 
 def get_copy_number(outdir, deletion_region, gene, ins_seq):
-    os.system('%s/../bin/samtools depth -aa %s/newref_insertion.bam >%s/newref_insertion.depth'%(sys.path[0],outdir, outdir))
+    os.system('samtools depth -aa %s/newref_insertion.bam >%s/newref_insertion.depth'%(outdir, outdir))
     normal_depth = []
     deletions_depth_list = []
     for i in range(len(deletion_region)):
@@ -1165,12 +1163,12 @@ def dup_region_type(outdir, strainsNum, bamfile):
         k=%s
         pos=HLA_DRB1:3898-4400        
         ref=%s/../db/ref/DRB1_dup_extract_ref.fasta
-        %s/../bin/samtools view -f 64 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##1 "$2,$3}' > $outdir/extract.fa
-        %s/../bin/samtools view -f 128 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##2 "$2,$3}' >> $outdir/extract.fa
+        samtools view -f 64 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##1 "$2,$3}' > $outdir/extract.fa
+        samtools view -f 128 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##2 "$2,$3}' >> $outdir/extract.fa
         %s/../bin/blastn -query $outdir/extract.fa -out $outdir/extract.read.blast -db $ref -outfmt 6 -strand plus  -penalty -1 -reward 1 -gapopen 4 -gapextend 1
         perl %s/count.read.pl $outdir
         less $outdir/DRB1.hla.count| sort -k3,3nr -k4,4nr | head -n $k |awk '$3>0.7'|awk '$4>5' >$outdir/select.DRB1.seq.txt
-        """%(bamfile, outdir, strainsNum, sys.path[0], sys.path[0], sys.path[0],sys.path[0], sys.path[0])
+        """%(bamfile, outdir, strainsNum, sys.path[0], sys.path[0], sys.path[0])
     os.system(order)
 
 def long_InDel_breakpoints(bfile):
@@ -1487,9 +1485,9 @@ def run_SpecHap():
         bin=%s/../bin
         gene=%s
         sample=nanopore
-        $bin/minimap2 -t %s -a $ref $outdir/%s/$gene.nanopore.fq.gz > $outdir/$sample.tgs.sam
-        $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
-        $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
+        minimap2 -t %s -a $ref $outdir/%s/$gene.nanopore.fq.gz > $outdir/$sample.tgs.sam
+        samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
+        samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
         $bin/ExtractHAIRs --triallelic 1 --ONT 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.nanopore.file
         cat $outdir/fragment.nanopore.file >> $outdir/fragment.all.file
         """%(args.nanopore, hla_ref, outdir, sys.path[0], gene.split("_")[1], args.thread_num, args.sample_id, gene_vcf)
@@ -1509,10 +1507,10 @@ def run_SpecHap():
         bin=%s/../bin
         sample=HiC
         group='@RG\tID:'$sample'\tSM:'$sample
-        $bin/bwa mem -t %s -5SP -Y -U 10000 -L 10000,10000 -O 7,7 -E 2,2 $ref $fwd_hic $rev_hic >$outdir/$sample.tgs.raw.sam
+        bwa mem -t %s -5SP -Y -U 10000 -L 10000,10000 -O 7,7 -E 2,2 $ref $fwd_hic $rev_hic >$outdir/$sample.tgs.raw.sam
         cat $outdir/$sample.tgs.raw.sam|grep -v 'XA:'|grep -v 'SA:'>$outdir/$sample.tgs.sam
-        $bin/samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
-        $bin/samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
+        samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
+        samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
         $bin/ExtractHAIRs --new_format 1 --triallelic 1 --hic 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.hic.file
         # python %s/whole/edit_linkage_value.py $outdir/fragment.raw.hic.file 10 $outdir/fragment.hic.file
         # rm $outdir/fragment.hic.file
@@ -1736,12 +1734,12 @@ def vcf2fasta(rephase_vcf):
         start, end = interval[0], interval[1]
         for i in range(1, 3):
             if j == 0:
-                fastq2 = '%s/../bin/samtools faidx %s %s:%s-%s | %s/../bin/bcftools consensus -H %s --mask %s %s\
-                    >%s/hla.allele.%s.%s.fasta'%(sys.path[0], hla_ref, gene, start, end, sys.path[0], i, mask_bed,\
+                fastq2 = 'samtools faidx %s %s:%s-%s | %s/../bin/bcftools consensus -H %s --mask %s %s\
+                    >%s/hla.allele.%s.%s.fasta'%(hla_ref, gene, start, end, sys.path[0], i, mask_bed,\
                     rephase_vcf, outdir, i, gene)
             else:
-                fastq2 = '%s/../bin/samtools faidx %s %s:%s-%s | %s/../bin/bcftools consensus -H %s --mask %s %s\
-                    >>%s/hla.allele.%s.%s.fasta'%(sys.path[0], hla_ref, gene, start, end, sys.path[0], i, mask_bed, \
+                fastq2 = 'samtools faidx %s %s:%s-%s | %s/../bin/bcftools consensus -H %s --mask %s %s\
+                    >>%s/hla.allele.%s.%s.fasta'%(hla_ref, gene, start, end, sys.path[0], i, mask_bed, \
                     rephase_vcf, outdir, i, gene)              
             os.system(fastq2)
         j += 1
