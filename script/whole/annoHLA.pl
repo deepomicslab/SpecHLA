@@ -74,12 +74,6 @@ while(<INL>){
                 my @arrs = (split /\//,$line);
                 foreach my $kk(@arrs){
                         my $hla = "$tag"."$kk";
-                        # next if($hla =~ /DQB1\*02:02/);
-                        # next if($hla =~ /DQB1\*03/);
-                        # next if($hla =~ /DQA1\*05/);
-                        # next if($hla =~ /DQA1\*03/);
-                        # next if($hla =~ /C\*07/);
-                        # next if($hla =~ /DRB1\*14/);
                         $hashg{$hla} = $value;
                 }
         }else{
@@ -332,6 +326,10 @@ foreach my $hla(@hlas){
                 }
              }else{ 
                    if(exists $hashg{$pout}){$pout = $hashg{$pout};}
+                   my $temp1 = "$pout".":01";
+		   my $temp2 = "$pout".":01:01";
+		   if(exists $hashg{$temp1}){$pout = $hashg{$temp1};}
+	           if(exists $hashg{$temp2}){$pout = $hashg{$temp2};}
              #      else{$pout = $lines2[0]}
                    $out = $pout;   $line1 = $pout; 
              }

@@ -96,7 +96,6 @@ def ana_paf(input_paf, gene, sample):
 def ana_sam(input_sam, gene, sample):
     # Open the PAF file
     align_list = []
-    align_dict = {}
     # # Open the SAM file
     for line in open(input_sam, "r"):
         # Skip header lines
@@ -107,7 +106,7 @@ def ana_sam(input_sam, gene, sample):
         # print (line)
         align_info = read_sam_line(line)
         align_list.append(align_info)
-        align_dict[align_info[0]] = align_info
+
    
     match_sorted_list = sorted(align_list, key=get_1_element, reverse = True)
     match_sorted_list = resort_list_with_same_alleles(match_sorted_list, 1, 3)
@@ -119,16 +118,25 @@ def ana_sam(input_sam, gene, sample):
     intersection_alleles = list(set(max_match_len_alleles) & set(max_identity_alleles))
     
     print (sample, gene)
+    # print (">>>>>>>>>", max_match_len_alleles)
+    # print (">>>>>>>>>", max_identity_alleles)
     truth_alleles = []
     if sample in truth_1000_dict:
         if gene in truth_1000_dict[sample]:
             truth_alleles = truth_1000_dict[sample][gene]
             # print ("truth", gene, truth_1000_dict[sample][gene])
-    print ("truth", truth_alleles)
+    # print ("truth", truth_alleles)
     if len(intersection_alleles) > 0:
-        print ("perfect:", intersection_alleles)
-        select_allele = intersection_alleles[0]
-        select_allele_list = align_dict[select_allele]
+        
+        select_allele_list = intersection_alleles[0].split(">")
+        select_allele_list[1] = int(select_allele_list[1])
+        select_allele_list[2] = int(select_allele_list[2])
+        select_allele_list[5] = int(select_allele_list[5])
+        select_allele_list[6] = int(select_allele_list[6])
+        select_allele = select_allele_list[0]
+        print (">>>>>>>>>>perfect:", select_allele)
+        # print (identity_sorted_list[:5])
+        # print (match_sorted_list[:5])
     
     else:
         select_allele_list = compare_match_len_and_identity(match_sorted_list, identity_sorted_list, truth_alleles)
@@ -154,7 +162,9 @@ def get_max_alleles(sorted_list, index):
     max_allele_list = []
     for list in sorted_list:
         if list[index] == max_value:
-            max_allele_list.append(list[0])
+            # max_allele_list.append(list[0])
+            list = [str(x) for x in list]
+            max_allele_list.append(">".join(list))
         else:
             break
     return max_allele_list
@@ -202,6 +212,9 @@ def compare_match_len_and_identity(match_sorted_list, identity_sorted_list, trut
     for allele_info in identity_sorted_list[:5]:
         print(allele_info)
     print ("identity **************************")
+    for allele_info in identity_sorted_list:
+        if allele_info[0] == "DRB1*16:02:01:03":
+            print (allele_info)
     
     print ("selected allele is ", select_allele_list[0])
     return select_allele_list
@@ -223,6 +236,7 @@ def read_1000G_truth():
                     truth_1000_dict[sample][gene] = []
                 # print (sample, j, array)
                 typed_allele = array[j]
+                typed_allele = typed_allele.replace("*", '')
 
                 truth_1000_dict[sample][gene].append(typed_allele)
         i += 1
@@ -248,7 +262,8 @@ def read_sam_line(line):
         # print (length, op)
         if op == "M":
             match_length += int(length)
-        block_length += int(length)
+        if op != "S" and op != "H":
+            block_length += int(length)
 
     nm_tag = [tag for tag in fields[11:] if tag.startswith("NM:i:")]
     if len(nm_tag) == 1:
@@ -279,15 +294,16 @@ def extract_seq(select_allele_list, assembly_file, hap_index, sample, gene, out_
 
     # close the input and output files
     
-def check_trio_consistency(record_best_match):
+def check_trio_consistency(record_best_match, trio_list):
     for gene in gene_list:
-        child_alleles = record_best_match["NA19240"][gene]
-        parent1_alleles = record_best_match["NA19238"][gene]
-        parent2_alleles = record_best_match["NA19239"][gene]
+        child_alleles = record_best_match[trio_list[0]][gene]
+        parent1_alleles = record_best_match[trio_list[1]][gene]
+        parent2_alleles = record_best_match[trio_list[2]][gene]
         if (child_alleles[0] in parent1_alleles and child_alleles[1] in parent2_alleles) or (child_alleles[1] in parent1_alleles and child_alleles[0] in parent2_alleles):
-            print ("consistency", gene)
+            print (trio_list[0], "consistency", gene)
         else:
-            print ("not consistency", gene, child_alleles,parent1_alleles,  parent2_alleles)
+            print (trio_list[0], "not consistency", gene, child_alleles, parent1_alleles,  parent2_alleles)
+
 
 if __name__ == "__main__":
     # sample = "HG00096"
@@ -299,9 +315,11 @@ if __name__ == "__main__":
     # change_allele_name(raw_HLA_data, HLA_data)
     result_path = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/"
     samples_list = ['HG00096', 'HG00171', 'HG00512', 'HG00513', 'HG00514', 'HG00731', 'HG00732', 'HG00733', 'HG00864', 'HG01114', 'HG01505', 'HG01596', 'HG02011', 'HG02492', 'HG02587', 'HG02818', 'HG03009', 'HG03065', 'HG03125', 'HG03371', 'HG03486', 'HG03683', 'HG03732', 'NA12878', 'NA18534', 'NA18939', 'NA19238', 'NA19239', 'NA19240', 'NA19650', 'NA19983', 'NA20509', 'NA20847', 'NA24385']
-    trio_list = ["NA19238", "NA19239", "NA19240"]
+    trio_list = ["NA19240", "NA19239", "NA19238"]
+    # trio_list = ["HG00733", "HG00731", "HG00732"]
+    # trio_list = ["HG00514", "HG00512", "HG00513"]
     gene_list = ["A", "B", "C", "DPA1", "DPB1", "DQA1", "DQB1", "DRB1"]
-    # gene_list = ["DQA1"]
+    # gene_list = ["DQB1"]
     record_truth_file_dict = get_phased_assemblies()
     truth_1000_dict = read_1000G_truth()
     # print (record_truth_file_dict.keys())
@@ -314,7 +332,7 @@ if __name__ == "__main__":
     record_best_match = {}
     for sample in samples_list:
     # for sample in trio_list:
-    # for sample in ["NA19240"]:
+    # for sample in ["HG01505"]:
         print (sample)
         record_best_match[sample] = {}
         for hap_index in range(2):
@@ -329,11 +347,11 @@ if __name__ == "__main__":
                     record_best_match[sample][gene] = []
                 select_allele_list = ana_sam(input_sam, gene, sample)
                 record_best_match[sample][gene].append(select_allele_list[0])
-                # print (assembly_file)
+                # print (assembly_file, input_sam)
                 extract_seq(select_allele_list, assembly_file, hap_index, sample, gene, out_fasta, in_fasta)
         #         break
             in_fasta.close()
         # break
     out_fasta.close()
-    check_trio_consistency(record_best_match)
+    # check_trio_consistency(record_best_match, trio_list)
 

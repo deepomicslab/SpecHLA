@@ -247,8 +247,8 @@ class Seq_error_accelerate():
             # command = f"""
             # blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7
             # """
-            if not os.path.isfile(f"{self.truth_hap_file}.nhr"):
-                os.system(f"/home/wangshuai/softwares/SpecHLA/bin/makeblastdb -in {self.truth_hap_file} -dbtype nucl -out {self.truth_hap_file}")
+            # if not os.path.isfile(f"{self.truth_hap_file}.nhr"):
+            os.system(f"/home/wangshuai/softwares/SpecHLA/bin/makeblastdb -in {self.truth_hap_file} -dbtype nucl -out {self.truth_hap_file}")
             command = f"""
             /home/wangshuai/softwares/SpecHLA/bin/blastn -query {self.infer_hap_file} -out {self.blast_file} -db {self.truth_hap_file} -outfmt 7 -num_threads 10
             """
@@ -258,7 +258,7 @@ class Seq_error_accelerate():
             /home/wangshuai/softwares/SpecHLA/bin/blastn -query {self.infer_hap_file} -out {self.blast_file} -subject {self.truth_hap_file} -outfmt 7 -evalue 0.05 \
                 -word_size 11 -reward 2 -penalty -3 -gapopen 5 -gapextend 2 
             """
-        # print (flag)
+        print (command)
         os.system(command)
 
     def get_fasta_len(self):
@@ -490,6 +490,7 @@ class Seq_error_hgsvc2(Seq_error_accelerate_sim):
             true_map_e = int(array[9])
             self.true_mapped_interval_dict[seq_name] = self.get_uniq_map(true_map_s, true_map_e, 0, 0, self.true_mapped_interval_dict[seq_name],seq_name)
             i += 1
+        # print (self.true_mapped_interval_dict)
 
            
     def main(self):
@@ -501,6 +502,9 @@ class Seq_error_hgsvc2(Seq_error_accelerate_sim):
         self.get_gap_per()
         self.get_true_allele()
         self.get_infer_allele()
+        # print (self.true_allele_len_dict)
+        # print (self.true_mapped_len_dict)
+        # print (self.mapped_len_dict)
         for geno_name in self.mapped_interval_dict.keys():
             true_allele = self.infer_true_allele_pair[geno_name]
             true_allele_len = self.true_allele_len_dict[true_allele]
@@ -1589,7 +1593,7 @@ class Assess_hgsvc2_seq_recall():
         for sample in self.record_truth_file_dict.keys():
             if not os.path.isfile(self.spechla_dir + f"/{sample}/hla.allele.1.HLA_A.fasta"):
                 continue
-            # if sample != "HG03732":
+            # if sample != "HG01505":
             #     continue
             record_used_samples.append([sample, self.record_truth_file_dict[sample][0].split("/")[-1], self.record_truth_file_dict[sample][1].split("/")[-1]])
             print (sample)

@@ -13,6 +13,7 @@ import pandas as pd
 import numpy as np
 
 gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
+# gene_list = ['DRB1']
 
 class Eva_typing():
 
@@ -147,30 +148,30 @@ class Eva_typing():
         all_sample_true_dict = self.get_truth_allele()
         # print (all_sample_true_dict["HG00514"])
 
-        # self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/hifi_hlala/HLA-LA.merge.result.txt"
-        # hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
-        # data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PacBio")
-        # # print (hla_la_all_sample_infer_dict)
+        self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/hifi_hlala/HLA-LA.merge.result.txt"
+        hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
+        data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PacBio")
+        # print (hla_la_all_sample_infer_dict)
 
-        # self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/ngs_hlala/HLA-LA.merge.result.txt"
-        # hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
-        # data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PE")
+        self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/ngs_hlala/HLA-LA.merge.result.txt"
+        hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
+        data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PE")
 
         self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/pacbio/"
         self.get_spechla_merge_result()
         spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
         data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PacBio")
 
-        # self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/spechla_no_pac/"
-        # self.get_spechla_merge_result()
-        # spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
-        # data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PE")
+        self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/spechla_no_pac/"
+        self.get_spechla_merge_result()
+        spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
+        data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PE")
 
-        # self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/spechla_with_pac/"
-        # self.get_spechla_merge_result()
-        # spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
-        # # print(spechla_all_sample_infer_dict)
-        # data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_hybrid")
+        self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/spechla_with_pac/"
+        self.get_spechla_merge_result()
+        spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
+        # print(spechla_all_sample_infer_dict)
+        data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_hybrid")
 
         # print ("HLA*LA")
         

@@ -8,3 +8,4 @@ The scripts to evaluate the typing results are in this folder.
 |assess_read_assign.py| Evaluate the read-binning accuracy in simulated data |
 |eva_type_accuracy.py| Calculate four-digit typing accuracy |
 |visualize_trio/*| Generate the format for visulization of trio-consistency |
+|compare.1k|Compare typing results in 1000G samples|

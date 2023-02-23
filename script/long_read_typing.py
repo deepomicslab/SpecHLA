@@ -12,7 +12,7 @@ import argparse
 interval_dict = {"A":"HLA_A:1000-4503", "B":"HLA_B:1000-5081","C": "HLA_C:1000-5304","DPA1":"HLA_DPA1:1000-10775",\
     "DPB1":"HLA_DPB1:1000-12468","DQA1":"HLA_DQA1:1000-7492","DQB1":"HLA_DQB1:1000-8480","DRB1":"HLA_DRB1:1000-12229" }
 gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
-gene_list = ['DRB1']
+# gene_list = ['DRB1']
 
 
 class Read_Obj():
@@ -70,17 +70,21 @@ class Score_Obj():
         for read_name in self.loci_score: # for each read
             assigned_locus = []
             gene_score = sorted(self.loci_score[read_name].items(), key=lambda item: item[1], reverse = True)
-            if len(gene_score) > 1 and (gene_score[0][0] == "DRB1"):
-                print (read_name, gene_score[:2])
+            # if len(gene_score) > 1 and (gene_score[0][0] == "DQB1"):
+            #     print (read_name, gene_score[:2])
             if gene_score[0][1] < Min_score:
                 continue
             if len(gene_score) == 1: # mapped to only one gene, directly assign to that gene
                 assigned_locus = [gene_score[0][0]]
             else:
                 # real-data based adjustment
-                if gene_score[0][0] == "DRB1" and gene_score[0][1] < 0.99:
+                # if gene_score[0][0] in ["U"] and gene_score[1][0] == "A" and gene_score[0][1] - gene_score[1][1] < 0.02:
+                #     assigned_locus = ["A"]
+                if gene_score[0][0] == "DRB1" and gene_score[0][1] < 0.9:
                     continue
-                elif gene_score[0][0] == "DRB1" and gene_score[0][1] - gene_score[1][1] < 0.07:
+                elif gene_score[0][0] == "DRB1" and gene_score[0][1] - gene_score[1][1] < 0.02:
+                    continue
+                elif gene_score[0][0] == "DQB1" and gene_score[0][1] < 0.9:
                     continue
                 elif gene_score[0][0] == 'DPB2' and gene_score[1][0] == "DPA1":
                     assigned_locus = ["DPA1"]
@@ -98,7 +102,6 @@ class Score_Obj():
             self.read_loci[read_name] = assigned_locus
         f.close()
         return self.read_loci
-
 
 class Pacbio_Binning():
 
@@ -122,7 +125,7 @@ class Pacbio_Binning():
         $bin/minimap2 -t {parameter.threads} -p 0.1 -N 100000 -a $ref $fq > $outdir/$sample.db.sam
         echo alignment done.
         """
-        # os.system(alignDB_order)
+        os.system(alignDB_order)
 
     def read_bam(self):
         # observe each read, assign it to gene based on alignment records
