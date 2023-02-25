@@ -167,7 +167,22 @@ class Eva_typing():
                 all_sample_true_dict[sample][gene] += [allele]
                 print (sample, len(all_sample_true_dict[sample][gene]), gene, raw_allele,allele, sep = "," , file = f)
         f.close()
-                
+
+    def check_spechla_accuracy(self):
+        # check results in all 32 samples
+        spechla_dir = "/mnt/d/HLAPro_backup/haplotype_v2/spechla/"
+        spechla_result = "/mnt/d/HLAPro_backup/haplotype_v2/spechla_merge_results.txt"
+        command = f"cat {spechla_dir}/*/hla.result.txt|grep -v Sample >{spechla_result}"
+        os.system(command)
+        all_sample_true_dict = self.get_truth_allele()
+        data  = []
+        spechla_32_sample_infer_dict = self.extract_inferred(spechla_result)
+        self.sample_list = []
+        for sample in all_sample_true_dict.keys():
+            if sample in spechla_32_sample_infer_dict:
+                self.sample_list.append(sample)
+        # print (len(spechla_32_sample_infer_dict), len(all_sample_true_dict))
+        self.assess(all_sample_true_dict, spechla_32_sample_infer_dict, data, "spechla in 32 samples")
 
     def main_real(self): 
         data = []   
@@ -213,8 +228,11 @@ class Eva_typing():
         for sample in self.sample_list:
             for gene in all_sample_true_dict[sample]:
                 true_alleles = all_sample_true_dict[sample][gene]
-                infer_alleles = infer_all_sample_infer_dict[sample][gene]
-                # print (sample, gene, infer_alleles, "true:", true_alleles)
+                # print (sample, gene, "true:", true_alleles)
+                if gene in infer_all_sample_infer_dict[sample]:
+                    infer_alleles = infer_all_sample_infer_dict[sample][gene]
+                else:
+                    infer_alleles = ["no result", "no result"]
                 right_num = self.compare_allele(true_alleles, infer_alleles)
                 gene_count[gene]["right"] += right_num
                 gene_count[gene]["all"] += 2
@@ -313,6 +331,7 @@ if __name__ == "__main__":
     G_annotation_dict = read_G_annotation()
     digit = 6
     typ = Eva_typing()
-    typ.main_real()
+    # typ.main_real()
     # typ.print_truth() # save g-group truth in a table
+    typ.check_spechla_accuracy()
     

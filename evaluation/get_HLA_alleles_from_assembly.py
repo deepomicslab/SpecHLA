@@ -101,7 +101,6 @@ def ana_paf(input_paf, gene, sample):
             print(allele_info)
         print ("identity **************************")
 
-
 def recheck_fit_num(input_sam, gene, allele_perfect_exon_dict):
     have_perfect_exon_allele = False
     f = open(input_sam, "r")
@@ -112,10 +111,14 @@ def recheck_fit_num(input_sam, gene, allele_perfect_exon_dict):
         if not line.startswith(f"{gene}*"):
             continue
         allele_name = line.split("\t")[0]
-        if "HLA-" + allele_name not in allele_perfect_exon_dict[gene]:
-            continue
-        if allele_perfect_exon_dict[gene]["HLA-"+allele_name] == True:
-            have_perfect_exon_allele = True
+        if "HLA-" + allele_name in allele_perfect_exon_dict[gene]:
+            if allele_perfect_exon_dict[gene]["HLA-"+allele_name] == True:
+                have_perfect_exon_allele = True
+                # print ("perfect exon", allele_name)
+        elif "HLA-"+allele_name[:-3] in allele_perfect_exon_dict[gene]:
+            if allele_perfect_exon_dict[gene]["HLA-"+allele_name[:-3]] == True:
+                have_perfect_exon_allele = True
+                # print ("perfect exon", allele_name)
     f.close()
     return have_perfect_exon_allele
 
@@ -123,6 +126,7 @@ def ana_sam(input_sam, gene, sample, allele_perfect_exon_dict, fit_num_each_gene
     # Open the PAF file
     align_list = []
     have_perfect_exon_allele = recheck_fit_num(input_sam, gene, allele_perfect_exon_dict) 
+    # print ("<<<<<<<<<", allele_perfect_exon_dict[gene])
     ### check if the gene has allele with 100% matched exon
     ### if not, skip the criteria
     # # Open the SAM file
@@ -137,51 +141,20 @@ def ana_sam(input_sam, gene, sample, allele_perfect_exon_dict, fit_num_each_gene
         allele_name = line.split("\t")[0]
         exon_allele_name = "HLA-" + allele_name
         if have_perfect_exon_allele == True:
-            if exon_allele_name not in allele_perfect_exon_dict[gene] :
-                continue
-            # print (line)
-            if allele_perfect_exon_dict[gene][exon_allele_name] == False: #exon is not 100% matched
+            flag = False #exon is not 100% matched
+            if exon_allele_name in allele_perfect_exon_dict[gene]:
+                if allele_perfect_exon_dict[gene][exon_allele_name]:
+                    flag = True
+            elif exon_allele_name[:-3] in allele_perfect_exon_dict[gene]:
+                if allele_perfect_exon_dict[gene][exon_allele_name[:-3]]:
+                    flag = True
+            if flag == False:
                 continue
         
         align_info = read_sam_line(line)
         align_list.append(align_info)
-
-    print ("<<<", gene, fit_num_each_gene[gene], have_perfect_exon_allele)
-    match_sorted_list = sorted(align_list, key=get_1_element, reverse = True)
-    match_sorted_list = resort_list_with_same_alleles(match_sorted_list, 1, 3)
     identity_sorted_list = sorted(align_list, key=get_3_element, reverse = True)
-    identity_sorted_list = resort_list_with_same_alleles(identity_sorted_list, 3, 1)
-    max_match_len_alleles = get_max_alleles(match_sorted_list, 1)
-    max_identity_alleles = get_max_alleles(identity_sorted_list, 3)
-
-    intersection_alleles = list(set(max_match_len_alleles) & set(max_identity_alleles))
-    
-    print (sample, gene)
-    # print (">>>>>>>>>", max_match_len_alleles)
-    # print (">>>>>>>>>", max_identity_alleles)
-    truth_alleles = []
-    if sample in truth_1000_dict:
-        if gene in truth_1000_dict[sample]:
-            truth_alleles = truth_1000_dict[sample][gene]
-            # print ("truth", gene, truth_1000_dict[sample][gene])
-    # print ("truth", truth_alleles)
-    if len(intersection_alleles) > 0:
-        
-        select_allele_list = intersection_alleles[0].split(">")
-        select_allele_list[1] = int(select_allele_list[1])
-        select_allele_list[2] = int(select_allele_list[2])
-        select_allele_list[5] = int(select_allele_list[5])
-        select_allele_list[6] = int(select_allele_list[6])
-        select_allele = select_allele_list[0]
-        print (">>>>>>>>>>perfect:", select_allele)
-        # print (identity_sorted_list[:5])
-        # print (match_sorted_list[:5])
-    
-    else:
-        select_allele_list = compare_match_len_and_identity(match_sorted_list, identity_sorted_list, truth_alleles)
-    print (select_allele_list)
-    f.close()
-    return select_allele_list
+    return identity_sorted_list
 
 def resort_list_with_same_alleles(sorted_list, first_index, second_index):
     flag = True
@@ -225,7 +198,7 @@ def compare_match_len_and_identity(match_sorted_list, identity_sorted_list, trut
     match_len_diff_ratio = (max_match_len - match_len_with_max_identity) / match_len_with_max_identity
     identity_diff_ratio = (max_identity - identiy_with_max_match_len) / identiy_with_max_match_len
 
-    print ("match_len_diff_ratio", match_len_diff_ratio, "identity_diff_ratio", identity_diff_ratio, "1000G truth", truth_alleles)
+    print ("match_len_diff_ratio", match_len_diff_ratio, "identity_diff_ratio", identity_diff_ratio)
     get_help_from_1000G = False
 
     if extract_four_digits(match_sorted_list[0][0]) in truth_alleles and extract_four_digits(identity_sorted_list[0][0]) not in truth_alleles:
@@ -238,8 +211,10 @@ def compare_match_len_and_identity(match_sorted_list, identity_sorted_list, trut
         select_allele_list = identity_sorted_list[0]
     elif match_len_diff_ratio < identity_diff_ratio:
         select_allele_list = identity_sorted_list[0]
-    elif identity_diff_ratio < 0.005:
-        select_allele_list = match_sorted_list[0]
+    elif match_len_diff_ratio < 0.3:
+        select_allele_list = identity_sorted_list[0]
+    # elif identity_diff_ratio < 0.005:
+    #     select_allele_list = match_sorted_list[0]
     else:
         print (" no determine")
         
@@ -324,8 +299,8 @@ def extract_seq(select_allele_list, assembly_file, hap_index, sample, gene, out_
 
     # define the segment name, start position, and end position
     segment_name = select_allele_list[4]
-    start_pos = select_allele_list[5] - 1
-    end_pos = select_allele_list[6] - 1
+    start_pos = int(select_allele_list[5]) - 1
+    end_pos = int(select_allele_list[6]) - 1
 
     # extract the sequence for the interval
     sequence = in_fasta.fetch(segment_name, start_pos, end_pos)
@@ -367,7 +342,8 @@ def get_exons_databse(single_exon_database):
     out.close()
 
 def get_alleles_with_perfect_exon(exon_sam):
-    allele_perfect_exon_dict = {}   
+    allele_perfect_exon_dict = {}  
+    contig_allele_perfect_exon_dict = {}
     pattern = re.compile(r"(\d+)([MIDNSHP=X])")
     # Split the SAM record into fields
     
@@ -378,6 +354,7 @@ def get_alleles_with_perfect_exon(exon_sam):
         fields = line.split("\t")
         allele_name = fields[0]
         cigar = fields[5]
+        contig_name = fields[2]
 
         perfect = True
         for length, op in re.findall(pattern, cigar):
@@ -390,14 +367,43 @@ def get_alleles_with_perfect_exon(exon_sam):
             num_mismatches = 100000
         if num_mismatches != 0:
             perfect = False
+
         allele_name = allele_name.split("|")[0]
         gene = allele_name.split("*")[0].split("-")[1]
-        if gene not in allele_perfect_exon_dict:
-            allele_perfect_exon_dict[gene] = {}
-        if allele_name not in allele_perfect_exon_dict[gene]:
-            allele_perfect_exon_dict[gene][allele_name] = perfect
+        if gene not in contig_allele_perfect_exon_dict:
+            contig_allele_perfect_exon_dict[gene] = {}
+        if allele_name not in contig_allele_perfect_exon_dict[gene]:
+            contig_allele_perfect_exon_dict[gene][allele_name] = {}
+        if contig_name not in contig_allele_perfect_exon_dict[gene][allele_name]:
+            contig_allele_perfect_exon_dict[gene][allele_name][contig_name] = perfect
         else:
-            allele_perfect_exon_dict[gene][allele_name] = allele_perfect_exon_dict[gene][allele_name] and perfect
+            contig_allele_perfect_exon_dict[gene][allele_name][contig_name] = contig_allele_perfect_exon_dict[gene][allele_name][contig_name] and perfect
+    for gene in contig_allele_perfect_exon_dict:
+        allele_perfect_exon_dict[gene] = {}
+        for allele_name in contig_allele_perfect_exon_dict[gene]:
+            flag = False
+            for contig_name in contig_allele_perfect_exon_dict[gene][allele_name]:
+                if  contig_allele_perfect_exon_dict[gene][allele_name][contig_name]:
+                    flag = True
+            allele_perfect_exon_dict[gene][allele_name] = flag
+
+    #     if perfect and re.search("DRB1", allele_name):
+    #         print (allele_name)
+    # print ("test", allele_perfect_exon_dict["DRB1"]["HLA-DRB1*14:54:01:02"])
+    # new_allele_perfect_exon_dict = {}
+    # for gene in allele_perfect_exon_dict:  #consider the alleles with same 3-field as equal
+    #     new_allele_perfect_exon_dict[gene] = {}
+    #     for allele in allele_perfect_exon_dict[gene]:
+    #         # print (allele)
+    #         new_allele_perfect_exon_dict[gene][allele] = allele_perfect_exon_dict[gene][allele]
+    #         if len(allele.split(":")) == 4:
+    #             three_field = ":".join(allele.split(":")[:-1])
+    #             # print (three_field)
+    #             if three_field not in new_allele_perfect_exon_dict[gene]:
+    #                 new_allele_perfect_exon_dict[gene][three_field] = allele_perfect_exon_dict[gene][allele]
+    #             else:
+    #                 new_allele_perfect_exon_dict[gene][three_field] = allele_perfect_exon_dict[gene][allele] or new_allele_perfect_exon_dict[gene][three_field]
+    # print (new_allele_perfect_exon_dict["DRB1"])
     return allele_perfect_exon_dict
 
 def count_perferct_exon_num(allele_perfect_exon_dict):
@@ -410,6 +416,139 @@ def count_perferct_exon_num(allele_perfect_exon_dict):
                 # print (allele, allele_perfect_exon_dict[gene][allele])
                 fit_num_each_gene[gene] += 1
     return fit_num_each_gene
+
+
+class Assign_allele():
+
+    def __init__(self, sample_save_alignments_dict, sample):
+        self.sample_save_alignments_dict = sample_save_alignments_dict
+        self.sample = sample
+
+    def main(self):
+        record_selection = {}
+        for gene in gene_list:
+            gene_alignments = self.sample_save_alignments_dict[gene]
+            truth_alleles = self.get_1000G_truth(gene)
+            first_hap_selection, second_hap_selection = self.handle_each_gene(gene_alignments, truth_alleles, gene)
+            record_selection[gene] = [first_hap_selection, second_hap_selection]
+            print (self.sample, gene, "selection", first_hap_selection[0], second_hap_selection[0])
+        return record_selection
+    
+    def handle_each_gene(self, gene_alignments, truth_alleles, gene):
+        print (self.sample, gene, "1000G", truth_alleles)
+        # print (gene_alignments[0])
+        # print (gene_alignments[1])
+        if len(truth_alleles) > 0 and len(truth_alleles[0]) > 0:
+            align_00 = self.filter_by_1000G(truth_alleles[0], gene_alignments[0])
+            align_11 = self.filter_by_1000G(truth_alleles[1], gene_alignments[1])
+            align_01 = self.filter_by_1000G(truth_alleles[0], gene_alignments[1])
+            align_10 = self.filter_by_1000G(truth_alleles[1], gene_alignments[0])
+            if len(align_00) == 0 or len(align_11) == 0:
+                truth_alleles.reverse()
+            elif len(align_01) == 0 or len(align_10) == 0:
+                pass
+            elif align_11[0][3] + align_00[0][3] < align_01[0][3] + align_10[0][3]:
+                truth_alleles.reverse()
+            # else:
+            # print (align_00, "\n", align_11, "\n",align_01, "\n",align_10)
+            my_align_00 = self.filter_by_1000G(truth_alleles[0], gene_alignments[0])
+            my_align_11 = self.filter_by_1000G(truth_alleles[1], gene_alignments[1])
+            # print (my_align_00, my_align_11)
+            # print (truth_alleles[0], my_align_00)
+            # print (truth_alleles[1], my_align_11)
+            return my_align_00[0], my_align_11[0]
+        
+        else:
+            first_hap_selection = self.select_by_alignment(gene_alignments[0], truth_alleles)
+            second_hap_selection = self.select_by_alignment(gene_alignments[1], truth_alleles)
+            return first_hap_selection, second_hap_selection
+
+    def select_by_alignment(self, align_list, truth_alleles):
+
+        match_sorted_list = sorted(align_list, key=get_1_element, reverse = True)
+        match_sorted_list = resort_list_with_same_alleles(match_sorted_list, 1, 3)
+        identity_sorted_list = sorted(align_list, key=get_3_element, reverse = True)
+        identity_sorted_list = resort_list_with_same_alleles(identity_sorted_list, 3, 1)
+        max_match_len_alleles = get_max_alleles(match_sorted_list, 1)
+        max_identity_alleles = get_max_alleles(identity_sorted_list, 3)
+
+        # print (identity_sorted_list)
+        intersection_alleles = list(set(max_match_len_alleles) & set(max_identity_alleles))   
+        # print (">>>>>>>>>", match_sorted_list)
+
+        if len(intersection_alleles) > 0:
+            select_allele_list = intersection_alleles[0].split(">")
+            select_allele = select_allele_list[0]
+            print (">>>>>>>>>>perfect:", select_allele)      
+            return select_allele_list
+
+        max_match_len = match_sorted_list[0][1]
+        match_len_with_max_identity = identity_sorted_list[0][1]
+
+        max_identity = identity_sorted_list[0][3]
+        identiy_with_max_match_len = match_sorted_list[0][3]
+
+        match_len_diff_ratio = (max_match_len - match_len_with_max_identity) / match_len_with_max_identity
+        identity_diff_ratio = (max_identity - identiy_with_max_match_len) / identiy_with_max_match_len
+
+        print ("match_len_diff_ratio", match_len_diff_ratio, "identity_diff_ratio", identity_diff_ratio)
+        get_help_from_1000G = False
+        select_allele_list = identity_sorted_list[0]
+        # if extract_four_digits(match_sorted_list[0][0]) in truth_alleles and extract_four_digits(identity_sorted_list[0][0]) not in truth_alleles:
+        #     select_allele_list = match_sorted_list[0]
+        #     get_help_from_1000G = True
+        # elif extract_four_digits(match_sorted_list[0][0]) not in truth_alleles and extract_four_digits(identity_sorted_list[0][0]) in truth_alleles:
+        #     select_allele_list = identity_sorted_list[0]
+        #     get_help_from_1000G = True
+        # elif identiy_with_max_match_len < 0.999:
+        #     select_allele_list = identity_sorted_list[0]
+        # elif match_len_diff_ratio < identity_diff_ratio:
+        #     select_allele_list = identity_sorted_list[0]
+        # elif identity_diff_ratio < 0.005:
+        #     select_allele_list = match_sorted_list[0]
+        # else:
+        #     print (" no determine")
+            
+        # if get_help_from_1000G == False:
+        print ("check to determine use highest identity or match length in person.")
+        for allele_info in match_sorted_list[:5]:
+            print(allele_info)
+        print ("match bases**************************")
+
+        
+        for allele_info in identity_sorted_list[:5]:
+            print(allele_info)
+        print ("identity **************************")
+
+        print ("selected allele is ", select_allele_list[0])
+        return select_allele_list
+
+        
+    
+    def filter_by_1000G(self, truth, align_list):
+        new_align_list = []
+        if len(truth) == 5:
+            for align in align_list:
+                array = align[0].split("*")[1].split(":")
+                two_field = array[0] + ":" + array[1]
+                if two_field == truth:
+                    new_align_list.append(align)
+        else:
+            truth = truth[:2]
+            for align in align_list:
+                array = align[0].split("*")[1].split(":")
+                one_field = array[0]
+                if one_field == truth:
+                    new_align_list.append(align)
+        return new_align_list
+
+
+    def get_1000G_truth(self, gene):
+        truth_alleles = []
+        if self.sample in truth_1000_dict:
+            if gene in truth_1000_dict[self.sample]:
+                truth_alleles = truth_1000_dict[self.sample][gene]
+        return truth_alleles
 
 
 if __name__ == "__main__":
@@ -433,9 +572,10 @@ if __name__ == "__main__":
     # trio_list = ["HG00733", "HG00731", "HG00732"]
     # trio_list = ["HG00514", "HG00512", "HG00513"]
     gene_list = ["A", "B", "C", "DPA1", "DPB1", "DQA1", "DQB1", "DRB1"]
-    # gene_list = ["DRB1"]
+    gene_list = ["A"]
     record_truth_file_dict = get_phased_assemblies()
     truth_1000_dict = read_1000G_truth()
+    # truth_1000_dict["HG03009"]["C"] = []
     # print (record_truth_file_dict.keys())
     # 
 
@@ -444,14 +584,15 @@ if __name__ == "__main__":
     out_fasta = open(result_path + "/extracted_HLA_alleles.fasta", 'w')
 
     record_best_match = {}
-    for sample in samples_list:
+    # for sample in samples_list:
     # for sample in trio_list:
-    # for sample in ["HG01505"]:
+    for sample in ["HG00514"]:
         print (sample)
-        record_best_match[sample] = {}
-        for hap_index in range(2):
+        sample_save_alignments_dict = {}
+        # for hap_index in range(2):
             # minimap(sample, hap_index)
             # minimap_exon(sample, hap_index)
+        for hap_index in range(2):
             input_sam_exon = f"/mnt/d/HLAPro_backup/minor_rev/extract_alleles/{sample}.h{hap_index+1}.exon.sam"
             allele_perfect_exon_dict = get_alleles_with_perfect_exon(input_sam_exon)
             fit_num_each_gene = count_perferct_exon_num(allele_perfect_exon_dict)
@@ -459,17 +600,26 @@ if __name__ == "__main__":
             input_sam = f"/mnt/d/HLAPro_backup/minor_rev/extract_alleles/{sample}.h{hap_index+1}.sam"
             assembly_file = record_truth_file_dict[sample][hap_index]
             # open the input FASTA file
-            in_fasta = pysam.FastaFile(assembly_file)
+            
             for gene in gene_list:
-                if gene not in record_best_match[sample]:
-                    record_best_match[sample][gene] = []
-                select_allele_list = ana_sam(input_sam, gene, sample, allele_perfect_exon_dict, fit_num_each_gene)
-                record_best_match[sample][gene].append(select_allele_list[0])
+                if gene not in sample_save_alignments_dict:
+                    sample_save_alignments_dict[gene] = []
+                align_list = ana_sam(input_sam, gene, sample, allele_perfect_exon_dict, fit_num_each_gene)
+                sample_save_alignments_dict[gene].append(align_list)
                 # print (assembly_file, input_sam)
+        ass = Assign_allele(sample_save_alignments_dict, sample)
+        record_selection = ass.main()
+        record_best_match[sample] = record_selection
+        for hap_index in range(2):
+            assembly_file = record_truth_file_dict[sample][hap_index]
+            in_fasta = pysam.FastaFile(assembly_file)
+            for gene in gene_list: 
+                select_allele_list = record_selection[gene][hap_index]
+            
                 extract_seq(select_allele_list, assembly_file, hap_index, sample, gene, out_fasta, in_fasta)
-        #         break
+    #     #         break
             in_fasta.close()
-        # break
+    #     # break
     out_fasta.close()
     # check_trio_consistency(record_best_match, trio_list)
     # """

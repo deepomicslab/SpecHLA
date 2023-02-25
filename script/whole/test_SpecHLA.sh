@@ -1,50 +1,54 @@
 #!/bin/bash
 
 ###
-### SpecHLA: Full-resolution HLA typing from paired-end, PacBio, Nanopore,
-### Hi-C, and 10X sequencing. Supports WGS, WES, and RNASeq data.
+### SpecHLA: Full-resolution HLA typing from paired-end, PacBio, Nanopore, Hi-C, and 10X data.
+### WGS, WES, and RNASeq data are supported. 
 ### 
+### Note: 
+###   1) Use HLA reads only, otherwise, it would be slow. Use ExtractHLAread.sh to extract HLA reads first.
+###   2) With WES or RNASeq data, must select exon typing  (-u 0).
+###   3) Short single-end read data are not supported.
 ###
 ### Usage:
-###   sh SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -t <sample.pacbio.fq.gz> -p <Asian>
+###   bash SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o <outdir>
 ###
 ### Options:
 ###   -n        Sample ID. <required>
-###   -1        The first fastq file. <required>
-###   -2        The second fastq file. <required>
-###   -o        The output folder to store the typing results.
-###   -u        Choose full-length or exon typing. 0 indicates full-length, 1 means exon, 
-###             default is to perform full-length typing.
-###   -p        The population of the sample [Asian, Black, Caucasian, Unknown, nonuse]. 
-###             Default is Unknown, meaning use mean frequency. nonuse indicates only adopting 
-###             mapping score and considering alleles with frequency as zero. 
+###   -1        The first fastq file of paired-end data. <required> 
+###   -2        The second fastq file of paired-end data. <required>
+###   -o        The output folder to store the typing results. Default is ./output
+###   -u        Choose full-length or exon typing [0|1]. 0 indicates full-length, 1 means exon, 
+###             default is 0. With Exome or RNA data, must select 1 (i.e., exon typing).
+###   -p        The population of the sample [Asian, Black, Caucasian, Unknown, nonuse] for annotation. 
+###             Default is Unknown, meaning use mean allele frequency in all populations. nonuse indicates  
+###             only adopting mapping score and considering zero-frequency alleles. 
+###   -j        Number of threads [5].
 ###   -t        Pacbio fastq file.
 ###   -e        Nanopore fastq file.
 ###   -c        fwd hi-c fastq file.
 ###   -d        rev hi-c fastq file.
 ###   -x        Path of folder created by 10x demultiplexing. Prefix of the filenames of FASTQs
 ###             should be the same as Sample ID. Please install Longranger in the system env.
-###   -w        The weight to use linkage info from genotype frequency [0-1], default is 0 that means 
-###             not use, 1 means only use imbalance info, other values integrate use both.
-###   -j        Number of threads [5]
+###   -w        The weight to use allele imbalance info for phasing [0-1]. Default is 0 that means 
+###             not use. 1 means only use imbalance info; other values integrate reads and allele imbalance info.
 ###   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
 ###             is 2. It should be set larger to infer novel alleles.
-###   -y        The minimum different mapping score between the best- and second-best aligned gene. 
+###   -y        The minimum different mapping score between the best and second-best aligned genes. 
 ###             Discard the read if the score is lower than this value. Deault is 0.1. 
-###   -v        True or False. Consider long InDels if True, else only consider short variants. 
+###   -v        True or False. Consider long InDels if True, else only consider small variants. 
 ###             Default is False. 
 ###   -q        Minimum variant quality. Default is 0.01. Set it larger in high quality samples.
 ###   -s        Minimum variant depth. Default is 5.
 ###   -a        Use this long InDel file if provided.
 ###   -r        The minimum Minor Allele Frequency (MAF), default is 0.05 for full length and
 ###             0.1 for exon typing.
-###   -g        Whether use G-translate in annotation [1|0], default is 0.
+###   -g        Whether use G group resolution annotation [0|1], default is 0 (i.e., not use).
 ###   -k        The mean depth in a window lower than this value will be masked by N, default is 5.
 ###             Set 0 to avoid masking.
 ###   -z        Whether only mask exon region, True or False, default is False.
-###   -f        The trio infromation; child:parent_1:parent_2 [Example: NA12878:NA12891:NA12892]. 
-###             Note: this parameter should be used after performing SpecHLA already.
-###   -b        Whether use database for unlinked block phasing [1|0], default is 1.
+###   -f        The trio infromation; child:parent_1:parent_2 [Example: NA12878:NA12891:NA12892]. If provided, 
+###             use trio info to improve typing. Note: use it after performing SpecHLA once already.
+###   -b        Whether use database for unlinked block phasing [0|1], default is 1 (i.e., use).
 ###   -h        Show this message.
 
 help() {
@@ -176,14 +180,14 @@ if [ -f "$license" ];then
         exit 1
     fi
     $bin/novoalign -d $db/ref/$database_prefix.ndx -f $fq1 $fq2 -F STDFQ -o SAM \
-    -o FullNW -r All 100000 --mCPU ${num_threads:-5} -c 10  -g 20 -x 3  | $bin/samtools view \
-    -Sb - | $bin/samtools sort -  > $outdir/$sample.map_database.bam
+    -o FullNW -r All 100000 --mCPU ${num_threads:-5} -c 10  -g 20 -x 3  | samtools view \
+    -Sb - | samtools sort -  > $outdir/$sample.map_database.bam
 else
     echo "Can't detect novoalign license, use bowtie2." 
     bowtie2 --very-sensitive -p ${num_threads:-5} -k 30 -x $db/ref/$database_prefix.fasta -1 $fq1 -2 $fq2|\
-    $bin/samtools view -bS -| $bin/samtools sort - >$outdir/$sample.map_database.bam
+    samtools view -bS -| samtools sort - >$outdir/$sample.map_database.bam
 fi
-$bin/samtools index $outdir/$sample.map_database.bam
+samtools index $outdir/$sample.map_database.bam
 $python_bin $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir -d ${mini_score:-0.1} \
 -b ${outdir}/${sample}.map_database.bam -nm ${nm:-2}
 # #############################################################################################################
@@ -191,18 +195,18 @@ $python_bin $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir 
 
 
 # ########### align the gene-specific reads to the corresponding gene reference################################
-$bin/bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 | $bin/samtools view -H  >$outdir/header.sam
+bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 | samtools view -H  >$outdir/header.sam
 #hlas=(A B C)
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
         hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-        $bin/bwa mem -t ${num_threads:-5} -U 10000 -L 10000,10000 -R $group $hla_ref $outdir/$hla.R1.fq.gz $outdir/$hla.R2.fq.gz\
-         | $bin/samtools view -bS -F 0x800 -| $bin/samtools sort - >$outdir/$hla.bam
-        $bin/samtools index $outdir/$hla.bam
+        bwa mem -t ${num_threads:-5} -U 10000 -L 10000,10000 -R $group $hla_ref $outdir/$hla.R1.fq.gz $outdir/$hla.R2.fq.gz\
+         | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
+        samtools index $outdir/$hla.bam
 done
-$bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.merge.bam $outdir/A.bam $outdir/B.bam $outdir/C.bam\
+samtools merge -f -h $outdir/header.sam $outdir/$sample.merge.bam $outdir/A.bam $outdir/B.bam $outdir/C.bam\
  $outdir/DPA1.bam $outdir/DPB1.bam $outdir/DQA1.bam $outdir/DQB1.bam $outdir/DRB1.bam
-$bin/samtools index $outdir/$sample.merge.bam
+samtools index $outdir/$sample.merge.bam
 # ###############################################################################################################
 
 
@@ -214,7 +218,7 @@ else # full length
   assemble_region=$dir/select.region.txt
 fi
 sh $dir/../run.assembly.realign.sh $sample $outdir/$sample.merge.bam $outdir 70 $assemble_region ${num_threads:-5}
-$bin/freebayes -a -f $hlaref -p 3 $outdir/$sample.realign.sort.bam > $outdir/$sample.realign.vcf && \
+freebayes -a -f $hlaref -p 3 $outdir/$sample.realign.sort.bam > $outdir/$sample.realign.vcf && \
 rm -rf $outdir/$sample.realign.vcf.gz 
 bgzip -f $outdir/$sample.realign.vcf
 tabix -f $outdir/$sample.realign.vcf.gz
@@ -242,7 +246,7 @@ fi
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
 # ###################### mask low-depth region #############################################
-$bin/samtools depth -aa $bam>$bam.depth  
+samtools depth -aa $bam>$bam.depth  
 if [ $focus_exon_flag == 1 ];then my_mask_exon=True; else my_mask_exon=${mask_exon:-False}; fi
 $python_bin $dir/../mask_low_depth_region.py -c $bam.depth -o $outdir -w 20 -d ${mask_depth:-5} -f $my_mask_exon
 
@@ -256,22 +260,22 @@ if [ ${long_indel:-False} == True ] && [ $focus_exon_flag != 1 ]; #don't call lo
 
     if [ ${tgs:-NA} != NA ] # detect long Indel with pacbio
         then
-        $bin/pbmm2 align -j ${num_threads:-5} $hlaref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --sample $sample --rg '@RG\tID:movie1'
-        $bin/samtools view -H $outdir/$sample.movie1.bam >$outdir/header.sam
+        pbmm2 align -j ${num_threads:-5} $hlaref ${tgs:-NA} $outdir/$sample.movie1.bam --sort --sample $sample --rg '@RG\tID:movie1'
+        samtools view -H $outdir/$sample.movie1.bam >$outdir/header.sam
 
         hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
         for hla in ${hlas[@]}; do
                 hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-                $bin/pbmm2 align -j ${num_threads:-5} $hla_ref $outdir/$sample/$hla.pacbio.fq.gz $outdir/$hla.gene.bam --sort --sample $sample --rg '@RG\tID:movie1'
-                $bin/samtools index $outdir/$hla.gene.bam
+                pbmm2 align -j ${num_threads:-5} $hla_ref $outdir/$sample/$hla.pacbio.fq.gz $outdir/$hla.gene.bam --sort --sample $sample --rg '@RG\tID:movie1'
+                samtools index $outdir/$hla.gene.bam
         done
-        $bin/samtools merge -f -h $outdir/header.sam $outdir/$sample.pacbio.bam $outdir/A.gene.bam $outdir/B.gene.bam $outdir/C.gene.bam\
+        samtools merge -f -h $outdir/header.sam $outdir/$sample.pacbio.bam $outdir/A.gene.bam $outdir/B.gene.bam $outdir/C.gene.bam\
         $outdir/DPA1.gene.bam $outdir/DPB1.gene.bam $outdir/DQA1.gene.bam $outdir/DQB1.gene.bam $outdir/DRB1.gene.bam
-        $bin/samtools index $outdir/$sample.pacbio.bam
+        samtools index $outdir/$sample.pacbio.bam
 
 
-        $bin/pbsv discover -l 100 $outdir/$sample.pacbio.bam $outdir/$sample.svsig.gz
-        $bin/pbsv call -t DEL,INS -m 150 -j ${num_threads:-5} $hlaref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
+        pbsv discover -l 100 $outdir/$sample.pacbio.bam $outdir/$sample.svsig.gz
+        pbsv call -t DEL,INS -m 150 -j ${num_threads:-5} $hlaref $outdir/$sample.svsig.gz $outdir/$sample.var.vcf
         $python_bin $dir/vcf2bp.py $outdir/$sample.var.vcf $outdir/$sample.tgs.breakpoint.txt
         cat $outdir/$sample.tgs.breakpoint.txt >$bfile
     else # detect long Indel with pair end data.
