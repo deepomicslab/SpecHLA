@@ -2,8 +2,10 @@
 extract HLA allele from phased assemblies
 1. map the HLA database to the assembly
 2. obtain the matched length and identity of each allele
-3. choose the best allele by balancing the matched length and identity
-4. extract the assembly sequence that mapped to the best allele
+3. remove the allele does not fit the 1000G typing results
+4. remove the allele that not perfect match in exons (2,3 for class I, and 2 for class II genes)
+5. choose the best allele by balancing the matched length and identity
+6. extract the assembly sequence that mapped to the best allele
 
 wangshuai, Feb 20, 2023
 """
@@ -55,6 +57,12 @@ def minimap(sample, hap_index):
     print (command)
     os.system(command)
 
+def minimap_exon(sample, hap_index):
+    # command = f"{minimap_path} {record_truth_file_dict[sample][hap_index]} {HLA_data}  -o {result_path}/{sample}.h{hap_index+1}.paf -t 10"
+    command = f"{minimap_path} {record_truth_file_dict[sample][hap_index]} {single_exon_database_fasta}  -o {result_path}/{sample}.h{hap_index+1}.exon.sam -a -t 15"
+    # print (command)
+    os.system(command)
+
 def ana_paf(input_paf, gene, sample):
     # Open the PAF file
     align_list = []
@@ -93,21 +101,52 @@ def ana_paf(input_paf, gene, sample):
             print(allele_info)
         print ("identity **************************")
 
-def ana_sam(input_sam, gene, sample):
-    # Open the PAF file
-    align_list = []
-    # # Open the SAM file
-    for line in open(input_sam, "r"):
+
+def recheck_fit_num(input_sam, gene, allele_perfect_exon_dict):
+    have_perfect_exon_allele = False
+    f = open(input_sam, "r")
+    for line in f:
         # Skip header lines
         if line.startswith("@"):
             continue
         if not line.startswith(f"{gene}*"):
             continue
-        # print (line)
+        allele_name = line.split("\t")[0]
+        if "HLA-" + allele_name not in allele_perfect_exon_dict[gene]:
+            continue
+        if allele_perfect_exon_dict[gene]["HLA-"+allele_name] == True:
+            have_perfect_exon_allele = True
+    f.close()
+    return have_perfect_exon_allele
+
+def ana_sam(input_sam, gene, sample, allele_perfect_exon_dict, fit_num_each_gene):
+    # Open the PAF file
+    align_list = []
+    have_perfect_exon_allele = recheck_fit_num(input_sam, gene, allele_perfect_exon_dict) 
+    ### check if the gene has allele with 100% matched exon
+    ### if not, skip the criteria
+    # # Open the SAM file
+    f = open(input_sam, "r")
+    for line in f:
+        # Skip header lines
+        if line.startswith("@"):
+            continue
+        if not line.startswith(f"{gene}*"):
+            continue
+        
+        allele_name = line.split("\t")[0]
+        exon_allele_name = "HLA-" + allele_name
+        if have_perfect_exon_allele == True:
+            if exon_allele_name not in allele_perfect_exon_dict[gene] :
+                continue
+            # print (line)
+            if allele_perfect_exon_dict[gene][exon_allele_name] == False: #exon is not 100% matched
+                continue
+        
         align_info = read_sam_line(line)
         align_list.append(align_info)
 
-   
+    print ("<<<", gene, fit_num_each_gene[gene], have_perfect_exon_allele)
     match_sorted_list = sorted(align_list, key=get_1_element, reverse = True)
     match_sorted_list = resort_list_with_same_alleles(match_sorted_list, 1, 3)
     identity_sorted_list = sorted(align_list, key=get_3_element, reverse = True)
@@ -141,6 +180,7 @@ def ana_sam(input_sam, gene, sample):
     else:
         select_allele_list = compare_match_len_and_identity(match_sorted_list, identity_sorted_list, truth_alleles)
     print (select_allele_list)
+    f.close()
     return select_allele_list
 
 def resort_list_with_same_alleles(sorted_list, first_index, second_index):
@@ -158,6 +198,7 @@ def resort_list_with_same_alleles(sorted_list, first_index, second_index):
     return sorted_list
     
 def get_max_alleles(sorted_list, index):
+    # print (sorted_list)
     max_value = sorted_list[0][index]
     max_allele_list = []
     for list in sorted_list:
@@ -304,6 +345,72 @@ def check_trio_consistency(record_best_match, trio_list):
         else:
             print (trio_list[0], "not consistency", gene, child_alleles, parent1_alleles,  parent2_alleles)
 
+def get_exons_databse(single_exon_database):
+    out = open(single_exon_database_fasta, 'w')
+    test_file = single_exon_database + "A2.exon.txt"
+    for item in os.listdir(single_exon_database):
+        if re.search(".exon.txt", item):
+            test_file = single_exon_database + "/" + item
+            # print (test_file)
+            f = open(test_file)
+            for line in f:
+                line = line.replace('\"', '')
+
+                array = line.split()
+                # print (array)
+                if len(array) == 1:
+                    continue
+                allele = array[0] + "|" + array[1]
+                seq = array[-1].strip()
+                print (f">{allele}\n{seq}", file = out)
+            f.close()
+    out.close()
+
+def get_alleles_with_perfect_exon(exon_sam):
+    allele_perfect_exon_dict = {}   
+    pattern = re.compile(r"(\d+)([MIDNSHP=X])")
+    # Split the SAM record into fields
+    
+    for line in open(exon_sam, "r"):
+        # Skip header lines
+        if line.startswith("@"):
+            continue
+        fields = line.split("\t")
+        allele_name = fields[0]
+        cigar = fields[5]
+
+        perfect = True
+        for length, op in re.findall(pattern, cigar):
+            if op != "M":
+                perfect = False
+        nm_tag = [tag for tag in fields[11:] if tag.startswith("NM:i:")]
+        if len(nm_tag) == 1:
+            num_mismatches = int(nm_tag[0].split(":")[2])
+        else:
+            num_mismatches = 100000
+        if num_mismatches != 0:
+            perfect = False
+        allele_name = allele_name.split("|")[0]
+        gene = allele_name.split("*")[0].split("-")[1]
+        if gene not in allele_perfect_exon_dict:
+            allele_perfect_exon_dict[gene] = {}
+        if allele_name not in allele_perfect_exon_dict[gene]:
+            allele_perfect_exon_dict[gene][allele_name] = perfect
+        else:
+            allele_perfect_exon_dict[gene][allele_name] = allele_perfect_exon_dict[gene][allele_name] and perfect
+    return allele_perfect_exon_dict
+
+def count_perferct_exon_num(allele_perfect_exon_dict):
+    fit_num_each_gene = {} # the number of allele with 100% matched exon
+    for gene in allele_perfect_exon_dict:
+        for allele in allele_perfect_exon_dict[gene]:
+            if gene not in fit_num_each_gene:
+                fit_num_each_gene[gene] = 0
+            if allele_perfect_exon_dict[gene][allele] == True:
+                # print (allele, allele_perfect_exon_dict[gene][allele])
+                fit_num_each_gene[gene] += 1
+    return fit_num_each_gene
+
 
 if __name__ == "__main__":
     # sample = "HG00096"
@@ -311,15 +418,22 @@ if __name__ == "__main__":
     # https://github.com/ANHIG/IMGTHLA/blob/Latest/fasta/hla_gen.fasta
     raw_HLA_data = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/hla_gen.fasta"
     HLA_data = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/hla_gen.rename.fasta"
+    raw_HLA_exon_data = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/hla_nuc.fasta"
+    HLA_exon_data = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/hla_nuc.rename.fasta"
     truth_1000G_file = "/mnt/d/HLAPro_backup/wgs1000/20181129_HLA_types_full_1000_Genomes_Project_panel.txt"
+    single_exon_database = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/xml/"
+    single_exon_database_fasta = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/xml/hla_exons.fasta"
     # change_allele_name(raw_HLA_data, HLA_data)
+    # change_allele_name(raw_HLA_exon_data, HLA_exon_data)
+    get_exons_databse(single_exon_database)
+    # """
     result_path = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/"
     samples_list = ['HG00096', 'HG00171', 'HG00512', 'HG00513', 'HG00514', 'HG00731', 'HG00732', 'HG00733', 'HG00864', 'HG01114', 'HG01505', 'HG01596', 'HG02011', 'HG02492', 'HG02587', 'HG02818', 'HG03009', 'HG03065', 'HG03125', 'HG03371', 'HG03486', 'HG03683', 'HG03732', 'NA12878', 'NA18534', 'NA18939', 'NA19238', 'NA19239', 'NA19240', 'NA19650', 'NA19983', 'NA20509', 'NA20847', 'NA24385']
     trio_list = ["NA19240", "NA19239", "NA19238"]
     # trio_list = ["HG00733", "HG00731", "HG00732"]
     # trio_list = ["HG00514", "HG00512", "HG00513"]
     gene_list = ["A", "B", "C", "DPA1", "DPB1", "DQA1", "DQB1", "DRB1"]
-    # gene_list = ["DQB1"]
+    # gene_list = ["DRB1"]
     record_truth_file_dict = get_phased_assemblies()
     truth_1000_dict = read_1000G_truth()
     # print (record_truth_file_dict.keys())
@@ -337,6 +451,10 @@ if __name__ == "__main__":
         record_best_match[sample] = {}
         for hap_index in range(2):
             # minimap(sample, hap_index)
+            # minimap_exon(sample, hap_index)
+            input_sam_exon = f"/mnt/d/HLAPro_backup/minor_rev/extract_alleles/{sample}.h{hap_index+1}.exon.sam"
+            allele_perfect_exon_dict = get_alleles_with_perfect_exon(input_sam_exon)
+            fit_num_each_gene = count_perferct_exon_num(allele_perfect_exon_dict)
             # input_paf = f"/mnt/d/HLAPro_backup/minor_rev/extract_alleles/{sample}.h{hap_index+1}.paf"
             input_sam = f"/mnt/d/HLAPro_backup/minor_rev/extract_alleles/{sample}.h{hap_index+1}.sam"
             assembly_file = record_truth_file_dict[sample][hap_index]
@@ -345,7 +463,7 @@ if __name__ == "__main__":
             for gene in gene_list:
                 if gene not in record_best_match[sample]:
                     record_best_match[sample][gene] = []
-                select_allele_list = ana_sam(input_sam, gene, sample)
+                select_allele_list = ana_sam(input_sam, gene, sample, allele_perfect_exon_dict, fit_num_each_gene)
                 record_best_match[sample][gene].append(select_allele_list[0])
                 # print (assembly_file, input_sam)
                 extract_seq(select_allele_list, assembly_file, hap_index, sample, gene, out_fasta, in_fasta)
@@ -354,4 +472,5 @@ if __name__ == "__main__":
         # break
     out_fasta.close()
     # check_trio_consistency(record_best_match, trio_list)
+    # """
 

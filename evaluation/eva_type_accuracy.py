@@ -313,6 +313,6 @@ if __name__ == "__main__":
     G_annotation_dict = read_G_annotation()
     digit = 6
     typ = Eva_typing()
-    # typ.main_real()
-    typ.print_truth() # save g-group truth in a table
+    typ.main_real()
+    # typ.print_truth() # save g-group truth in a table
     
