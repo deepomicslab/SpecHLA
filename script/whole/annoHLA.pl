@@ -272,7 +272,7 @@ foreach my $hla(@hlas){
                  $score = sprintf "%.3f", $score;
                  #DRB1*14:01 and DRB1*14:54 differ in HLA_DRB1:9519
                  if($allele =~ /DRB1\*14:01/){
-                          system("samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf");
+                          system("samtools  mpileup -r HLA_DRB1:9519-9519 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.realign.sort.bam --output $workdir/snp.vcf");
                           open TE, "$workdir/snp.vcf" or die "$!\n";
                           while(<TE>){
                                  chomp;
@@ -284,7 +284,7 @@ foreach my $hla(@hlas){
                  }
                  #C*07:01 and C*07:18 differ in HLA_C:4061
                  if($allele =~ /C\*07:01/ && $wxs eq "exon"){
-                          system("samtools  mpileup -r HLA_C:4061-4061 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.merge.bam --output $workdir/snp.vcf");
+                          system("samtools  mpileup -r HLA_C:4061-4061 -t DP -t SP -uvf $db/hla.ref.extend.fa $dir/$sample.realign.sort.bam --output $workdir/snp.vcf");
                           open TE, "$workdir/snp.vcf" or die "$!\n";
                           while(<TE>){
                                  chomp;

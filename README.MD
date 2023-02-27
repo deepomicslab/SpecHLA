@@ -130,7 +130,6 @@ Options:
   -a        Use this long InDel file if provided.
   -r        The minimum Minor Allele Frequency (MAF), default is 0.05 for full length and
             0.1 for exon typing.
-  -g        Whether use G group resolution annotation [0|1], default is 0 (i.e., not use).
   -k        The mean depth in a window lower than this value will be masked by N, default is 5.
             Set 0 to avoid masking.
   -z        Whether only mask exon region, True or False, default is False.
@@ -153,12 +152,11 @@ Required arguments:
   -o        The output folder to store the typing results. (default: ./output)
 
 Optional arguments:
-  -p        The population of the sample [Asian, Black, Caucasian, Unknown, nonuse] for annotation. Unknown means
-              use mean allele frequency in all populations. nonuse indicates only adopting mapping score and
-              considering zero-frequency alleles. (default: Unknown)
+  -p        The population of the sample [Asian, Black, Caucasian, Unknown, nonuse] for annotation. Unknown
+              means use mean allele frequency in all populations. nonuse indicates only adopting mapping score
+              and considering zero-frequency alleles. (default: Unknown)
   -j        Number of threads. (default: 5)
   -d        Minimum score difference to assign a read to a gene. (default: 0.001)
-  -g        Whether use G group resolution annotation [0|1]. (default: 0)
   -m        1 represents typing, 0 means only read assignment (default: 1)
   -a        Prefix of filtered fastq file. (default: long_read)
   -h, --help
@@ -195,6 +193,7 @@ In the directory of one specific sample, you will find the below files:
 | --- | --- |
 | hla.result.txt | HLA-typing results for all alleles |
 | hla.result.details.txt | Detail results of mapping the allele to the database |
+| hla.result.g.group.txt | G group resolution HLA type |
 | hla.allele.\*.HLA_\*.fasta | Sequence of each allele |
 | HLA_*_freq.txt | Haplotype frequencies of each gene |
 | HLA_*.rephase.vcf.gz | Phased vcf file for each gene |

@@ -11,6 +11,7 @@ import sys
 import re
 import pandas as pd
 import numpy as np
+from collections import Counter
 
 gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
 # gene_list = ['DRB1']
@@ -172,7 +173,7 @@ class Eva_typing():
         # check results in all 32 samples
         spechla_dir = "/mnt/d/HLAPro_backup/haplotype_v2/spechla/"
         spechla_result = "/mnt/d/HLAPro_backup/haplotype_v2/spechla_merge_results.txt"
-        command = f"cat {spechla_dir}/*/hla.result.txt|grep -v Sample >{spechla_result}"
+        command = f"cat {spechla_dir}/*/hla.result.g.group.txt|grep -v Sample >{spechla_result}"
         os.system(command)
         all_sample_true_dict = self.get_truth_allele()
         data  = []
@@ -183,6 +184,23 @@ class Eva_typing():
                 self.sample_list.append(sample)
         # print (len(spechla_32_sample_infer_dict), len(all_sample_true_dict))
         self.assess(all_sample_true_dict, spechla_32_sample_infer_dict, data, "spechla in 32 samples")
+
+    def check_new_annotation_spechla_accuracy(self):
+        # check results in all 32 samples
+        spechla_dir = "/mnt/d/HLAPro_backup/haplotype_v2/spechla/"
+
+        all_sample_true_dict = self.get_truth_allele()
+        self.sample_list = []
+        for sample in all_sample_true_dict.keys():
+            if os.path.isdir(f"{spechla_dir}/{sample}"):
+                self.sample_list.append(sample)
+        spechla_32_sample_infer_dict = {}
+        for sample in self.sample_list:
+            # print (sample)
+            g_ann = G_annotation(sample, spechla_dir)
+            sample_result = g_ann.main()
+            spechla_32_sample_infer_dict[sample] = sample_result
+        self.assess(all_sample_true_dict, spechla_32_sample_infer_dict, [], "spechla with new G annotation")
 
     def main_real(self): 
         data = []   
@@ -322,16 +340,143 @@ def read_G_annotation():
         i += 1
     return G_annotation_dict
 
+def convert_G(allele):
+    allele = re.sub(":","_",allele)
+    allele = re.sub("HLA-","",allele)
+    allele = re.sub("\*","_",allele)
+    allele = allele.split(";")[0]
+    if allele in G_annotation_dict:
+        allele = G_annotation_dict[allele]
+    elif allele + "_01" in G_annotation_dict:
+        allele = G_annotation_dict[allele + "_01"]
+    elif allele + "_01_01" in G_annotation_dict:
+        allele = G_annotation_dict[allele + "_01_01"]
+    G_type = allele
+    return G_type
 
+class G_annotation():
+    def __init__(self, sample, spechla_dir):
+        self.sample = sample
+        self.spechla_dir = spechla_dir
+    
+    def blast(self, infer_hap_file, blast_result_file):
+        command = f"""
+        blastn -query {infer_hap_file} -out {blast_result_file} -subject {exon_database} -outfmt 7 -max_target_seqs 60000
+        """
+        # os.system(command)  
+           
+    def read_blast(self, blast_result_file):
+        # blast_result_file = "/mnt/d/HLAPro_backup/haplotype_v2/spechla/HG00096/test.out"
+        f = open(blast_result_file, 'r')
+        identity_record = {}
+        record_hit_exon_times = {}
+        for line in f:
+            if line[0] == "#":
+                continue
+            array = line.strip().split()
+            exon = array[1]
+            identity = float(array[2])
+            match_len = int(array[3])
+            allele = exon.split("|")[0]
+            if not self.check_pop(allele):
+                continue
+
+            if allele not in identity_record:
+                identity_record[allele] = [0, 0]
+            if exon not in record_hit_exon_times:
+                identity_record[allele][0] += identity
+                identity_record[allele][1] += match_len
+            record_hit_exon_times[exon] = 1
+        f.close()
+
+        if len(identity_record) == 0:
+            return "no_match"
+
+        # sort the dictionary by its values in ascending order
+        # sorted_identity_record = sorted(identity_record.items(), key=lambda x: x[1], reverse = True)
+        sorted_identity_record = sorted(identity_record.items(), key=lambda x: (x[1][0], x[1][1]), reverse = True)
+        # print (sorted_identity_record[0])
+        # print the sorted dictionary
+        top_alleles = []
+        max_identity = sorted_identity_record[0][1][0]
+        max_length = sorted_identity_record[0][1][1]
+        for allele, info in sorted_identity_record:
+            if info[0] == max_identity and info[1] == max_length:
+                top_alleles.append(convert_G(allele))
+                # print(allele, info, convert_G(allele))
+            else:
+                break
+        most_common_allele = most_common(top_alleles)
+        return (most_common_allele)
+
+    def main(self):
+        sample_results = {}
+        for gene in gene_list:
+            sample_results[gene] = []
+            for hap_index in range(1,3):
+                infer_hap_file = f"{self.spechla_dir}/{self.sample}/hla.allele.{hap_index}.HLA_{gene}.fasta"
+                blast_result_file = infer_hap_file + ".exon.blast"
+                self.blast(infer_hap_file, blast_result_file)
+                g_group_type = self.read_blast(blast_result_file)
+                sample_results[gene].append(g_group_type)
+        print (self.sample, sample_results)
+        return sample_results
+
+    def check_pop(self, allele):
+        allele = re.sub("HLA-","",allele)
+        array = allele.split(":")
+        two_field = array[0] + ":" + array[1]
+        flag = False
+        if two_field in  hashp:
+            if hashp[two_field] > 0:
+                flag = True
+        return flag
+
+def population(pop, wxs):
+    hashp = {}
+    freq = "/home/wangshuai/softwares/SpecHLA/db/HLA/HLA_FREQ_HLA_I_II.txt"
+    with open(f"{freq}", "r") as fin:
+        next(fin)
+        for line in fin:
+            gene, c, b, a = line.strip().split()
+            if wxs == "exon":
+                a = "%.3f" % float(a)
+                b = "%.3f" % float(b)
+                c = "%.3f" % float(c)
+            elif wxs == "whole":
+                a = "%.8f" % float(a)
+                b = "%.8f" % float(b)
+                c = "%.8f" % float(c)
+            if pop == "Unknown":
+                hashp[gene] = (float(a) + float(b) + float(c)) / 3
+            elif pop == "Asian":
+                hashp[gene] = float(a)
+            elif pop == "Black":
+                hashp[gene] = float(b)
+            elif pop == "Caucasian":
+                hashp[gene] = float(c)
+            elif pop == "nonuse":
+                hashp[gene] = 0
+    return hashp
+
+
+def most_common(lst):
+    data = Counter(lst)
+    return data.most_common(1)[0][0]
 
 if __name__ == "__main__":
     # for gene in ['A', 'B', 'C', 'DQB1','DRB1']:
     #     single(gene)
     matched_allele_file = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/extracted_HLA_alleles.fasta"
+    exon_database = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/xml/hla_exons.fasta"
     G_annotation_dict = read_G_annotation()
+    hashp = population("Unknown", "whole")
     digit = 6
     typ = Eva_typing()
     # typ.main_real()
     # typ.print_truth() # save g-group truth in a table
     typ.check_spechla_accuracy()
+    # typ.check_new_annotation_spechla_accuracy()
+    # g_ann = G_annotation("NA19239", "/mnt/d/HLAPro_backup/haplotype_v2/spechla/")
+    # g_ann.main()
     

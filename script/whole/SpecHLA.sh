@@ -42,7 +42,6 @@
 ###   -a        Use this long InDel file if provided.
 ###   -r        The minimum Minor Allele Frequency (MAF), default is 0.05 for full length and
 ###             0.1 for exon typing.
-###   -g        Whether use G group resolution annotation [0|1], default is 0 (i.e., not use).
 ###   -k        The mean depth in a window lower than this value will be masked by N, default is 5.
 ###             Set 0 to avoid masking.
 ###   -z        Whether only mask exon region, True or False, default is False.
@@ -50,6 +49,8 @@
 ###             use trio info to improve typing. Note: use it after performing SpecHLA once already.
 ###   -b        Whether use database for unlinked block phasing [0|1], default is 1 (i.e., use).
 ###   -h        Show this message.
+
+#   -g        Whether use G group resolution annotation [0|1], default is 0 (i.e., not use).
 
 help() {
     sed -rn 's/^### ?//;T;p' "$0"
@@ -100,8 +101,8 @@ while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:z:y:f:b:" opt; do
     ;;
     s) snp_dp="$OPTARG"
     ;;
-    g) trans="$OPTARG"
-    ;;
+    # g) trans="$OPTARG"
+    # ;;
     k) mask_depth="$OPTARG"
     ;;
     z) mask_exon="$OPTARG"
@@ -339,10 +340,11 @@ done
 echo start annotation...
 # perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop
 if [ $focus_exon_flag == 1 ];then #exon
-    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -g ${trans:-0} -r exon 
+    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -r exon  #-g ${trans:-0}
 else
-    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -g ${trans:-0} -r whole 
+    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -r whole 
 fi
+python3 $dir/g_group_annotation.py -s $sample -i $outdir -p ${pop:-Unknown} -j ${num_threads:-5} # g group resolution annotation
 # #############################################################################
 
 
