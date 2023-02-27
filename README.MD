@@ -37,7 +37,7 @@ Please go to the `example/` folder, run SpecHLA with given scripts, and find res
 |script/ExtractHLAread.sh| Extract HLA reads.|
 |script/whole/SpecHLA.sh| HLA typing with paired-end (PE), PE+long-reads, PE+HiC, or PE+10X data.  |
 |script/long_read_typing.py|HLA typing with only long-read data.|
-|script/cal.hla.copy.pl|Detect HLA LOH events based on typing SpecHLA's results.|
+|script/cal.hla.copy.pl|Detect HLA LOH events based on SpecHLA's results.|
 
 
 ### Extract HLA-related reads
