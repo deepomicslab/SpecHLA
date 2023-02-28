@@ -1,3 +1,10 @@
+"""
+Mask low-depth region with N
+
+wangshuai, wshuai294@gmail.com
+"""
+
+
 import os
 import numpy as np
 import pickle

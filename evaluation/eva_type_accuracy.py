@@ -125,49 +125,18 @@ class Eva_typing():
     def get_truth_allele(self):
         all_sample_true_dict = {}
         
-        for line in open(matched_allele_file):
-            if line[0] == ">":
-                array = line[1:].split()
-                array[2] = re.sub(":","_",array[2])
-                array[2] = re.sub("\*","_",array[2])
-                allele = array[2]
-                sample = array[0].split(".")[0]
-                gene = array[0].split("-")[1]
+        for line in open(truth_g_group):
+            line = line.strip()
+            array = line.split(",")
+            if array[0] == "sample":
+                continue
+            sample = array[0]
+            gene = array[1]
+            if sample not in all_sample_true_dict:
+                all_sample_true_dict[sample] = {}
+            all_sample_true_dict[sample][gene] = [array[3], array[5]]
 
-                if sample not in all_sample_true_dict:
-                    all_sample_true_dict[sample] = {}
-                if gene not in all_sample_true_dict[sample]:
-                    all_sample_true_dict[sample][gene] = []
-                if allele in G_annotation_dict:
-                    allele = G_annotation_dict[allele]
-                all_sample_true_dict[sample][gene] += [allele]
         return all_sample_true_dict
-
-    def print_truth(self):
-        # for supplementary Table S29
-        file = "/mnt/d/HLAPro_backup/hybrid/hgsvc2_G_group_truth.csv"
-        f = open(file, 'w')
-        print ("sample,haplotype,gene,HLA type,G-group", file = f)
-        all_sample_true_dict = {}
-        for line in open(matched_allele_file):
-            if line[0] == ">":
-                array = line[1:].split()
-                raw_allele = array[2]
-                array[2] = re.sub(":","_",array[2])
-                array[2] = re.sub("\*","_",array[2])
-                allele = array[2]
-                sample = array[0].split(".")[0]
-                gene = array[0].split("-")[1]
-
-                if sample not in all_sample_true_dict:
-                    all_sample_true_dict[sample] = {}
-                if gene not in all_sample_true_dict[sample]:
-                    all_sample_true_dict[sample][gene] = []
-                if allele in G_annotation_dict:
-                    allele = G_annotation_dict[allele]
-                all_sample_true_dict[sample][gene] += [allele]
-                print (sample, len(all_sample_true_dict[sample][gene]), gene, raw_allele,allele, sep = "," , file = f)
-        f.close()
 
     def check_spechla_accuracy(self):
         # check results in all 32 samples
@@ -182,7 +151,7 @@ class Eva_typing():
         for sample in all_sample_true_dict.keys():
             if sample in spechla_32_sample_infer_dict:
                 self.sample_list.append(sample)
-        # print (len(spechla_32_sample_infer_dict), len(all_sample_true_dict))
+        print (len(spechla_32_sample_infer_dict), len(all_sample_true_dict))
         self.assess(all_sample_true_dict, spechla_32_sample_infer_dict, data, "spechla in 32 samples")
 
     def check_new_annotation_spechla_accuracy(self):
@@ -200,6 +169,8 @@ class Eva_typing():
             g_ann = G_annotation(sample, spechla_dir)
             sample_result = g_ann.main()
             spechla_32_sample_infer_dict[sample] = sample_result
+        # print (spechla_32_sample_infer_dict)
+        print (all_sample_true_dict)
         self.assess(all_sample_true_dict, spechla_32_sample_infer_dict, [], "spechla with new G annotation")
 
     def main_real(self): 
@@ -246,11 +217,12 @@ class Eva_typing():
         for sample in self.sample_list:
             for gene in all_sample_true_dict[sample]:
                 true_alleles = all_sample_true_dict[sample][gene]
-                # print (sample, gene, "true:", true_alleles)
+                
                 if gene in infer_all_sample_infer_dict[sample]:
                     infer_alleles = infer_all_sample_infer_dict[sample][gene]
                 else:
                     infer_alleles = ["no result", "no result"]
+                # print (sample, gene, "true:", true_alleles, infer_alleles)
                 right_num = self.compare_allele(true_alleles, infer_alleles)
                 gene_count[gene]["right"] += right_num
                 gene_count[gene]["all"] += 2
@@ -467,15 +439,16 @@ def most_common(lst):
 if __name__ == "__main__":
     # for gene in ['A', 'B', 'C', 'DQB1','DRB1']:
     #     single(gene)
-    matched_allele_file = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/extracted_HLA_alleles.fasta"
+    # matched_allele_file = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/extracted_HLA_alleles.fasta"
+    truth_g_group = "/mnt/d/HLAPro_backup/haplotype_v2/hgsvc2_G_group_truth.csv"
     exon_database = "/mnt/d/HLAPro_backup/minor_rev/extract_alleles/xml/hla_exons.fasta"
     G_annotation_dict = read_G_annotation()
     hashp = population("Unknown", "whole")
     digit = 6
     typ = Eva_typing()
-    # typ.main_real()
+    typ.main_real()
     # typ.print_truth() # save g-group truth in a table
-    typ.check_spechla_accuracy()
+    # typ.check_spechla_accuracy()
     # typ.check_new_annotation_spechla_accuracy()
     # g_ann = G_annotation("NA19239", "/mnt/d/HLAPro_backup/haplotype_v2/spechla/")
     # g_ann.main()

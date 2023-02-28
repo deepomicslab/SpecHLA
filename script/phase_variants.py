@@ -1,3 +1,9 @@
+"""
+Phase small variants and long indels
+
+wangshuai, wshuai294@gmail.com
+"""
+
 from argparse import ArgumentParser
 from argparse import ArgumentTypeError
 import time

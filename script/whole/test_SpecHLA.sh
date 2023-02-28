@@ -242,8 +242,8 @@ fi
 if [ ${nanopore_data:-NA} != NA ];then
     $python_bin $dir/../long_read_typing.py -r ${nanopore_data} -n $sample -m 0 -o $outdir -j ${num_threads:-5} -a nanopore
 fi
+# !
 
-!
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
 # ###################### mask low-depth region #############################################
@@ -335,7 +335,7 @@ $python_bin $dir/../phase_variants.py \
 done
 # ##################################################################################################
 
-
+!
 # ############################ annotation ####################################
 echo start annotation...
 # perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop
@@ -351,4 +351,5 @@ python3 $dir/g_group_annotation.py -s $sample -i $outdir -p ${pop:-Unknown} -j $
 
 bash $dir/../clear_output.sh $outdir/
 cat $outdir/hla.result.txt
+cat $outdir/hla.result.g.group.txt
 echo $sample is done.

@@ -1604,8 +1604,8 @@ class Assess_hgsvc2_seq_recall():
             data = self.for_spechla(sample, data, "SpecHLA")
             # break
             
-            # self.spechla_dir = self.work_dir + "/spechla_unmasked/"
-            # data = self.for_spechla(sample, data, "SpecHLA-U")
+            # self.spechla_dir = self.work_dir + "/spechla_sv/"
+            # data = self.for_spechla(sample, data, "SpecHLA-sv")
 
 
         print ("total sample number:", sample_num)
@@ -1634,6 +1634,7 @@ class Assess_hgsvc2_seq_recall():
         print (self.record_truth_file_dict[sample], truth_file1)
         truth_file2 = self.record_truth_file_dict[sample][1]
         infer_file = outdir + "/hla.allele.all.fasta"
+        os.system("rm %s/hla.allele.*.HLA_*.fasta.merged.exon.fasta"%(outdir))
         os.system("cat %s/hla.allele.*.HLA_*.fasta>%s"%(outdir, infer_file))
 
         if not os.path.isfile(truth_file1) or not os.path.isfile(truth_file2):
@@ -1797,13 +1798,11 @@ if __name__ == "__main__":
         print ("############")
         # nov = Assess_novel()
         # nov.main()
-        # ass_recall = Assess_hgsvc2_seq_recall()
-        # ass_recall.main()
-        ass = Assess_hgsvc2()
-        # ass.main()
-        ass.main_exon()
-        # ass = Assess_hgsvc2_edit_distance()
-        # ass.main()
+        ass_recall = Assess_hgsvc2_seq_recall()
+        ass_recall.main()
+        # ass = Assess_hgsvc2()
+        # # ass.main()
+        # ass.main_exon()
         # ass.test()
         # eva_simu_trio()
         # eva_real_trio()

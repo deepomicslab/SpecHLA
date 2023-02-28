@@ -90,9 +90,10 @@ class G_annotation():
             identity = float(array[2])
             match_len = int(array[3])
             allele = exon.split("|")[0]
-            if not self.check_pop(allele):
+            if not self.check_pop(allele) and args["p"] != "nonuse": # check allele freq in population
+                # print ("<<<")
                 continue
-
+            # print (allele, identity, match_len)
             if allele not in identity_record:
                 identity_record[allele] = [0, 0]
             if exon not in record_hit_exon_times:
@@ -118,6 +119,7 @@ class G_annotation():
                 # print(allele, info, convert_G(allele))
             else:
                 break
+        # print (top_alleles)
         most_common_allele = most_common(top_alleles)
         return (most_common_allele)
 
@@ -174,7 +176,10 @@ def population(pop, wxs):
             elif pop == "Caucasian":
                 hashp[gene] = float(c)
             elif pop == "nonuse":
-                hashp[gene] = 0
+                hashp[gene] = 1
+            else:
+                print ("Wrong value for the parameter -p.")
+                sys.exit(0)
     return hashp
 
 

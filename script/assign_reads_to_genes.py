@@ -1,5 +1,7 @@
 """
 assin reads to original gene loci with the alignment 
+
+wangshuai, wshuai294@gmail.com
 """
 
 import sys

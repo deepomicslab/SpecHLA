@@ -2,6 +2,8 @@
 Link the unlinked blocks by mapping them to the database
 regard each sub-haplotype in the phase block as a node
 construct the linkage graph to link blocks
+
+wangshuai, wshuai294@gmail.com
 """
 
 import numpy as np

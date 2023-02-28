@@ -2,6 +2,8 @@
 Input: the VCF file that saves long InDels
 refine the breakpoints, and convert the formate
 return breakpoint file
+
+wangshuai, wshuai294@gmail.com
 """
 
 import sys
