@@ -12,3 +12,4 @@ The scripts to evaluate the typing results are in this folder.
 |get_truth_HSVC2_g.py| Infer G group HLA types from HGSVC2 samples as ground truth|
 |get_HLA_alleles_from_assembly.py| Extract HLA alleles from HGSVC2 samples as ground truth|
 |download_hgsvc_assemly.py| Download phased assemblies of HGSVC2 samples as ground truth |
+|convert.allele.pl | map the HLA types to the most recent IMGT version|
