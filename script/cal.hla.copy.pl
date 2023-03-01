@@ -8,14 +8,16 @@ my ($sample, $het_cutoff, $purity, $ploidy, $filelist, $tfile, $outdir);
 my $Help;
 GetOptions(
 	   "purity=f"  =>      \$purity,
-           "ploidy=f"  =>      \$ploidy,
+        "ploidy=f"  =>      \$ploidy,
 	   "F=s"       =>      \$filelist,
-           "T=s"       =>      \$tfile,  ## typing result
+        "T=s"       =>      \$tfile,  ## typing result
 	   "O=s"       =>      \$outdir,
 	   "S=s"       =>      \$sample,
 	   "C=f"       =>      \$het_cutoff,
 	   "h"         =>      \$Help
 );
+
+$het_cutoff = 5 if (!defined $het_cutoff);
 
 my $usage = <<USE;
 Usage:
@@ -27,11 +29,12 @@ usage:  perl $0 [Options] -S <samplename> -C <5> -purity <Purity> -ploidy <Ploid
         -purity  [f]  the purity of tumor sample. <required>
         -ploidy  [f]  the ploidy of tumor sample in HLA gene region. <required> 
         -S       [s]  sample name <required>
-        -C       [f]  the cutoff of heterogeneous snp number. <required>
-        -F       [s]  the filelist. <required>     Format, separated by table: ./HLA_A_freq.txt
+        -C       [f]  the cutoff of heterogeneous snp number. Default is 5.
+        -F       [s]  the HLA_*_freq.txt file list. <required>  Obtained by "ls typing_result_dir/*_freq.txt >freq.list"
         -T       [s]  the hla typing result file of Spechla <required>
-        -O       [s]  the output dir. <required>
-        
+        -O       [s]  the output dir. <required> Need exist before running.
+
+The result file "merge.hla.copy.txt" can be found in the outdir.      
 
 USE
 die $usage unless ($purity && $ploidy && $sample && $filelist && $tfile && $outdir);

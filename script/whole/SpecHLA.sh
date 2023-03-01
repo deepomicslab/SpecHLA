@@ -1,13 +1,13 @@
 #!/bin/bash
 
 ###
-### SpecHLA: Full-resolution HLA typing from paired-end, PacBio, Nanopore, Hi-C, and 10X data.
-### WGS, WES, and RNASeq data are supported. 
+### SpecHLA: Full-resolution HLA typing from sequencing data.
 ### 
 ### Note: 
 ###   1) Use HLA reads only, otherwise, it would be slow. Use ExtractHLAread.sh to extract HLA reads first.
-###   2) With WES or RNASeq data, must select exon typing  (-u 0).
-###   3) Short single-end read data are not supported.
+###   2) WGS, WES, and RNASeq data are supported. 
+###   3) With WES or RNASeq data, must select exon typing  (-u 0).
+###   4) Short single-end read data are not supported.
 ###
 ### Usage:
 ###   bash SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o <outdir>

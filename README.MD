@@ -89,13 +89,13 @@ bash script/whole/SpecHLA.sh -n <sample> -v True -p <Asia> -1 <sample.fq.1.gz> -
 
 Full arguments can be seen in
 ```
-SpecHLA: Full-resolution HLA typing from paired-end, PacBio, Nanopore, Hi-C, and 10X data.
-WGS, WES, and RNASeq data are supported.
+SpecHLA: Full-resolution HLA typing from sequencing data.
 
 Note:
   1) Use HLA reads only, otherwise, it would be slow. Use ExtractHLAread.sh to extract HLA reads first.
-  2) With WES or RNASeq data, must select exon typing  (-u 0).
-  3) Short single-end read data are not supported.
+  2) WGS, WES, and RNASeq data are supported.
+  3) With WES or RNASeq data, must select exon typing  (-u 0).
+  4) Short single-end read data are not supported.
 
 Usage:
   bash SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o <outdir>
@@ -179,12 +179,18 @@ usage:  perl script/cal.hla.copy.pl [Options] -S <samplename> -C <5> -purity <Pu
         -purity  [f]  the purity of tumor sample. <required>
         -ploidy  [f]  the ploidy of tumor sample in HLA gene region. <required>
         -S       [s]  sample name <required>
-        -C       [f]  the cutoff of heterogeneous snp number. <required>
-        -F       [s]  the filelist. <required>     Format, separated by table: ./HLA_A_freq.txt
+        -C       [f]  the cutoff of heterogeneous snp number. Default is 5.
+        -F       [s]  the HLA_*_freq.txt file list. <required>  Obtained by "ls typing_result_dir/*_freq.txt >freq.list"
         -T       [s]  the hla typing result file of Spechla <required>
-        -O       [s]  the output dir. <required>
+        -O       [s]  the output dir. <required> Need exist before running.
+
+The result file "merge.hla.copy.txt" can be found in the outdir.
 ```
-Use `ls typing_result_dir/*_freq.txt >freq.list` to generate the file required by `-F`.
+Use `ls typing_result_dir/*_freq.txt >freq.list` to generate the file required by `-F`. The command example is
+```
+perl script/cal.hla.copy.pl -purity 0.5 -ploidy 2 -S test -F freq.list -T hla.result.txt -O ./
+```
+
 
 ## Interpret output
 In the denoted outdir, the results of each sample are saved in a folder named as the sample ID.  
@@ -205,12 +211,12 @@ If you performed pedigree phasing, you will find below files.
 | trio/HLA_*.trio.vcf.gz | Phased vcf file after pedigree phasing |
 | hla.allele.\*.HLA_\*.fasta | Allele sequence after pedigree phasing|
 
-An example for "hla.result.txt" is as below:
+An example for `hla.result.txt` is as below:
 ```
 Sample  HLA_A_1 HLA_A_2 HLA_B_1 HLA_B_2 HLA_C_1 HLA_C_2 HLA_DPA1_1      HLA_DPA1_2      HLA_DPB1_1      HLA_DPB1_2      HLA_DQA1_1    HLA_DQA1_2      HLA_DQB1_1      HLA_DQB1_2      HLA_DRB1_1      HLA_DRB1_2
 HG00118 A*24:02:01:01   A*02:01:01:01   B*07:02:01:01   B*40:01:02:02   C*03:04:01:01   C*07:02:01:03   DPA1*01:03:01:02        DPA1*01:03:01:02    DPB1*04:01:01:01        DPB1*04:01:01:01        DQA1*01:02:01:01        DQA1*01:02:01:01        DQB1*06:02:01:01        DQB1*06:02:01:01    DRB1*15:01:01:01        DRB1*15:01:01:01
 ```
-An example for "HLA_*_freq.txt" is as below:
+An example for `HLA_*_freq.txt` is as below:
 ```
 # Haplotype     Frequency
 hla.allele.1.HLA_A.fasta 0.532
@@ -218,7 +224,7 @@ hla.allele.2.HLA_A.fasta 0.468
 # The number of heterozygous variant is 30
 ```
 
-An example for HLA LOH result is as below:
+An example for HLA LOH result file: `merge.hla.copy.txt` is as below:
 ```
 Sample	HLA	Allele1	Allele2	copyratio	KeptHLA	LossHLA
 DNA_CRL-2314_p3_s6	A	A*03:01:01:01	A*02:05:01:01	2:0	A*03:01:01:01	A*02:05:01:01
@@ -235,7 +241,7 @@ DNA_CRL-2314_p3_s6	DRB1	DRB1*11:02:01:01	DRB1*15:01:01:01	0:2	DRB1*15:01:01:01	D
 ## Dependencies 
 
 ### Systematic requirement
-SpecHLA requires `conda 4.12.0` and `GCC 11.3.0` for environment construction and installation.
+SpecHLA requires `conda 4.12.0`, `cmake 3.16.3`, and `GCC 9.4.0` for environment construction and software installation.
 
 ### Programming 
 * python=3.8.12 or above  
