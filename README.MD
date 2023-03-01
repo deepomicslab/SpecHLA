@@ -226,15 +226,15 @@ hla.allele.2.HLA_A.fasta 0.468
 
 An example for HLA LOH result file: `merge.hla.copy.txt` is as below:
 ```
-Sample	HLA	Allele1	Allele2	copyratio	KeptHLA	LossHLA
-DNA_CRL-2314_p3_s6	A	A*03:01:01:01	A*02:05:01:01	2:0	A*03:01:01:01	A*02:05:01:01
-DNA_CRL-2314_p3_s6	B	B*35:03:01:01	B*49:01:01:01	2:0	B*35:03:01:01	B*49:01:01:01
-DNA_CRL-2314_p3_s6	C	C*12:03:01:01	C*07:01:01:01	2:0	C*12:03:01:01	C*07:01:01:01
-DNA_CRL-2314_p3_s6	DPA1	DPA1*01:03:01:01	DPA1*01:03:01:01	2:0	DPA1*01:03:01:01	homogeneous
-DNA_CRL-2314_p3_s6	DPB1	DPB1*15:01:01:01	DPB1*04:01:01:01	0:2	DPB1*04:01:01:01	DPB1*15:01:01:01
-DNA_CRL-2314_p3_s6	DQA1	DQA1*01:02:01:01	DQA1*05:05:01:01	2:0	DQA1*01:02:01:01	DQA1*05:05:01:01
-DNA_CRL-2314_p3_s6	DQB1	DQB1*06:02:01:01	DQB1*03:19:01:01	2:0	DQB1*06:02:01:01	DQB1*03:19:01:01
-DNA_CRL-2314_p3_s6	DRB1	DRB1*11:02:01:01	DRB1*15:01:01:01	0:2	DRB1*15:01:01:01	DRB1*11:02:01:01
+Sample  HLA     Allele1 Allele2 copyratio       KeptHLA LossHLA Freq1   Freq2   Purity  Het_num LOH
+test    A       A*24:02:01:01   A*02:01:01:01   1:1     A*24:02:01:01   A*02:01:01:01   0.507   0.493   0.5     100     N
+test    B       B*07:02:01:01   B*40:01:02:01   1:1     B*07:02:01:01   B*40:01:02:01   0.502   0.498   0.5     32      N
+test    C       C*03:04:01:01   C*07:02:01:03   1:1     C*07:02:01:03   C*03:04:01:01   0.433   0.567   0.5     99      N
+test    DPA1    DPA1*01:03:01:02        DPA1*01:03:01:02        2:0     DPA1*01:03:01:02        homogeneous     1       0       0.5     0       N
+test    DPB1    DPB1*04:01:01:01        DPB1*04:01:01:01        2:0     DPB1*04:01:01:01        DPB1*04:01:01:01        0.909   0.091   0.5     1       N
+test    DQA1    DQA1*01:02:01:01        DQA1*01:02:01:01        1:1     DQA1*01:02:01:01        DQA1*01:02:01:01        0.548   0.452   0.5     1       N
+test    DQB1    DQB1*06:02:01:01        DQB1*06:02:01:01        2:0     DQB1*06:02:01:01        homogeneous     1       0       0.5     0       N
+test    DRB1    DRB1*15:01:01:01        DRB1*15:01:01:01        2:0     DRB1*15:01:01:01        DRB1*15:01:01:01        0.65    0.35    0.5     2       N
 ```
 
 
