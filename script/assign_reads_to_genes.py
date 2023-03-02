@@ -204,14 +204,14 @@ def main():
 if __name__ == "__main__":
     from argparse import ArgumentParser
 
-    parser = ArgumentParser(description='Read assignment')
+    parser = ArgumentParser(description='Read binning')
     parser.add_argument('-b', '--bam', help='bam file', required=True)
     parser.add_argument('-o', '--outdir', help='outdir', required=True)  
-    parser.add_argument('-1', '--fq1', help='bin dir', required=True) 
-    parser.add_argument('-2', '--fq2', help='bin dir', required=True)  
+    parser.add_argument('-1', '--fq1', help='fq1', required=True) 
+    parser.add_argument('-2', '--fq2', help='fq2', required=True)  
     parser.add_argument('-n', '--bin_dir', help='bin dir', required=True)  
-    parser.add_argument('-nm', '--max_nm', help='MAX NM', required=False, default = 2, type=int)
-    parser.add_argument('-d', '--diff_score', help='The score for the best gene must be at least this higher\
+    parser.add_argument('-nm', '--max_nm', help='MAX mismatch num', required=False, default = 2, type=int)
+    parser.add_argument('-d', '--diff_score', help='The score for the best-matched gene must be at least this higher\
          than the second gene', required=True, default = 0.1, type=float)
     options = parser.parse_args()
 
