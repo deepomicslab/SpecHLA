@@ -250,8 +250,8 @@ SpecHLA requires `conda 4.12.0`, `cmake 3.16.3`, and `GCC 9.4.0` for environment
 
 ### Third party packages
 SpecHLA enables automatic installation of these third party packages. 
-Also, users can install the softwares by themselves, please remind link the executable file to the `bin/` folder.
-To apply [Novoalign](https://www.novocraft.com/buy-now/), please put the novoalign.lic (License file) in the `bin/` folder.
+Also, users can install the softwares by themselves, and add their locations to system path.
+After applying [Novoalign](https://www.novocraft.com/buy-now/), please put the novoalign.lic (License file) in the `bin/` folder.
 
 * Third party packages:
     * SamTools-1.3.1
