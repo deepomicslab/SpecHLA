@@ -30,7 +30,7 @@
 ###   -x        Path of folder created by 10x demultiplexing. Prefix of the filenames of FASTQs
 ###             should be the same as Sample ID. Please install Longranger in the system env.
 ###   -w        The weight to use allele imbalance info for phasing [0-1]. Default is 0 that means 
-###             not use. 1 means only use imbalance info; other values integrate reads and allele imbalance info.
+###             not use. 1 means only use imbalance info; other values integrate reads and allele imbalance.
 ###   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
 ###             is 2. It should be set larger to infer novel alleles.
 ###   -y        The minimum different mapping score between the best and second-best aligned genes. 
