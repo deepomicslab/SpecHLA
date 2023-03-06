@@ -56,7 +56,7 @@ USAGE: bash script/ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome> 
 ```
 
 ### HLA Typing 
-Full-resolution and exon HLA typing using SpecHLA. With WES or RNASeq data, must perform exon typing.
+Full-resolution and exon HLA typing using SpecHLA. With Exome data like WES or RNASeq, only support exon typing.
 
 Perform full-resolution HLA typing with `paired-end` reads by
 ```
@@ -94,7 +94,7 @@ SpecHLA: Full-resolution HLA typing from sequencing data.
 Note:
   1) Use HLA reads only, otherwise, it would be slow. Use ExtractHLAread.sh to extract HLA reads first.
   2) WGS, WES, and RNASeq data are supported.
-  3) With WES or RNASeq data, must select exon typing  (-u 0).
+  3) With Exome data like WES or RNASeq, must select exon typing  (-u 0).
   4) Short single-end read data are not supported.
 
 Usage:
