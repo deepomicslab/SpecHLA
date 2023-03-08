@@ -1,11 +1,10 @@
 """
-extract HLA allele from phased assemblies
+Extract HLA allele from phased assemblies
 1. map the HLA database to the assembly
 2. obtain the matched length and identity of each allele
 3. remove the allele does not fit the 1000G typing results
-4. remove the allele that not perfect match in exons (2,3 for class I, and 2 for class II genes)
-5. choose the best allele by balancing the matched length and identity
-6. extract the assembly sequence that mapped to the best allele
+4. choose the best allele by balancing the matched length and identity
+5. extract the assembly sequence that mapped to the best allele
 
 wangshuai, Feb 20, 2023
 """

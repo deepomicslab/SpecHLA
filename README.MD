@@ -264,8 +264,8 @@ SpecHLA requires `conda 4.12.0+`, `cmake 3.16.3+`, and `GCC 9.4.0+` for environm
 * Perl 5 or above
 
 ### Third party packages
-SpecHLA enables automatic installation of these third party packages. 
-Also, users can install the softwares by themselves, and add their locations to system path.
+SpecHLA enables automatic installation of these third party packages using `conda`. 
+Also, we can install the softwares by ourselves, and add their locations to system path (Exception: put bcftools, fermikit, and novoalign to `bin/` folder).
 After applying [Novoalign](https://www.novocraft.com/buy-now/), please put the novoalign.lic (License file) in the `bin/` folder.
 
 * Third party packages:

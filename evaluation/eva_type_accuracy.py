@@ -1,6 +1,5 @@
 """
-Calculate typing accuracy of HLA*LA and SpecHLA at the G group level
-in seven HGSVC2 samples with both NGS and Pacbio data 
+Calculate typing accuracy of HLA*LA and SpecHLA at the G group level in HGSVC2 samples.
 
 wangshuai July 11, 2022
 """
