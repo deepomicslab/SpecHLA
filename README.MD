@@ -236,6 +236,21 @@ test    DQA1    DQA1*01:02:01:01        DQA1*01:02:01:01        1:1     DQA1*01:
 test    DQB1    DQB1*06:02:01:01        DQB1*06:02:01:01        2:0     DQB1*06:02:01:01        homogeneous     1       0       0.5     0       N
 test    DRB1    DRB1*15:01:01:01        DRB1*15:01:01:01        2:0     DRB1*15:01:01:01        DRB1*15:01:01:01        0.65    0.35    0.5     2       N
 ```
+Interpret each column as
+|Header| Description |
+| --- | --- |
+|Sample| Sample Name|
+|HLA| HLA locus|
+|Allele1| HLA type of the first allele|
+|Allele2| HLA type of the second allele|
+|copyratio| Copy numbers of two alleles|
+|KeptHLA| The remaining allele|
+|LossHLA| The possible lost allele|
+|Freq1| Frequency of the first allele|
+|Freq2|Frequency of the second allele|
+|Purity| Tumor purity|
+|Het_num|Number of heterozygous variant|
+|LOH| Whether LOH exists (Y or N)|
 
 
 ## Dependencies 
