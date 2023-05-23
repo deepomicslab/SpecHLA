@@ -81,6 +81,13 @@ class Eva_typing():
                 allele = allele.split(";")[0]
                 if allele in G_annotation_dict:
                     allele = G_annotation_dict[allele]
+
+                elif allele + "_01" in G_annotation_dict:
+                    allele = G_annotation_dict[allele + "_01"]
+                elif allele + "_01_01" in G_annotation_dict:
+                    allele = G_annotation_dict[allele + "_01_01"]
+                # else:
+                #     print ("no G-group resolution:", allele)
                 type = allele
                 all_sample_infer_dict[sample][gene].append(type)
         return all_sample_infer_dict
@@ -179,6 +186,7 @@ class Eva_typing():
         # print (all_sample_true_dict["HG00514"])
 
         self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/hifi_hlala/HLA-LA.merge.result.txt"
+        # self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/hifi_hlala/original_bam/HLA-LA.merge.result.txt"
         hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
         data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PacBio")
         # print (hla_la_all_sample_infer_dict)
