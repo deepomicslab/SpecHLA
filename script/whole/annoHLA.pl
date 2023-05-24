@@ -20,7 +20,7 @@ usage: perl $0 [options]
         -s       <tr>    sample name
         -i       <tr>    the directory of phased sequence
         -p       <tr>    population information "Asian|Black|Caucasian|Unknown|nonuse"
-        -r       <tr>    focus region "exon|whole" ("exon" is suitable for WES or RNAseq; "whole" is suitable for WGS )
+        -r       <tr>    focus region "exon|whole|tgs" ("exon" is suitable for WES or RNAseq; "whole" is suitable for WGS; "tgs" is suitable for TGS )
         -g       <tr>     G-translate 1|0"
         -help|?           print help information
 e.g.:
@@ -30,6 +30,8 @@ die $usage unless ($sample && $dir && $pop && $wxs );
 print "parameter:\tsample:$sample\tdir:$dir\tpop:$pop\twxs:$wxs\tG_nom:$g_nom\n";
 
 my $k = 2;
+my $bias = 1;
+if($wxs eq "tgs"){$bias = 0.5} # gap score in TGS
 my (%hashp,%hashp2, %hashpp, %hashg, %hashc, %hash,%hashdd);
 my $db="$Bin/../../db/HLA";
 my $bin="$Bin/../../bin";
@@ -240,6 +242,47 @@ sub whole_blast{
     }
 }
 
+sub tgs_blast{
+	foreach my $class(@hlas){
+		my $ref = "$db/whole/$class";
+		for(my $i=1;$i<=$k;$i++){
+			my $tag = "$class"."_"."$i";
+			my $fa = "$fadir/hla.allele.$i.$class.fasta";
+			system("$bin/blastn -query $fa -out $fadir/tmp/$tag.blast.out1 -db $ref -outfmt 7 -num_threads 4 -max_target_seqs 2500 -perc_identity 95 -qcov_hsp_perc 10");
+			my (%hash_max,%hash11,%hash12, %hash21, %hash22,$gene,$score);
+			open IN1, "$workdir/$tag.blast.out1" or die "$!\n";
+			while(<IN1>){
+				chomp;
+				next if(/^#/);
+				my ($hla, $t, $m,$d,$s) = (split)[1,3,4,5,8];
+				$hash11{$hla} += $t;
+				$hash12{$hla} += $m + $d * $bias;
+			}
+			close IN1;
+			$score=85;
+              		my $ff=0;
+              		foreach my $key(sort keys %hash11){
+                      		my @tt = (split /:/, $key);
+                      		my $kid = "$tt[0]".":"."$tt[1]";
+                        	my ($fre,$fre2)=(0,0);
+                      		if(exists $hashp{$kid}){$fre=$hashp{$kid};$fre2=$hashp2{$kid}} ## population frequency of 4 digit hla allele
+                      		my $s = 100 * (1 - $hash12{$key}/$hash11{$key}); #blast score
+                      		next if($pop ne "nonuse" && $fre2 == 0);
+                      		my $scorel=$s;
+
+                      		if($scorel >= $score){
+                             		$score = $scorel;
+                             		$gene = $key;
+                             		$ff=$fre;
+                             		$hash_max{$scorel} .= "$gene;$s\t";
+                      		}
+             		}
+             		$hash{$tag} = $hash_max{$score};
+             		`rm -rf $fadir/$class.temp*`;
+        }
+    }
+}
+
 open COUT, ">$dir/hla.result.txt";
 print COUT "Sample\tHLA_A_1\tHLA_A_2\tHLA_B_1\tHLA_B_2\tHLA_C_1\tHLA_C_2\tHLA_DPA1_1\tHLA_DPA1_2\tHLA_DPB1_1\tHLA_DPB1_2\tHLA_DQA1_1\tHLA_DQA1_2\tHLA_DQB1_1\tHLA_DQB1_2\tHLA_DRB1_1\tHLA_DRB1_2\n";
 
@@ -250,6 +293,9 @@ if($wxs eq "exon"){
 }
 if($wxs eq "whole"){
        &whole_blast;
+}
+if($wxs eq "tgs"){
+       &tgs_blast;
 }
 sub uniq {
   my %seen;

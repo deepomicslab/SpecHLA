@@ -25,10 +25,12 @@ class Read_Obj():
 
         self.match_num = 0        
         for ci in read.cigar:
-            if ci[0] == 0 or ci[0] == 1 or ci[0] == 2:
+            if ci[0] == 0:
                 self.match_num += ci[1]
-            if ci[0] == 1 or ci[0] == 2:
-                mis_NM += ci[1]
+            # if ci[0] == 0 or ci[0] == 1 or ci[0] == 2:
+            #     self.match_num += ci[1]
+            # if ci[0] == 1 or ci[0] == 2:
+            #     mis_NM += ci[1]
         # print (read.query_name, read.reference_name, self.read_length, mis_NM)   
         # self.read_length = len(read.query_sequence) 
 
@@ -36,6 +38,9 @@ class Read_Obj():
         self.allele_name = read.reference_name
         self.mismatch_rate = round(float(mis_NM)/self.match_num, 6)
         self.match_rate = 1 - self.mismatch_rate
+
+        # if self.match_num < 1000:
+        #     self.match_rate = 0
 
         self.loci_name = self.allele_name.split("*")[0]
 
@@ -51,44 +56,46 @@ class Score_Obj():
         score = read_obj.match_rate
         if read_obj.read_name not in self.loci_score:
             self.loci_score[read_obj.read_name] = {}
-            self.loci_score[read_obj.read_name][read_obj.loci_name] = score
+            self.loci_score[read_obj.read_name][read_obj.loci_name] = [score, read_obj.match_num]
         elif read_obj.loci_name not in self.loci_score[read_obj.read_name]:
-            self.loci_score[read_obj.read_name][read_obj.loci_name] = score
+            self.loci_score[read_obj.read_name][read_obj.loci_name] = [score, read_obj.match_num]
         else:
-            if score > self.loci_score[read_obj.read_name][read_obj.loci_name]:
-                self.loci_score[read_obj.read_name][read_obj.loci_name] = score
+            if score > self.loci_score[read_obj.read_name][read_obj.loci_name][0]:
+                self.loci_score[read_obj.read_name][read_obj.loci_name] = [score, read_obj.match_num]
     
     def assign(self, assign_file):
         f = open(assign_file, 'w')
         # print (len(self.loci_score))
         for read_name in self.loci_score: # for each read
             assigned_locus = []
-            gene_score = sorted(self.loci_score[read_name].items(), key=lambda item: item[1], reverse = True)
+            gene_score = sorted(self.loci_score[read_name].items(), key=lambda item: item[1][0], reverse = True)
+            gene_match_len = sorted(self.loci_score[read_name].items(), key=lambda  x: x[1][1], reverse = True)
             # if len(gene_score) > 1 and (gene_score[0][0] == "DQB1"):
             #     print (read_name, gene_score[:2])
-            if gene_score[0][1] < Min_score:
+            if gene_score[0][1][0] < Min_score:
                 continue
             if len(gene_score) == 1: # mapped to only one gene, directly assign to that gene
                 assigned_locus = [gene_score[0][0]]
             else:
                 # real-data based adjustment
-                print (read_name, gene_score[0][0], gene_score[:5])
-                # if gene_score[0][0] in ["Y"] and gene_score[1][0] == "A":
-                #     assigned_locus = ["A"]
-                # if gene_score[0][0] == "A":
                 
-                if gene_score[0][0] == "DRB1" and gene_score[0][1] < 0.9:
+
+                # if gene_score[0][0] == "A" or gene_score[1][0] == "A":
+                #     print (read_name, gene_score[0][0], gene_score[:5], gene_match_len[:5])
+                # if gene_score[0][0] in ["U", "Y"] and gene_score[1][0] == "A" and gene_score[1][1] > 0.94:
+                #     assigned_locus = ["A"]                
+                if gene_score[0][0] == "DRB1" and gene_score[0][1][0] < 0.9:
                     continue
-                elif gene_score[0][0] == "DRB1" and gene_score[0][1] - gene_score[1][1] < 0.02:
+                elif gene_score[0][0] == "DRB1" and gene_score[0][1][0] - gene_score[1][1][0] < 0.02:
                     continue
-                elif gene_score[0][0] == "DQB1" and gene_score[0][1] < 0.9:
+                elif gene_score[0][0] == "DQB1" and gene_score[0][1][0] < 0.9:
                     continue
                 elif gene_score[0][0] == 'DPB2' and gene_score[1][0] == "DPA1":
                     assigned_locus = ["DPA1"]
                 elif gene_score[0][0] in ['DPB1', "DPA1"] and gene_score[1][0] in ['DPB1', "DPA1"]:
                     assigned_locus = ['DPB1', "DPA1"]
                 # map to more than one gene, check the score difference
-                elif gene_score[0][1] - gene_score[1][1] >= Min_diff:
+                elif gene_score[0][1][0] - gene_score[1][1][0] >= Min_diff:
                     assigned_locus = [gene_score[0][0]]
                 # score diff too small, can not determine which gene to assign
                 # discard this read
@@ -106,6 +113,7 @@ class Pacbio_Binning():
         
          
         self.db = f"{sys.path[0]}/../db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta"
+        # self.db = f"{sys.path[0]}/../db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta"
         self.map2db()
         self.sam = f"{parameter.outdir}/{parameter.sample}.db.sam"
         self.bamfile = pysam.AlignmentFile(self.sam, 'r')   
@@ -204,10 +212,13 @@ class Pacbio_Binning_test(): # assign read to the first-alignment gene, and the 
             read_loci[read.query_name] = []
             first_locus = read.reference_name.split("*")[0]
             read_loci[read.query_name].append(first_locus)
-            # if read.has_tag('SA'):
-            #     # read.get_tag('SA').split(',')[0]
-            #     second_locus = read.get_tag('SA').split(',')[0].split("*")[0]
-            #     read_loci[read.query_name].append(second_locus)
+            if read.has_tag('SA'):
+                # read.get_tag('SA').split(',')[0]
+                array = read.get_tag('SA').split(',')
+                for arr in array:
+                    second_locus = arr.split("*")[0]
+                    read_loci[read.query_name].append(second_locus)
+            read_loci[read.query_name] = list(set(read_loci[read.query_name]))
             # print (read)
             # read_obj = Read_Obj(read)
             # scor.add_read(read_obj)
@@ -269,6 +280,9 @@ class Parameters():
 
 class Fasta():
 
+    # minimap2 -t %s -p 0.5 -B 10 -ax asm20 $hla_ref $outdir/$hla.%s.fq.gz | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
+
+    # minimap2 -t %s -a $hla_ref $outdir/$hla.%s.fq.gz | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
     def vcf2fasta(self, gene):
         for index in range(2):
             order = """
@@ -283,8 +297,8 @@ class Fasta():
             minimap2 -t %s -a $hla_ref $outdir/$hla.%s.fq.gz | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
             samtools index $outdir/$hla.bam
 
-
             longshot -F  --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
+            #longshot -F -S -c 2 -q 10 -Q 2 -a 5 -y 20 -e 2 -E 0.1 --hom_snv_rate 0.01 --het_snv_rate 0.01 --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
             bgzip -f $outdir/$sample.$hla.longshot.vcf
             tabix -f $outdir/$sample.$hla.longshot.vcf.gz
 
