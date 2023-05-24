@@ -323,7 +323,7 @@ class Fasta():
 
     def annotation(self):
         anno = f"""
-        perl {parameter.whole_dir}/annoHLA.pl -s {parameter.sample} -i {parameter.outdir} -p {parameter.population} -r whole -g {args["g"]}
+        perl {parameter.whole_dir}/annoHLA.pl -s {parameter.sample} -i {parameter.outdir} -p {parameter.population} -r tgs -g {args["g"]}
         cat {parameter.outdir}/hla.result.txt
         """
         # print (anno)
@@ -366,15 +366,15 @@ if __name__ == "__main__":
     Min_diff = args["d"]  #0.001
 
     ###assign reads
-    if args["m"] == 10086:
-        print ("skip assignment, just for testing")
-    else:
-        pbin = Pacbio_Binning()
-        pbin.read_bam()        
+    # if args["m"] == 10086:
+    #     print ("skip assignment, just for testing")
+    # else:
+    #     pbin = Pacbio_Binning()
+    #     pbin.read_bam()        
 
     if args["m"] != 0:
         fa = Fasta()
-        fa.get_fasta()
+        # fa.get_fasta()
         print ("Sequence is reconstructed, start annotation...")
         fa.annotation()
     print ("Finished.")
