@@ -82,9 +82,9 @@ class Score_Obj():
 
                 # if gene_score[0][0] == "A" or gene_score[1][0] == "A":
                 #     print (read_name, gene_score[0][0], gene_score[:5], gene_match_len[:5])
-                # if gene_score[0][0] in ["U", "Y"] and gene_score[1][0] == "A" and gene_score[1][1] > 0.94:
-                #     assigned_locus = ["A"]                
-                if gene_score[0][0] == "DRB1" and gene_score[0][1][0] < 0.9:
+                if gene_score[0][0] in ["U"] and gene_score[1][0] == "A" :
+                    assigned_locus = ["A"]                
+                elif gene_score[0][0] == "DRB1" and gene_score[0][1][0] < 0.9:
                     continue
                 elif gene_score[0][0] == "DRB1" and gene_score[0][1][0] - gene_score[1][1][0] < 0.02:
                     continue
@@ -297,7 +297,7 @@ class Fasta():
             minimap2 -t %s -a $hla_ref $outdir/$hla.%s.fq.gz | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
             samtools index $outdir/$hla.bam
 
-            longshot -F  --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
+            longshot -F -c 2 --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
             #longshot -F -S -c 2 -q 10 -Q 2 -a 5 -y 20 -e 2 -E 0.1 --hom_snv_rate 0.01 --het_snv_rate 0.01 --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
             bgzip -f $outdir/$sample.$hla.longshot.vcf
             tabix -f $outdir/$sample.$hla.longshot.vcf.gz
@@ -366,15 +366,15 @@ if __name__ == "__main__":
     Min_diff = args["d"]  #0.001
 
     ###assign reads
-    # if args["m"] == 10086:
-    #     print ("skip assignment, just for testing")
-    # else:
-    #     pbin = Pacbio_Binning()
-    #     pbin.read_bam()        
+    if args["m"] == 10086:
+        print ("skip assignment, just for testing")
+    else:
+        pbin = Pacbio_Binning()
+        pbin.read_bam()        
 
     if args["m"] != 0:
         fa = Fasta()
-        # fa.get_fasta()
+        fa.get_fasta()
         print ("Sequence is reconstructed, start annotation...")
         fa.annotation()
     print ("Finished.")
