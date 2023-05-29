@@ -428,7 +428,7 @@ class MNP_linkage():
                 continue
             if read.query_name not in self.read_quality_dict:
                 self.read_quality_dict[read.query_name] = int(read.mapping_quality)
-            if int(first[1])-1 in read.get_reference_positions(full_length=True) and read.mapping_quality >1:   
+            if int(first[1])-1 in read.get_reference_positions(full_length=True) and read.mapping_quality > 1:   
                 
                 reads_index=read.get_reference_positions(full_length=True).index(int(first[1])-1)
                 if first[2][0] != first[3][0]:
@@ -475,6 +475,8 @@ class MNP_linkage():
                 if read_name not in self.read_cover_geno:
                     self.read_cover_geno[read_name] = {}
                 self.read_cover_geno[read_name][snp_index] = geno
+                # if snp_index == 6 or snp_index == 7:
+                #     print (snp_index, self.snp_list[snp_index-1], read_name, geno)
     
     def get_discard_reads(self):
         if gene == "HLA_DRB1":

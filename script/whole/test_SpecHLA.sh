@@ -1,13 +1,13 @@
 #!/bin/bash
 
 ###
-### SpecHLA: Full-resolution HLA typing from paired-end, PacBio, Nanopore, Hi-C, and 10X data.
-### WGS, WES, and RNASeq data are supported. 
+### SpecHLA: Full-resolution HLA typing from sequencing data.
 ### 
 ### Note: 
 ###   1) Use HLA reads only, otherwise, it would be slow. Use ExtractHLAread.sh to extract HLA reads first.
-###   2) With WES or RNASeq data, must select exon typing  (-u 0).
-###   3) Short single-end read data are not supported.
+###   2) WGS, WES, and RNASeq data are supported. 
+###   3) With Exome data like WES or RNASeq, must select exon typing  (-u 0).
+###   4) Short single-end read data are not supported.
 ###
 ### Usage:
 ###   bash SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o <outdir>
@@ -30,7 +30,7 @@
 ###   -x        Path of folder created by 10x demultiplexing. Prefix of the filenames of FASTQs
 ###             should be the same as Sample ID. Please install Longranger in the system env.
 ###   -w        The weight to use allele imbalance info for phasing [0-1]. Default is 0 that means 
-###             not use. 1 means only use imbalance info; other values integrate reads and allele imbalance info.
+###             not use. 1 means only use imbalance info; other values integrate reads and allele imbalance.
 ###   -m        The maximum mismatch number tolerated in assigning gene-specific reads. Deault
 ###             is 2. It should be set larger to infer novel alleles.
 ###   -y        The minimum different mapping score between the best and second-best aligned genes. 
@@ -156,7 +156,7 @@ exit 1
 fi
 # ###############################################################
 
-:<<!
+# :<<!
 # ################ remove the repeat read name #################
 $python_bin $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 $python_bin $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
@@ -242,7 +242,7 @@ fi
 if [ ${nanopore_data:-NA} != NA ];then
     $python_bin $dir/../long_read_typing.py -r ${nanopore_data} -n $sample -m 0 -o $outdir -j ${num_threads:-5} -a nanopore
 fi
-# !
+!
 
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf
@@ -306,7 +306,7 @@ fi
 
 echo Minimum Minor Allele Frequency is $my_maf.
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
-# hlas=(A)
+# hlas=(DPB1)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
 $python_bin $dir/../phase_variants.py \
@@ -335,7 +335,7 @@ $python_bin $dir/../phase_variants.py \
 done
 # ##################################################################################################
 
-!
+
 # ############################ annotation ####################################
 echo start annotation...
 # perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop
@@ -349,7 +349,6 @@ python3 $dir/g_group_annotation.py -s $sample -i $outdir -p ${pop:-Unknown} -j $
 
 
 
-bash $dir/../clear_output.sh $outdir/
+# bash $dir/../clear_output.sh $outdir/
 cat $outdir/hla.result.txt
-cat $outdir/hla.result.g.group.txt
 echo $sample is done.

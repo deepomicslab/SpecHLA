@@ -1,5 +1,6 @@
 """
 Calculate typing accuracy of HLA*LA and SpecHLA at the G group level in HGSVC2 samples.
+In the samples with both PE and PacBio data.
 
 wangshuai July 11, 2022
 """
@@ -66,7 +67,7 @@ class Eva_typing():
             if array[0] == "Sample":
                 continue
             sample = array[0]
-            sample = sample.split("_")[0]
+            # sample = sample.split("_")[0]
             all_sample_infer_dict[sample] = {}
             for allele in array[1:]:
                 gene = allele.split("*")[0]
@@ -181,49 +182,66 @@ class Eva_typing():
 
     def main_real(self): 
         data = []   
-        self.sample_list = ['HG00514', 'HG00731', 'HG00732', 'HG00733', 'NA19238', 'NA19239', 'NA19240']
+        self.sample_list = ["NA12878", 'HG00514', 'HG00731', 'HG00732', 'HG00733', 'NA19238', 'NA19239', 'NA19240', 'NA12878']
+        # self.sample_list = ["NA12878", 'HG00514', 'HG00731', 'HG00732', 'HG00733', 'NA19238', 'NA19239', 'NA19240', 'NA12878_nanopore', 'NA12878_pacbio']
         all_sample_true_dict = self.get_truth_allele()
-        # print (all_sample_true_dict["HG00514"])
+        all_sample_true_dict["NA12878"] = {'A': ['A_01_01_01G', 'A_11_01_01G'], 'B': ['B_56_01_01G', 'B_08_01_01G'], 'C': ['C_01_02_01G', 'C_07_01_01G'], \
+        'DPA1': ['DPA1_01_03_01G', 'DPA1_02_01_01G'], 'DPB1': ['DPB1_04_01_01G', 'DPB1_14_01_01G'], 'DQA1': ['DQA1_01_01_01G', 'DQA1_05_01_01G'], \
+        'DQB1': ['DQB1_02_01_01G', 'DQB1_05_01_01G'], 'DRB1': ['DRB1_01_01_01G', 'DRB1_03_01_01G']}
+        print (all_sample_true_dict["HG00514"])
 
         self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/hifi_hlala/HLA-LA.merge.result.txt"
         # self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/hifi_hlala/original_bam/HLA-LA.merge.result.txt"
         hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
+        print (hla_la_all_sample_infer_dict)
         data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PacBio")
-        # print (hla_la_all_sample_infer_dict)
+        # # print (hla_la_all_sample_infer_dict)
 
-        self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/ngs_hlala/HLA-LA.merge.result.txt"
-        hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
-        data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PE")
+        # self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/ngs_hlala/HLA-LA.merge.result.txt"
+        # hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
+        # data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PE")
 
         self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/pacbio/"
         self.get_spechla_merge_result()
         spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
         data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PacBio")
+        
+        # print ("<<<", spechla_all_sample_infer_dict.keys())
 
         self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/spechla_no_pac/"
         self.get_spechla_merge_result()
         spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
         data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PE")
 
-        self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/spechla_with_pac/"
-        self.get_spechla_merge_result()
-        spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
-        # print(spechla_all_sample_infer_dict)
-        data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_hybrid")
+        # self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/spechla_with_pac/"
+        # self.get_spechla_merge_result()
+        # spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
+        # # print(spechla_all_sample_infer_dict)
+        # data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_hybrid")
 
         # print ("HLA*LA")
         
         df = pd.DataFrame(data, columns = ["Accuracy", "Gene", "Methods"])
         df.to_csv('/mnt/d/HLAPro_backup/hybrid/hybrid_G_assess_real.csv', sep=',')
+    
+    # def save_type_result(self):
 
     def assess(self, all_sample_true_dict, infer_all_sample_infer_dict, data, method):
         # print (infer_all_sample_infer_dict)
         gene_count = {}
         for gene in gene_list:
             gene_count[gene] = {"right":0, "all":0}
-        for sample in self.sample_list:
-            for gene in all_sample_true_dict[sample]:
-                true_alleles = all_sample_true_dict[sample][gene]
+        for sample in infer_all_sample_infer_dict.keys():
+            # if sample not in infer_all_sample_infer_dict:
+            #     if sample + "_pacbio" in infer_all_sample_infer_dict:
+            #         sample = sample + "_pacbio"
+            #     elif sample + "_nanopore" in infer_all_sample_infer_dict:
+            #         sample = sample + "_nanopore"          
+            #     else:          
+            #         continue
+            pure_sample = sample.split("_")[0]
+            for gene in all_sample_true_dict[pure_sample]:
+                true_alleles = all_sample_true_dict[pure_sample][gene]
                 
                 if gene in infer_all_sample_infer_dict[sample]:
                     infer_alleles = infer_all_sample_infer_dict[sample][gene]
