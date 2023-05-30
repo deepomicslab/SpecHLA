@@ -29,6 +29,7 @@ fi
 # the lib required by samtools
 ln -s $dir/spechla_env/lib/libncurses.so.6 $dir/spechla_env/lib/libncurses.so.5
 ln -s $dir/spechla_env/lib/libtinfo.so.6 $dir/spechla_env/lib/libtinfo.so.5
+#ln -s $dir/spechla_env/lib/libhts.so.3 $dir/spechla_env/lib/libhts.so.2
 # !
 
 # install spechap

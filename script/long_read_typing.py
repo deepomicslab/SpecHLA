@@ -39,7 +39,7 @@ class Read_Obj():
         self.mismatch_rate = round(float(mis_NM)/self.match_num, 6)
         self.match_rate = 1 - self.mismatch_rate
 
-        # if self.match_num < 1000:
+        # if self.match_num < 500:
         #     self.match_rate = 0
 
         self.loci_name = self.allele_name.split("*")[0]
@@ -72,7 +72,7 @@ class Score_Obj():
             gene_match_len = sorted(self.loci_score[read_name].items(), key=lambda  x: x[1][1], reverse = True)
             # if len(gene_score) > 1 and (gene_score[0][0] == "DQB1"):
             #     print (read_name, gene_score[:2])
-            if gene_score[0][1][0] < Min_score:
+            if gene_score[0][1][0] <= Min_score:
                 continue
             if len(gene_score) == 1: # mapped to only one gene, directly assign to that gene
                 assigned_locus = [gene_score[0][0]]
@@ -80,13 +80,11 @@ class Score_Obj():
                 # real-data based adjustment
                 
 
-                # if gene_score[0][0] == "A" or gene_score[1][0] == "A":
+                # if gene_score[0][0] == "DRB1" or gene_score[1][0] == "DRB1":
                 #     print (read_name, gene_score[0][0], gene_score[:5], gene_match_len[:5])
                 if gene_score[0][0] in ["U"] and gene_score[1][0] == "A" :
                     assigned_locus = ["A"]                
-                elif gene_score[0][0] == "DRB1" and gene_score[0][1][0] < 0.9:
-                    continue
-                elif gene_score[0][0] == "DRB1" and gene_score[0][1][0] - gene_score[1][1][0] < 0.02:
+                elif gene_score[0][0] == "DRB1" and gene_score[0][1][0] - gene_score[1][1][0] < 0.05:  # 0.02 0.05
                     continue
                 elif gene_score[0][0] == "DQB1" and gene_score[0][1][0] < 0.9:
                     continue

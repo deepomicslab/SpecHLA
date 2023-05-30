@@ -306,7 +306,6 @@ fi
 
 echo Minimum Minor Allele Frequency is $my_maf.
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
-# hlas=(A)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
 $python_bin $dir/../phase_variants.py \

@@ -1473,15 +1473,15 @@ def run_SpecHap():
         ref=%s
         sample=pacbio
 
-        $bin/pbmm2 align -j %s $ref $outdir/%s/$gene.pacbio.fq.gz $outdir/$sample.tgs.sort.bam --sort --sample $sample --rg '@RG\tID:movie1'
-        $bin/ExtractHAIRs --triallelic 1 --pacbio 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.$sample.file
+        pbmm2 align -j %s $ref $outdir/%s/$gene.pacbio.fq.gz $outdir/$sample.tgs.sort.bam --sort --sample $sample --rg '@RG\tID:movie1'
+        samtools index $outdir/$sample.tgs.sort.bam
+        $bin/ExtractHAIRs --triallelic 1 --pacbio 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.$sample.raw.file
+        head -n -1 $outdir/fragment.$sample.raw.file > $outdir/fragment.$sample.file
         cat $outdir/fragment.$sample.file >> $outdir/fragment.all.file
         """%(args.tgs, outdir, sys.path[0], gene.split("_")[1], hla_ref, args.thread_num, args.sample_id, gene_vcf)
 
         print ('extract linkage info from pacbio data.')
         os.system(command)
-        # order = '%s/../bin/SpecHap/build/SpecHap --ncs -P --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
-        # --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
         order += " -P"
 
     # nanopore
@@ -1496,8 +1496,10 @@ def run_SpecHap():
         minimap2 -t %s -a $ref $outdir/%s/$gene.nanopore.fq.gz > $outdir/$sample.tgs.sam
         samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
         samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
-        $bin/ExtractHAIRs --triallelic 1 --ONT 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.nanopore.file
-        cat $outdir/fragment.nanopore.file >> $outdir/fragment.all.file
+        samtools index $outdir/$sample.tgs.sort.bam
+        $bin/ExtractHAIRs --triallelic 1 --ONT 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.$sample.raw.file
+        head -n -1 $outdir/fragment.$sample.raw.file > $outdir/fragment.$sample.file
+        cat $outdir/fragment.$sample.file >> $outdir/fragment.all.file
         """%(args.nanopore, hla_ref, outdir, sys.path[0], gene.split("_")[1], args.thread_num, args.sample_id, gene_vcf)
         print ('extract linkage info from nanopore TGS data.')
         os.system(command)
@@ -1519,11 +1521,9 @@ def run_SpecHap():
         cat $outdir/$sample.tgs.raw.sam|grep -v 'XA:'|grep -v 'SA:'>$outdir/$sample.tgs.sam
         samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
         samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
+        samtools index $outdir/$sample.tgs.sort.bam
         $bin/ExtractHAIRs --new_format 1 --triallelic 1 --hic 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.hic.file
-        # python %s/whole/edit_linkage_value.py $outdir/fragment.raw.hic.file 10 $outdir/fragment.hic.file
-        # rm $outdir/fragment.hic.file
-        # touch $outdir/fragment.hic.file
-        """%(args.hic_fwd, args.hic_rev, hla_ref, outdir, sys.path[0], args.thread_num, gene_vcf, sys.path[0])
+        """%(args.hic_fwd, args.hic_rev, hla_ref, outdir, sys.path[0], args.thread_num, gene_vcf)
         print ('extract linkage info from HiC data.')
         os.system(command)
         os.system('cat %s/fragment.hic.file >> %s/fragment.all.file'%(outdir, outdir))
@@ -1554,12 +1554,12 @@ def run_SpecHap():
             $bin/ExtractHAIRs --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam\
                  --VCF $vcf --out $outdir/fragment.raw.tenx.file
             gzip -f -d -k $vcf
-            %s/../spechla_env/bin/python3 %s/link_fragment.py -b $bam -f $outdir/fragment.raw.tenx.file\
+            python3 %s/link_fragment.py -b $bam -f $outdir/fragment.raw.tenx.file\
                  -v %s -o  $outdir/fragment.raw3.tenx.file
             awk '$0=$0" 1"' $outdir/fragment.raw3.tenx.file >$outdir/fragment.tenx.file
             cat $outdir/fragment.tenx.file >> $outdir/fragment.all.file
         
-        """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, gene_vcf,sys.path[0], args.thread_num, sys.path[0],sys.path[0], gene_vcf[:-3])
+        """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, gene_vcf,sys.path[0], args.thread_num, sys.path[0], gene_vcf[:-3])
         print ('align linked-reads with longranger and extract linkage info')
         os.system(command)
         
