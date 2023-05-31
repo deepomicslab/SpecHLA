@@ -203,9 +203,9 @@ In the directory of one specific sample, you will find the below files:
 | Output | Description |
 | --- | --- |
 | hla.result.txt | HLA-typing results for all alleles |
-| hla.result.details.txt | Detail results of mapping the allele to the database |
+| hla.result.details.txt | All the alleles with the highest mapping score in annotation |
 | hla.result.g.group.txt | G group resolution HLA type |
-| hla.allele.\*.HLA_\*.fasta | Sequence of each allele |
+| hla.allele.\*.HLA_\*.fasta | Sequence of each allele (the low-depth region is masked by N) |
 | HLA_*_freq.txt | Haplotype frequencies of each gene |
 | HLA_*.rephase.vcf.gz | Phased vcf file for each gene |
 

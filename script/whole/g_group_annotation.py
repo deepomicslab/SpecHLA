@@ -16,7 +16,18 @@ import argparse
 
 gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
 
+def count_n_ratio(fasta_file):
+    total_bases = 0
+    n_bases = 0
 
+    with open(fasta_file, 'r') as f:
+        for record in SeqIO.parse(f, 'fasta'):
+            total_bases += len(record.seq)
+            n_bases += record.seq.count('N')
+
+    ratio = n_bases / total_bases
+    ratio = round(ratio, 2)
+    return ratio
 
 def read_G_annotation():
     g_file = "%s/../../db/HLA/hla_nom_g.txt"%(sys.path[0])
@@ -129,6 +140,8 @@ class G_annotation():
             sample_results[gene] = []
             for hap_index in range(1,3):
                 infer_hap_file = f"{self.spechla_dir}/hla.allele.{hap_index}.HLA_{gene}.fasta"
+                n_ratio = count_n_ratio(infer_hap_file) # cal the ratio of N in the fasta
+                print ("The ratio of N (masked) is %s for the allele %s"%(n_ratio, infer_hap_file))
                 blast_result_file = infer_hap_file + ".exon.blast"
                 self.blast(infer_hap_file, blast_result_file)
                 g_group_type = self.read_blast(blast_result_file)
@@ -181,7 +194,6 @@ def population(pop, wxs):
                 print ("Wrong value for the parameter -p.")
                 sys.exit(0)
     return hashp
-
 
 def most_common(lst):
     data = Counter(lst)

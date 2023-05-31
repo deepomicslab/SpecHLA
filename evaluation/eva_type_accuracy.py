@@ -204,14 +204,14 @@ class Eva_typing():
         data, type_data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PacBio", type_data)
         # # print (hla_la_all_sample_infer_dict)
 
-        # self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/ngs_hlala/HLA-LA.merge.result.txt"
-        # hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
-        # data, type_data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PE", type_data)
+        self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/ngs_hlala/HLA-LA.merge.result.txt"
+        hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
+        data, type_data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PE", type_data)
 
-        # self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/pacbio/"
-        # self.get_spechla_merge_result()
-        # spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
-        # data, type_data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PacBio", type_data)
+        self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/pacbio/"
+        self.get_spechla_merge_result()
+        spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
+        data, type_data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PacBio", type_data)
         
         # # print ("<<<", spechla_all_sample_infer_dict.keys())
         self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/spechla_no_pac/"
@@ -259,12 +259,16 @@ class Eva_typing():
                 if right_num != 2:
                     print (sample, gene, true_alleles, infer_alleles)
         accuracy_list = []
+        total_num = 0
+        right_num = 0
         for gene in gene_list:
             print (method, gene, gene_count[gene]["right"], gene_count[gene]["all"], gene_count[gene]["right"]/gene_count[gene]["all"])
             accuracy = gene_count[gene]["right"]/gene_count[gene]["all"]
             accuracy_list.append(accuracy)
             data.append([accuracy, gene, method])
-        print (np.mean(accuracy_list))
+            total_num += gene_count[gene]["all"]
+            right_num += gene_count[gene]["right"]
+        print (right_num/total_num, total_num, right_num)
         print ("\n")
         return data, type_data
     
@@ -461,10 +465,50 @@ def population(pop, wxs):
                 hashp[gene] = 0
     return hashp
 
-
 def most_common(lst):
     data = Counter(lst)
     return data.most_common(1)[0][0]
+
+class All_HGSCV2(Eva_typing):
+
+    def get_spechla_merge_result(self):
+        command = f"cat {self.spechla_outdir}/*/hla.result.g.group.txt|grep -v Sample >{self.spechla_result}"
+        os.system(command)
+
+    def main_real(self): 
+        data = []   
+        type_data = []
+        self.sample_list = ["NA12878", 'HG00514', 'HG00731', 'HG00732', 'HG00733', 'NA19238', 'NA19239', 'NA19240', 'NA12878']
+        # self.sample_list = ["NA12878", 'HG00514', 'HG00731', 'HG00732', 'HG00733', 'NA19238', 'NA19239', 'NA19240', 'NA12878_nanopore', 'NA12878_pacbio']
+        all_sample_true_dict = self.get_truth_allele()
+        # new_all_sample_true_dict = {}
+        # for key in all_sample_true_dict:
+        #     if key in self.sample_list:
+        #         new_all_sample_true_dict[key] = all_sample_true_dict[key] 
+        # all_sample_true_dict = new_all_sample_true_dict
+
+        all_sample_true_dict["NA12878"] = {'A': ['A_01_01_01G', 'A_11_01_01G'], 'B': ['B_56_01_01G', 'B_08_01_01G'], 'C': ['C_01_02_01G', 'C_07_01_01G'], \
+        'DPA1': ['DPA1_01_03_01G', 'DPA1_02_01_01G'], 'DPB1': ['DPB1_04_01_01G', 'DPB1_14_01_01G'], 'DQA1': ['DQA1_01_01_01G', 'DQA1_05_01_01G'], \
+        'DQB1': ['DQB1_02_01_01G', 'DQB1_05_01_01G'], 'DRB1': ['DRB1_01_01_01G', 'DRB1_03_01_01G']}
+        # print (all_sample_true_dict["HG00514"])
+
+
+        
+        # # print ("<<<", spechla_all_sample_infer_dict.keys())
+        self.spechla_outdir = "/mnt/d/HLAPro_backup/haplotype_v2/spechla/"
+        self.get_spechla_merge_result()
+        spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
+        data, type_data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA", type_data)
+
+        
+        # df = pd.DataFrame(data, columns = ["Accuracy", "Gene", "Methods"])
+        # df.to_csv('/mnt/d/HLAPro_backup/hybrid/hybrid_G_assess_real.csv', sep=',')
+        # df = pd.DataFrame(type_data, columns = ["Methods", "Sample", "Gene", "Truth_allele_1", "Truth_allele_2", "Typed_allele_1", "Typed_allele_2"])
+        # df.to_csv('/mnt/d/HLAPro_backup/hybrid/hybrid_type_results.csv', sep=',')
+
+
+
+
 
 if __name__ == "__main__":
     # for gene in ['A', 'B', 'C', 'DQB1','DRB1']:
@@ -475,8 +519,13 @@ if __name__ == "__main__":
     G_annotation_dict = read_G_annotation()
     hashp = population("Unknown", "whole")
     digit = 6
-    typ = Eva_typing()
+    # typ = Eva_typing()
+    # typ.main_real()
+
+    typ = All_HGSCV2()
     typ.main_real()
+
+
     # typ.print_truth() # save g-group truth in a table
     # typ.check_spechla_accuracy()
     # typ.check_new_annotation_spechla_accuracy()
