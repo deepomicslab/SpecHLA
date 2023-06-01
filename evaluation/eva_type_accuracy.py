@@ -197,33 +197,35 @@ class Eva_typing():
         'DQB1': ['DQB1_02_01_01G', 'DQB1_05_01_01G'], 'DRB1': ['DRB1_01_01_01G', 'DRB1_03_01_01G']}
         # print (all_sample_true_dict["HG00514"])
 
-        self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/hifi_hlala/HLA-LA.merge.result.txt"
+        # self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/hifi_hlala/HLA-LA.merge.result.txt"
+        self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/hifi_hlala/HLA-LA.merge.result.G.txt"
         # self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/hifi_hlala/original_bam/HLA-LA.merge.result.txt"
         hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
         # print (hla_la_all_sample_infer_dict)
-        data, type_data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PacBio", type_data)
+        data, type_data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_Long", type_data)
         # # print (hla_la_all_sample_infer_dict)
 
-        self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/ngs_hlala/HLA-LA.merge.result.txt"
+        # self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/ngs_hlala/HLA-LA.merge.result.txt"
+        self.hla_la_result = "/mnt/d/HLAPro_backup/compare_hlala/ngs_hlala/HLA-LA.merge.result.G.txt"
         hla_la_all_sample_infer_dict = self.extract_inferred(self.hla_la_result)
-        data, type_data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_PE", type_data)
+        data, type_data = self.assess(all_sample_true_dict, hla_la_all_sample_infer_dict, data, "HLA*LA_Short", type_data)
 
         self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/pacbio/"
         self.get_spechla_merge_result()
         spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
-        data, type_data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PacBio", type_data)
+        data, type_data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_Long", type_data)
         
         # # print ("<<<", spechla_all_sample_infer_dict.keys())
         self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/spechla_no_pac/"
         self.get_spechla_merge_result()
         spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
-        data, type_data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_PE", type_data)
+        data, type_data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_Short", type_data)
 
         self.spechla_outdir = "/mnt/d/HLAPro_backup/compare_hlala/spechla_with_pac/"
         self.get_spechla_merge_result()
         spechla_all_sample_infer_dict = self.extract_inferred(self.spechla_result)
         # print(spechla_all_sample_infer_dict)
-        data, type_data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_hybrid", type_data)
+        data, type_data = self.assess(all_sample_true_dict, spechla_all_sample_infer_dict, data, "SpecHLA_Hybrid", type_data)
 
         # print ("HLA*LA")
         
@@ -519,11 +521,11 @@ if __name__ == "__main__":
     G_annotation_dict = read_G_annotation()
     hashp = population("Unknown", "whole")
     digit = 6
-    # typ = Eva_typing()
-    # typ.main_real()
-
-    typ = All_HGSCV2()
+    typ = Eva_typing()
     typ.main_real()
+
+    # typ = All_HGSCV2()
+    # typ.main_real()
 
 
     # typ.print_truth() # save g-group truth in a table

@@ -14,7 +14,7 @@ function usage {
     echo
     echo " -s          : desired sample name (ex: NA12878) [required]"
     echo
-    echo " -b          : sorted and indexed bam (ex: NA12878.bam) [required]"
+    echo " -b          : sorted and indexed bam or cram (ex: NA12878.bam) [required]"
     echo
     echo " -r          : hg38 or hg19"
     echo
@@ -59,7 +59,7 @@ bamUtil=bam
 #     echo "Please make sure samtools and bamUtil are installed"
 #     exit 1
 # fi
-if [ ! -f "$bam_path.bai" ]; then
+if [ ! -f "$bam_path.bai" ] && [ ! -f "$bam_path.crai" ]; then
     echo "Index the BAM." 
     $samtools_bin index $bam_path
 fi

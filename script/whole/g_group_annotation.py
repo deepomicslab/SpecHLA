@@ -136,6 +136,7 @@ class G_annotation():
 
     def main(self):
         sample_results = {}
+        print ("The region with low read depth is masked by N. The cutoff is specified by -k.")
         for gene in gene_list:
             sample_results[gene] = []
             for hap_index in range(1,3):

@@ -52,7 +52,7 @@ USAGE: bash script/ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome> 
 
  -s          : desired sample name (ex: NA12878) [required]
 
- -b          : sorted and indexed bam (ex: NA12878.bam) [required]
+ -b          : sorted and indexed bam or cram (ex: NA12878.bam) [required]
 
  -r          : hg38 or hg19
 
