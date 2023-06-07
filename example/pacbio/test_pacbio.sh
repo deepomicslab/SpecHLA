@@ -1,1 +1,1 @@
-python3  ../../script/long_read_typing.py  -j 5 -n NA19238 -r NA19238_pacbio.fastq.gz -o output 
+python3  ../../script/long_read_typing.py  -j 5 -n HG00733 -r HG00733_pacbio.subsample.fastq.gz -o output 

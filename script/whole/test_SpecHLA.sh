@@ -156,7 +156,7 @@ exit 1
 fi
 # ###############################################################
 
-# :<<!
+:<<!
 # ################ remove the repeat read name #################
 $python_bin $dir/../uniq_read_name.py $fq1 $outdir/$sample.uniq.name.R1.gz
 $python_bin $dir/../uniq_read_name.py $fq2 $outdir/$sample.uniq.name.R2.gz
@@ -242,7 +242,7 @@ fi
 if [ ${nanopore_data:-NA} != NA ];then
     $python_bin $dir/../long_read_typing.py -r ${nanopore_data} -n $sample -m 0 -o $outdir -j ${num_threads:-5} -a nanopore
 fi
-
+!
 
 bam=$outdir/$sample.realign.sort.bam
 vcf=$outdir/$sample.realign.filter.vcf

@@ -12,18 +12,29 @@ for hla in ${HLAs[@]}; do
     echo blat=$dir/db/HLA/HLA_${hla}/ >>$config_file
 done
 
-# index the database for bowtie2
-bowtie2-build $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta
-bowtie2-build $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta
 
-# index the database for novoalign
+
+
 license=$dir/bin/novoalign.lic
 if [ -f "$license" ];then
-    $dir/bin/novoindex  -k 14 -s 1 $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.ndx \
-    $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta
+    # index the database for novoalign
+    echo "Find License for Novoalign."
+    if [ -f "$dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.ndx" ] && [ -f "$dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.ndx" ];then
+        echo "Find reference index for Novoalign."
+    else
+        echo "Index the reference for novoalign..."
+        $dir/bin/novoindex  -k 14 -s 1 $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.ndx \
+        $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta
 
-    $dir/bin/novoindex  -k 14 -s 1 $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.ndx \
-    $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta
+        $dir/bin/novoindex  -k 14 -s 1 $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.ndx \
+        $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta
+    fi
+else
+    # index the database for bowtie2
+    echo "Cannot Find License for Novoalign, index the reference for bowtie2."
+    bowtie2-build $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta
+    bowtie2-build $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta $dir/db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta
+
 fi
 
 # the lib required by samtools
@@ -35,13 +46,20 @@ ln -s $dir/spechla_env/lib/libtinfo.so.6 $dir/spechla_env/lib/libtinfo.so.5
 # install spechap
 mkdir $dir/bin/SpecHap/build
 cd $dir/bin/SpecHap/build
-
 cmake .. -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
 make
+
+# install spechap
+mkdir $dir/bin/extractHairs/build
+cd $dir/bin/extractHairs/build
+cmake .. -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
+make
+
+
 cd $dir
 
 echo " "
 echo " "
 echo " "
-echo The installation is finished! Please start using SpecHLA.
+echo The installation is finished! Please start use SpecHLA.
 echo "-------------------------------------"

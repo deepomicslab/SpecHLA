@@ -8,7 +8,9 @@ example/hic/output/
 example/tenx/output/
 example/nanopore/output/
 example/pacbio/output/
+example/hybrid/output/
 spechla_env/
 bin/SpecHap/build/
+bin/extractHairs/build/
 *ndx
 *config.txt

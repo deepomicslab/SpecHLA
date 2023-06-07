@@ -1488,10 +1488,11 @@ def eva_real_trio():
 
 def eva_real_hybrid():
     # outdir = "/mnt/d/HLAPro_backup/trio/HG002/"
-    dict = {"SpecHLA-hybrid":"spechla_with_pac", "SpecHLA":"spechla_no_pac"}
+    dict = {"SpecHLA-hybrid":"spechla", "SpecHLA":"spechla_no_pac"}
+    # dict = {"SpecHLA-hybrid":"spechla_with_pac", "SpecHLA":"spechla_no_pac"}
     # dict = {"SpecHLA-hybrid":"spechla_with_pac"}
     # dict = {"SpecHLA-hybrid-sv":"spechla"}
-    truth_dir = "/mnt/d/HLAPro_backup/haplotype/my_HLA/assembly/"
+    truth_dir = "/mnt/d/my_HLA/assembly/"
     truth_file1_dict = {
                         "HG00733":"v12_HG00733_hgsvc_pbsq2-ccs_1000-pereg.h1-un.racon-p2.fasta",
                         "HG00731":"v12_HG00731_hgsvc_pbsq2-ccs_1000-pereg.h1-un.racon-p2.fasta",
@@ -1562,7 +1563,8 @@ class Assess_hgsvc2_seq_recall():
         self.record_truth_file_dict = {}
         self.work_dir = "/mnt/d/HLAPro_backup/haplotype_v2"
         self.spechla_dir = self.work_dir + "/spechla/"
-        self.hisat_dir = self.work_dir + "/shell/Hisat/"
+        # self.hisat_dir = self.work_dir + "/shell/Hisat/"
+        self.hisat_dir = self.work_dir + "/update_data/HISAT/"
         
         self.hisat_gene_count = {}
         self.spechla_gene_count = {}
@@ -1612,7 +1614,9 @@ class Assess_hgsvc2_seq_recall():
         df = pd.DataFrame(data, columns = ["sample", "gene", "mismatch_rate", "gap_rate", "map_len", "sequence_precision", "sequence_recall", "edit_distance", "Methods"])
         df.to_csv(self.work_dir + '/hgsvc_haplo_assess.csv', sep=',')
         print ("reconstructed gene num of hisat", self.hisat_gene_count)
+        print (sum(list(self.hisat_gene_count.values()))/(sample_num*8))
         print ("gene num of spechla with < %s N"%(self.N_ratio_cutoff), self.spechla_gene_count)
+        print (sum(list(self.spechla_gene_count.values()))/(sample_num*8))
         data = []
         for gene in gene_list:
             gene = "HLA_" + gene
@@ -1800,13 +1804,13 @@ if __name__ == "__main__":
         # nov.main()
         # ass_recall = Assess_hgsvc2_seq_recall()
         # ass_recall.main()
-        ass = Assess_hgsvc2()
-        # ass.main()
-        ass.main_exon()
+        # ass = Assess_hgsvc2()
+        # # ass.main()
+        # ass.main_exon()
         # ass.test()
         # eva_simu_trio()
         # eva_real_trio()
-        # eva_real_hybrid()
+        eva_real_hybrid()
         # eva_allele_imblance()
         # eva_pedigree_spechla()
         # eva_data_types_spechla()

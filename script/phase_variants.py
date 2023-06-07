@@ -1366,7 +1366,7 @@ def phase_insertion(gene, outdir, hla_ref, shdir):
     ref=%s
     cat $outdir/newref_insertion.freebayes.vcf|grep '#'>$outdir/filter_newref_insertion.freebayes.vcf
     awk -F'\t' '{if($6>5) print $0}' $outdir/newref_insertion.freebayes.vcf|grep -v '#' >>$outdir/filter_newref_insertion.freebayes.vcf
-    %s/../bin/ExtractHAIRs --triallelic 1 --mbq 4 --mmq 0 --indels 1 \
+    %s/../bin/extractHairs/build/ExtractHAIRs --triallelic 1 --mbq 4 --mmq 0 --indels 1 \
     --ref $ref --bam $outdir/newref_insertion.bam --VCF $outdir/filter_newref_insertion.freebayes.vcf --out $outdir/$sample.fragment.file > spec.log 2>&1
     sort -n -k3 $outdir/$sample.fragment.file >$outdir/$sample.fragment.sorted.file
     bgzip -f $outdir/filter_newref_insertion.freebayes.vcf
@@ -1460,7 +1460,7 @@ def run_SpecHap():
     # the order to phase with only ngs data.
     order='%s/../bin/SpecHap/build/SpecHap --ncs --protocols ngs,matrix --weights %s,%s --window_size 15000 --vcf %s --frag %s/fragment.sorted.file,%s/fragment.imbalance.file --out \
     %s/%s.specHap.phased.vcf'%(sys.path[0], 1-args.weight_imb, args.weight_imb, gene_vcf, outdir,outdir, outdir,gene)
-    print (order)
+    # print (order)
 
     # integrate phase info from pacbio data if provided.
     if args.tgs != 'NA':
@@ -1475,8 +1475,7 @@ def run_SpecHap():
 
         pbmm2 align -j %s $ref $outdir/%s/$gene.pacbio.fq.gz $outdir/$sample.tgs.sort.bam --sort --sample $sample --rg '@RG\tID:movie1'
         samtools index $outdir/$sample.tgs.sort.bam
-        $bin/ExtractHAIRs --triallelic 1 --pacbio 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.$sample.raw.file
-        head -n -1 $outdir/fragment.$sample.raw.file > $outdir/fragment.$sample.file
+        $bin/extractHairs/build/ExtractHAIRs --triallelic 1 --pacbio 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.$sample.file
         cat $outdir/fragment.$sample.file >> $outdir/fragment.all.file
         """%(args.tgs, outdir, sys.path[0], gene.split("_")[1], hla_ref, args.thread_num, args.sample_id, gene_vcf)
 
@@ -1497,8 +1496,7 @@ def run_SpecHap():
         samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
         samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
         samtools index $outdir/$sample.tgs.sort.bam
-        $bin/ExtractHAIRs --triallelic 1 --ONT 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.$sample.raw.file
-        head -n -1 $outdir/fragment.$sample.raw.file > $outdir/fragment.$sample.file
+        $bin/extractHairs/build/ExtractHAIRs --triallelic 1 --ONT 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.$sample.file
         cat $outdir/fragment.$sample.file >> $outdir/fragment.all.file
         """%(args.nanopore, hla_ref, outdir, sys.path[0], gene.split("_")[1], args.thread_num, args.sample_id, gene_vcf)
         print ('extract linkage info from nanopore TGS data.')
@@ -1522,7 +1520,7 @@ def run_SpecHap():
         samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
         samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
         samtools index $outdir/$sample.tgs.sort.bam
-        $bin/ExtractHAIRs --new_format 1 --triallelic 1 --hic 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.hic.file
+        $bin/extractHairs/build/ExtractHAIRs --new_format 1 --triallelic 1 --hic 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.hic.file
         """%(args.hic_fwd, args.hic_rev, hla_ref, outdir, sys.path[0], args.thread_num, gene_vcf)
         print ('extract linkage info from HiC data.')
         os.system(command)
@@ -1551,7 +1549,7 @@ def run_SpecHap():
                     --sample=$sample --localcores=%s --localmem=10 
             fi
  
-            $bin/ExtractHAIRs --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam\
+            $bin/extractHairs/build/ExtractHAIRs --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam\
                  --VCF $vcf --out $outdir/fragment.raw.tenx.file
             gzip -f -d -k $vcf
             python3 %s/link_fragment.py -b $bam -f $outdir/fragment.raw.tenx.file\
