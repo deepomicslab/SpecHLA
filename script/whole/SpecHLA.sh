@@ -212,7 +212,9 @@ samtools index $outdir/$sample.merge.bam
 
 
 # ################################### local assembly and realignment #################################
-echo start realignment...
+echo "start realignment..."
+echo ""
+echo "Attention: Please ensure the platform can run gzip -l automatically, otherwise, it may not continue."
 if [ $focus_exon_flag == 1 ];then #exon
   assemble_region=$dir/select.region.exon.txt
 else # full length

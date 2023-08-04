@@ -26,7 +26,7 @@ Note:
 
 - SpecHLA requires a License of [Novoalign](https://www.novocraft.com/buy-now/) in `bin/`. If not detected, it uses `bowtie2` as replacement automatically. 
 The License file of `Novoalign` should be put in the `bin/` folder `before` running `bash index.sh`. 
-- SpecHLA now supports Linux and Windows WSL.
+- SpecHLA now supports Linux and Windows WSL systems.
 - SpecHLA does not accept short single-end reads.
 
 
@@ -38,10 +38,10 @@ Please go to the `example/` folder, run SpecHLA with given scripts, and find res
 ### Main functions
 | Scripts | Description |
 | --- | --- |
-|script/ExtractHLAread.sh| Extract HLA reads.|
-|script/whole/SpecHLA.sh| HLA typing with paired-end (PE), PE+long-reads, PE+HiC, or PE+10X data.  |
+|script/ExtractHLAread.sh| Extract HLA reads from enrichment-free data.|
+|script/whole/SpecHLA.sh| HLA typing with paired-end (PE), PE+long reads, PE+HiC, or PE+10X data.  |
 |script/long_read_typing.py|HLA typing with only long-read data.|
-|script/cal.hla.copy.pl|Detect HLA LOH events based on SpecHLA's results.|
+|script/cal.hla.copy.pl|Detect HLA LOH events based on SpecHLA's typing results.|
 
 
 ### Extract HLA-related reads
