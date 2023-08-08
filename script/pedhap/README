@@ -1,0 +1,15 @@
+python main.py -v test/test.vcf.gz -p test/test.ped -o test/test.out
+There's a ped file demo in test content
+
+Bus 002 Device 004: ID 0bc2:ac36 Seagate RSS LLC BUP Portable
+Bus 002 Device 003: ID 1058:2622 Western Digital Technologies, Inc. Elements SE 2622
+Bus 002 Device 002: ID 0424:5744 Microchip Technology, Inc. (formerly SMSC) Hub
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 001 Device 006: ID 046d:c084 Logitech, Inc. G203 Gaming Mouse
+Bus 001 Device 005: ID 1ea7:0907 SHARKOON Technologies GmbH Keyboard
+Bus 001 Device 004: ID 0424:2744 Microchip Technology, Inc. (formerly SMSC) Hub
+Bus 001 Device 003: ID 0a12:0001 Cambridge Silicon Radio, Ltd Bluetooth Dongle (HCI mode)
+Bus 001 Device 008: ID 0bda:c811 Realtek Semiconductor Corp. 802.11ac NIC
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
