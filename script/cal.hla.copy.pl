@@ -43,6 +43,7 @@ $het_cutoff ||= 5;
 my @hlas = ("A","B","C","DPA1","DPB1","DQA1","DQB1","DRB1");
 my %hasha;
 open RIN, "$tfile" or die "$!\n";
+<RIN>;
 my $line1 = <RIN>; my $line2 = <RIN>;
 chomp $line1; chomp $line2;
 my @array1 = split /\t/,$line1;

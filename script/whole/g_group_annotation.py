@@ -34,6 +34,8 @@ def read_G_annotation():
     G_annotation_dict = {}
     i = 0
     for line in open(g_file):
+        if re.search("# version:", line):
+            version_info = line
         if line[0] == "#":
             continue
         # line.replace(":","_", 10000)
@@ -58,7 +60,7 @@ def read_G_annotation():
         # if i > 2:
         #     break
         i += 1
-    return G_annotation_dict
+    return G_annotation_dict, version_info
 
 def convert_G(allele):
     allele = re.sub(":","_",allele)
@@ -150,6 +152,7 @@ class G_annotation():
         # print (self.sample, sample_results)
         # return sample_results
         COUT =  open(f"{self.spechla_dir}/hla.result.g.group.txt", "w")
+        COUT.write(version_info)
         COUT.write("Sample\tHLA_A_1\tHLA_A_2\tHLA_B_1\tHLA_B_2\tHLA_C_1\tHLA_C_2\tHLA_DPA1_1\tHLA_DPA1_2\tHLA_DPB1_1\tHLA_DPB1_2\tHLA_DQA1_1\tHLA_DQA1_2\tHLA_DQB1_1\tHLA_DQB1_2\tHLA_DRB1_1\tHLA_DRB1_2\n")
         print (self.sample, end = "\t", file = COUT)
         for gene in gene_list:
@@ -234,7 +237,7 @@ if __name__ == "__main__":
     freq = "%s/../../db/HLA/HLA_FREQ_HLA_I_II.txt"%(sys.path[0])
 
     print ("Start G group resolution annotation...")
-    G_annotation_dict = read_G_annotation()
+    G_annotation_dict, version_info = read_G_annotation()
     hashp = population(args["p"], "whole")
     g_ann = G_annotation(args["s"], args["i"])
     g_ann.main()

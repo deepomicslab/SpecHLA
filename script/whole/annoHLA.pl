@@ -29,6 +29,7 @@ USE
 die $usage unless ($sample && $dir && $pop && $wxs );
 print "parameter:\tsample:$sample\tdir:$dir\tpop:$pop\twxs:$wxs\tG_nom:$g_nom\n";
 
+my $version="";
 my $k = 2;
 my $bias = 1;
 if($wxs eq "tgs"){$bias = 0.4} # gap score in TGS
@@ -89,6 +90,7 @@ close INL;
 open IN, "$db/Allelelist.txt" or die "$!\n";
 while(<IN>){
         chomp;
+	if(/version/){$version=$_}
         next if(/^#/);
         my ($id, $name) = (split /,/, $_)[0,1];
         my $key = "HLA:"."$id";
@@ -284,9 +286,11 @@ sub tgs_blast{
 }
 
 open COUT, ">$dir/hla.result.txt";
+print COUT "$version\n";
 print COUT "Sample\tHLA_A_1\tHLA_A_2\tHLA_B_1\tHLA_B_2\tHLA_C_1\tHLA_C_2\tHLA_DPA1_1\tHLA_DPA1_2\tHLA_DPB1_1\tHLA_DPB1_2\tHLA_DQA1_1\tHLA_DQA1_2\tHLA_DQB1_1\tHLA_DQB1_2\tHLA_DRB1_1\tHLA_DRB1_2\n";
 
 open OUT, ">$dir/hla.result.details.txt";
+print OUT "$version\n";
 print OUT "Gene\tG_best\tallele\tdetails:allele;Score;Caucasian;Black;Asian\n";
 if($wxs eq "exon"){
        &exon_blast; 
