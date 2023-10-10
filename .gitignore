@@ -12,5 +12,6 @@ example/hybrid/output/
 spechla_env/
 bin/SpecHap/build/
 bin/extractHairs/build/
+bin/IMGTHLA
 *ndx
 *config.txt

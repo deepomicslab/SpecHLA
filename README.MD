@@ -256,6 +256,12 @@ Interpret each column as
 |Het_num|Number of heterozygous variant|
 |LOH| Whether LOH exists (Y or N)|
 
+## Update to latest IMGT/HLA database
+```
+cd SpecHLA/bin
+perl renew_HLA_annotation_db.pl
+```
+This script will download the latest IMGT/HLA database from Github, and preprocess it for SpecHLA to use.
 
 ## Dependencies 
 
