@@ -257,6 +257,7 @@ Interpret each column as
 |LOH| Whether LOH exists (Y or N)|
 
 ## Update to latest IMGT/HLA database
+To nomenclature the HLA alleles using the latest IMGT/HLA database, please execute the following command:
 ```
 cd SpecHLA/bin
 perl renew_HLA_annotation_db.pl
