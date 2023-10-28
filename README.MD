@@ -60,7 +60,7 @@ USAGE: bash script/ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome> 
 ```
 
 ### HLA Typing 
-Full-resolution and exon HLA typing using SpecHLA. With Exome data like WES or RNASeq, only support exon typing.
+Full-resolution and exon HLA typing using SpecHLA. With Exome data like WES or RNASeq, only support exon typing. For efficient HLA typing, we strongly recommend utilizing only HLA-related reads. Specifically, for enrichment-free data, we recommend first performing the aforementioned step.
 
 Perform full-resolution HLA typing with `paired-end` reads by
 ```
@@ -174,21 +174,21 @@ bash script/SpecHLA.sh -n <child> -1 <child.fq.1.gz> -2 <child.fq.2.gz> -o outdi
 ```
 The fresh results can be found in the trio/ folder inside the original result folder.
 
-### Detect HLA LOH in cancer samples
-If the purity of cancer sample and the ploidy of HLA region are known, we can infer HLA LOH event by
+### Detect HLA LOH in tumor samples
+Based on the tumor purity and the ploidy of the tumor sample, we can infer HLA LOH event by
 ```
-usage:  perl script/cal.hla.copy.pl [Options] -S <samplename> -C <5> -purity <Purity> -ploidy <Ploidy> -F <filelist> -T <hla.result.txt> -O <outdir>
+usage:  perl cal.hla.copy.pl [Options] -S <samplename> -C <5> -purity <Purity> -ploidy <Ploidy> -F <filelist> -T <hla.result.txt> -O <outdir>
 
         OPTIONS:
-        -purity  [f]  the purity of tumor sample. <required>
-        -ploidy  [f]  the ploidy of tumor sample in HLA gene region. <required>
+        -purity  [f]  the purity of the tumor sample. <required>
+        -ploidy  [f]  the ploidy of the tumor sample. <required> Note: tumor purity and ploidy can be inferred by software like ABSOLUTE and ASCAT.
         -S       [s]  sample name <required>
         -C       [f]  the cutoff of heterogeneous snp number. Default is 5.
         -F       [s]  the HLA_*_freq.txt file list. <required>  Obtained by "ls typing_result_dir/*_freq.txt >freq.list"
         -T       [s]  the hla typing result file of Spechla <required>
         -O       [s]  the output dir. <required> Need exist before running.
 
-The result file "merge.hla.copy.txt" can be found in the outdir.
+The result file "merge.hla.copy.txt" can be found in the output dir.
 ```
 Use `ls typing_result_dir/*_freq.txt >freq.list` to generate the file required by `-F`. The command example is
 ```
@@ -215,11 +215,13 @@ If you performed pedigree phasing, you will find below files.
 | trio/HLA_*.trio.vcf.gz | Phased vcf file after pedigree phasing |
 | hla.allele.\*.HLA_\*.fasta | Allele sequence after pedigree phasing|
 
-An example for `hla.result.txt` is as below:
+
+An example for `hla.result.txt` is as below: (Note: We handle each gene independently. Hence the result does not contain the linkage information between different genes.)
 ```
 Sample  HLA_A_1 HLA_A_2 HLA_B_1 HLA_B_2 HLA_C_1 HLA_C_2 HLA_DPA1_1      HLA_DPA1_2      HLA_DPB1_1      HLA_DPB1_2      HLA_DQA1_1    HLA_DQA1_2      HLA_DQB1_1      HLA_DQB1_2      HLA_DRB1_1      HLA_DRB1_2
 HG00118 A*24:02:01:01   A*02:01:01:01   B*07:02:01:01   B*40:01:02:02   C*03:04:01:01   C*07:02:01:03   DPA1*01:03:01:02        DPA1*01:03:01:02    DPB1*04:01:01:01        DPB1*04:01:01:01        DQA1*01:02:01:01        DQA1*01:02:01:01        DQB1*06:02:01:01        DQB1*06:02:01:01    DRB1*15:01:01:01        DRB1*15:01:01:01
 ```
+
 An example for `HLA_*_freq.txt` is as below:
 ```
 # Haplotype     Frequency

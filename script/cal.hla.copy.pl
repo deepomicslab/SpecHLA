@@ -21,20 +21,20 @@ $het_cutoff = 5 if (!defined $het_cutoff);
 
 my $usage = <<USE;
 Usage:
-description: Calculte the copy number of HLA alleles
+description: Calculate the copy number of HLA alleles
 author:wangmengyao
 usage:  perl $0 [Options] -S <samplename> -C <5> -purity <Purity> -ploidy <Ploidy> -F <filelist> -T <hla.result.txt> -O <outdir>
         
         OPTIONS:                                                                             
-        -purity  [f]  the purity of tumor sample. <required>
-        -ploidy  [f]  the ploidy of tumor sample in HLA gene region. <required> 
+        -purity  [f]  the purity of the tumor sample. <required>
+        -ploidy  [f]  the ploidy of the tumor sample. <required> Note: tumor purity and ploidy can be inferred by software like ABSOLUTE and ASCAT. 
         -S       [s]  sample name <required>
         -C       [f]  the cutoff of heterogeneous snp number. Default is 5.
         -F       [s]  the HLA_*_freq.txt file list. <required>  Obtained by "ls typing_result_dir/*_freq.txt >freq.list"
         -T       [s]  the hla typing result file of Spechla <required>
         -O       [s]  the output dir. <required> Need exist before running.
 
-The result file "merge.hla.copy.txt" can be found in the outdir.      
+The result file "merge.hla.copy.txt" can be found in the output dir.      
 
 USE
 die $usage unless ($purity && $ploidy && $sample && $filelist && $tfile && $outdir);
