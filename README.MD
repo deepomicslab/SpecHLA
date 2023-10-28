@@ -175,7 +175,7 @@ bash script/SpecHLA.sh -n <child> -1 <child.fq.1.gz> -2 <child.fq.2.gz> -o outdi
 The fresh results can be found in the trio/ folder inside the original result folder.
 
 ### Detect HLA LOH in tumor samples
-Based on the tumor purity and the ploidy of the tumor sample, we can infer HLA LOH event by
+Based on the tumor purity and ploidy, we can infer HLA LOH event by
 ```
 usage:  perl cal.hla.copy.pl [Options] -S <samplename> -C <5> -purity <Purity> -ploidy <Ploidy> -F <filelist> -T <hla.result.txt> -O <outdir>
 
