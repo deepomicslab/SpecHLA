@@ -257,7 +257,7 @@ hla.allele.2.HLA_A.fasta 0.468
 # The number of heterozygous variant is 30
 ```
 
-3. **After typing from diploid assmebly, an example for `{sample}_extracted_HLA_alleles.fasta` is as below:**
+3. **After typing from diploid assmebly, an example for `<sample>_extracted_HLA_alleles.fasta` is as below:**
 ```
 >v12_HG00096.h1.HLA-A   cluster13_contig_98:2073847-2077365     A*29:02:01:01   # version: IPD-IMGT/HLA 3.51.0
 >v12_HG00096.h1.HLA-B   cluster13_contig_98:657830-661911       B*44:03:01:01   # version: IPD-IMGT/HLA 3.51.0
