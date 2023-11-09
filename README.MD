@@ -41,6 +41,7 @@ Please go to the `example/` folder, run SpecHLA with given scripts, and find res
 |script/ExtractHLAread.sh| Extract HLA reads from enrichment-free data.|
 |script/whole/SpecHLA.sh| HLA typing with paired-end (PE), PE+long reads, PE+HiC, or PE+10X data.  |
 |script/long_read_typing.py|HLA typing with only long-read data.|
+|script/typing_from_assembly.py  |HLA Typing from diploid assemblies.|
 |script/cal.hla.copy.pl|Detect HLA LOH events based on SpecHLA's typing results.|
 
 
@@ -167,6 +168,29 @@ Optional arguments:
   -h, --help
 ```
 
+### HLA Typing from diploid assemblies
+```
+usage: python3 typing_from_assembly.py -h
+
+HLA Typing from diploid assemblies.
+
+Required arguments:
+  -1        Assembly file of the first haplotype in fasta formate (default: None)
+  -2        Assembly file of the second haplotype in fasta formate (default: None)
+  -n        Sample ID (default: None)
+  -o        The output folder to store the typing results. (default: ./output)
+
+Optional arguments:
+  -j        Number of threads. (default: 10)
+  -h, --help
+```
+An example of running command is 
+```
+python SpecHLA/script/typing_from_assembly.py -j 15 -o output -n v12_HG00096 -1 v12_HG00096_hgsvc_pbsq2-clr_1000-flye.h1-un.arrow-p1.fasta -2 v12_HG00096_hgsvc_pbsq2-clr_1000-flye.h2-un.arrow-p1.fasta
+```
+The result is stored in `<sample>_extracted_HLA_alleles.fasta`, please see result description in the below `Interpret output` section.
+
+
 ### Pedigree phasing
 After performing HLA typing, we can afford trio information to update the results of child by
 ```
@@ -216,11 +240,14 @@ If you performed pedigree phasing, you will find below files.
 | hla.allele.\*.HLA_\*.fasta | Allele sequence after pedigree phasing|
 
 
-An example for `hla.result.txt` is as below: (Note: We handle each gene independently. Hence the result does not contain the linkage information between different genes.)
+An example for `hla.result.txt` is as below: 
 ```
 Sample  HLA_A_1 HLA_A_2 HLA_B_1 HLA_B_2 HLA_C_1 HLA_C_2 HLA_DPA1_1      HLA_DPA1_2      HLA_DPB1_1      HLA_DPB1_2      HLA_DQA1_1    HLA_DQA1_2      HLA_DQB1_1      HLA_DQB1_2      HLA_DRB1_1      HLA_DRB1_2
 HG00118 A*24:02:01:01   A*02:01:01:01   B*07:02:01:01   B*40:01:02:02   C*03:04:01:01   C*07:02:01:03   DPA1*01:03:01:02        DPA1*01:03:01:02    DPB1*04:01:01:01        DPB1*04:01:01:01        DQA1*01:02:01:01        DQA1*01:02:01:01        DQB1*06:02:01:01        DQB1*06:02:01:01    DRB1*15:01:01:01        DRB1*15:01:01:01
 ```
+Note: 
+- We handle each gene independently. Hence the result does not contain the linkage information between different genes.
+- The Symbol `-` means low confidence sequence which cannot map to any allele in the database.
 
 An example for `HLA_*_freq.txt` is as below:
 ```
@@ -229,6 +256,22 @@ hla.allele.1.HLA_A.fasta 0.532
 hla.allele.2.HLA_A.fasta 0.468
 # The number of heterozygous variant is 30
 ```
+
+After typing from diploid assmebly, an example for `{sample}_extracted_HLA_alleles.fasta` is as below:
+```
+>v12_HG00096.h1.HLA-A   cluster13_contig_98:2073847-2077365     A*29:02:01:01   # version: IPD-IMGT/HLA 3.51.0
+>v12_HG00096.h1.HLA-B   cluster13_contig_98:657830-661911       B*44:03:01:01   # version: IPD-IMGT/HLA 3.51.0
+...
+>v12_HG00096.h2.HLA-A   cluster13_scaffold_119:2516943-2520446  A*01:01:01:01   # version: IPD-IMGT/HLA 3.51.0
+...
+```
+Interpret each column in the annotation line as
+|Column| Description |
+| --- | --- |
+|first| gene and haplotype, h1 means the first haplotype|
+|  second |  the region to extract the sequence from the assembly |
+| third  | the best matched IMGT allele, i.e., the typing result  |
+|  four | IMGT version  |
 
 An example for HLA LOH result file: `merge.hla.copy.txt` is as below:
 ```
