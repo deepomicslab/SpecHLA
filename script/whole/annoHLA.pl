@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl 
 use FindBin qw($Bin);
 use Getopt::Long;
 
