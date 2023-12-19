@@ -65,7 +65,7 @@ if [ ! -f "$bam_path.bai" ] && [ ! -f "$bam_path.crai" ]; then
 fi
 
 
-if [ $ref == "hg38" ]; then
+if [ "$ref" == "hg38" ]; then
   
 	echo ">>>>>>>>>>>>>>>> extracting reads mapping to HLA loci and ALT contigs (hg38)"
 
@@ -97,7 +97,7 @@ if [ $ref == "hg38" ]; then
 
 fi
 
-if [ $ref == "hg19" ];then
+if [ "$ref" == "hg19" ];then
 	
 	echo ">>>>>>>>>>>>>>>> extracting reads mapping to HLA loci and ALT contigs (hg19)"
 
