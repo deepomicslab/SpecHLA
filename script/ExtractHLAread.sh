@@ -16,7 +16,7 @@ function usage {
     echo
     echo " -b          : sorted and indexed bam or cram (ex: NA12878.bam) [required]"
     echo
-    echo " -r          : hg38 or hg19"
+    echo " -r          : hg38 or hg19 [required]"
     echo
     echo " -o          : folder to save extracted reads [required]"
     echo
@@ -46,6 +46,13 @@ while getopts ":s:b:r:o:" opt; do
 		 ;;
  esac
 done
+
+echo "Accepted parameters:"
+echo "-s " $id
+echo "-b " $bam_path
+echo "-r " $ref
+echo "-o " $outdir
+
 
 mkdir -p $outdir
 sampleid=$outdir/$id
