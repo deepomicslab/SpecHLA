@@ -26,6 +26,7 @@ Note:
 
 - SpecHLA requires a License of [Novoalign](https://www.novocraft.com/buy-now/) in `bin/`. If not detected, it uses `bowtie2` as replacement automatically. 
 The License file of `Novoalign` should be put in the `bin/` folder `before` running `bash index.sh`. 
+- If you want to run SpecHLA with `only` long-read data, these is no need for the `Novoalign` licence. 
 - SpecHLA now supports Linux and Windows WSL systems.
 - SpecHLA does not accept short single-end reads.
 
