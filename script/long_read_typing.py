@@ -214,6 +214,11 @@ class Fasta():
             minimap2 -t %s -a $hla_ref $outdir/$hla.%s.fq.gz | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
             samtools index $outdir/$hla.bam
 
+            samtools depth -aa $outdir/$hla.bam >$outdir/$hla.depth
+            python %s/mask_low_depth_region.py -f False -c $outdir/$hla.depth -o $outdir -w 20 -d %s
+            mask_bed=$outdir/low_depth.bed
+            cp $outdir/low_depth.bed $outdir/$hla.low_depth.bed
+
             longshot -F -c 2 --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
             #longshot -F -S -c 2 -q 10 -Q 2 -a 5 -y 20 -e 2 -E 0.1 --hom_snv_rate 0.01 --het_snv_rate 0.01 --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
             bgzip -f $outdir/$sample.$hla.longshot.vcf
@@ -223,12 +228,12 @@ class Fasta():
             bgzip -f $outdir/$sample.$hla.phased.vcf
             tabix -f $outdir/$sample.$hla.phased.vcf.gz
 
-            samtools faidx $hla_ref %s |$bin/bcftools consensus -H $i $outdir/$sample.$hla.phased.vcf.gz >$outdir/hla.allele.$i.HLA_$hla.raw.fasta
+            samtools faidx $hla_ref %s |$bin/bcftools consensus -H $i --mask $mask_bed $outdir/$sample.$hla.phased.vcf.gz >$outdir/hla.allele.$i.HLA_$hla.raw.fasta
             echo ">HLA_%s_$j" >$outdir/hla.allele.$i.HLA_$hla.fasta
             cat $outdir/hla.allele.$i.HLA_$hla.raw.fasta|grep -v ">" >>$outdir/hla.allele.$i.HLA_$hla.fasta
             
             samtools faidx $outdir/hla.allele.$i.HLA_$hla.fasta        
-            """%(parameter.sample, parameter.bin, parameter.db, parameter.outdir, gene, index+1, index,parameter.threads, args["a"], interval_dict[gene], gene)
+            """%(parameter.sample, parameter.bin, parameter.db, parameter.outdir, gene, index+1, index,parameter.threads, args["a"], sys.path[0], args["k"], interval_dict[gene], gene)
             os.system(order)
             # -S -A -Q 10 -E 0.3 -e 5
 
@@ -267,7 +272,8 @@ if __name__ == "__main__":
     optional.add_argument("-j", type=int, help="Number of threads.", metavar="\b", default=5)
     optional.add_argument("-d", type=float, help="Minimum score difference to assign a read to a gene.", metavar="\b", default=0.001)
     optional.add_argument("-g", type=int, help="Whether use G group resolution annotation [0|1].", metavar="\b", default=0)
-    optional.add_argument("-m", type=int, help="1 represents typing, 0 means only read assignment", metavar="\b", default=1)
+    optional.add_argument("-m", type=int, help="1 represents typing, 0 means only read assignment", metavar="\b", default=5)
+    optional.add_argument("-k", type=int, help="The mean depth in a window lower than this value will be masked by N, set 0 to avoid masking", metavar="\b", default=0)
     optional.add_argument("-a", type=str, help="Prefix of filtered fastq file.", metavar="\b", default="long_read")
     # optional.add_argument("-u", type=str, help="Choose full-length or exon typing. 0 indicates full-length, 1 means exon.", metavar="\b", default="0")
     optional.add_argument("-h", "--help", action="help")

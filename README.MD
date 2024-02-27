@@ -164,6 +164,8 @@ Optional arguments:
   -d        Minimum score difference to assign a read to a gene. (default: 0.001)
   -g        Whether use G group resolution annotation [0|1]. (default: 0)
   -m        1 represents typing, 0 means only read assignment (default: 1)
+  -k        The mean depth in a window lower than this value will be masked by N, set 0 to avoid masking
+            (default: 5)
   -a        Prefix of filtered fastq file. (default: long_read)
   -h, --help
 ```
