@@ -345,7 +345,7 @@ if [ $focus_exon_flag == 1 ];then #exon
 else
     perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -r whole 
 fi
-python3 $dir/g_group_annotation.py -s $sample -i $outdir -p ${pop:-Unknown} -j ${num_threads:-5} # g group resolution annotation
+$python_bin $dir/g_group_annotation.py -s $sample -i $outdir -p ${pop:-Unknown} -j ${num_threads:-5} # g group resolution annotation
 # #############################################################################
 
 
