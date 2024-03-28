@@ -143,6 +143,7 @@ Options:
   -f        The trio infromation; child:parent_1:parent_2 [Example: NA12878:NA12891:NA12892]. If provided,
             use trio info to improve typing. Note: use it after performing SpecHLA once already.
   -b        Whether use database for unlinked block phasing [0|1], default is 1 (i.e., use).
+  -l        Whether remove all tmp files [0|1], default is 1.
   -h        Show this message.
 ```
 

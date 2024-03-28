@@ -48,6 +48,7 @@
 ###   -f        The trio infromation; child:parent_1:parent_2 [Example: NA12878:NA12891:NA12892]. If provided, 
 ###             use trio info to improve typing. Note: use it after performing SpecHLA once already.
 ###   -b        Whether use database for unlinked block phasing [0|1], default is 1 (i.e., use).
+###   -l        Whether remove all tmp files [0|1], default is 1.
 ###   -h        Show this message.
 
 #   -g        Whether use G group resolution annotation [0|1], default is 0 (i.e., not use).
@@ -61,7 +62,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
     exit 1
 fi
 
-while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:z:y:f:b:" opt; do
+while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:z:y:f:b:l:" opt; do
   case $opt in
     n) sample="$OPTARG"
     ;;
@@ -112,6 +113,8 @@ while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:z:y:f:b:" opt; do
     f) trio="$OPTARG"
     ;;
     b) use_database="$OPTARG"
+    ;;
+    l) rm_tmp="$OPTARG"
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
@@ -349,7 +352,8 @@ $python_bin $dir/g_group_annotation.py -s $sample -i $outdir -p ${pop:-Unknown} 
 # #############################################################################
 
 
-
-bash $dir/../clear_output.sh $outdir/
+if [ ${rm_tmp:-1} == 1 ];then #exon
+    bash $dir/../clear_output.sh $outdir/
+fi
 cat $outdir/hla.result.txt
 echo $sample is done.
