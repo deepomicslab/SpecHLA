@@ -148,10 +148,11 @@ def assign_fastq(file, gene, index, assign_dict):
     for line in f:
         line = line.strip()
         if i % 4 == 0:
-            if re.search('/1',line) or re.search('/2',line):
-                read_name = line.split()[0][1:-2]
+            raw_read_name = line.split()[0]
+            if re.search('/1',raw_read_name) or re.search('/2',raw_read_name):
+                read_name = raw_read_name[1:-2]
             else:
-                read_name = line.split()[0][1:]
+                read_name = raw_read_name[1:]
             if read_name in assign_dict.keys() and assign_dict[read_name] == gene:
                 flag = True
                 num = 1
@@ -187,15 +188,24 @@ def main():
     t1 = time.time()
     print ("read bam cost %s"%(t1 - t0))
 
+    count_read_for_each_gene = {}
     # assign genes for each read
     for read_name in read_dict:
         assigned_locus = read_dict[read_name].assign()
         if assigned_locus == 'REMOVE':
             continue
         assign_dict[read_name] = assigned_locus
-
+        if assigned_locus not in count_read_for_each_gene:
+            count_read_for_each_gene[assigned_locus] = 0
+        count_read_for_each_gene[assigned_locus] += 1
+ 
     # generate gene-specific fastq
     for gene in ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']:
+        if gene in count_read_for_each_gene:
+            read_num = count_read_for_each_gene[gene]
+        else:
+            read_num = 0
+        print (f"read no. for {gene} is {read_num}.")
         assign_fastq(options.fq1, gene, 1, assign_dict)
         assign_fastq(options.fq2, gene, 2, assign_dict)
     t2 = time.time()
