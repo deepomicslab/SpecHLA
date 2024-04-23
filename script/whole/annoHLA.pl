@@ -245,6 +245,7 @@ sub whole_blast{
 }
 
 sub tgs_blast{
+        open BOUT, ">$dir/hla.blast.summary.txt";  # new 
 	foreach my $class(@hlas){
 		my $ref = "$db/whole/$class";
 		for(my $i=1;$i<=$k;$i++){
@@ -269,6 +270,7 @@ sub tgs_blast{
                         	my ($fre,$fre2)=(0,0);
                       		if(exists $hashp{$kid}){$fre=$hashp{$kid};$fre2=$hashp2{$kid}} ## population frequency of 4 digit hla allele
                       		my $s = 100 * (1 - $hash12{$key}/$hash11{$key}); #blast score
+                                print BOUT "$tag\t$key\t$hash12{$key}\t$hash11{$key}\t$s\n";  # new 
                       		next if($pop ne "nonuse" && $fre2 == 0);
                       		my $scorel=$s;
 

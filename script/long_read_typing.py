@@ -244,6 +244,7 @@ class Fasta():
         anno = f"""
         perl {parameter.whole_dir}/annoHLA.pl -s {parameter.sample} -i {parameter.outdir} -p {parameter.population} -r tgs -g {args["g"]}
         cat {parameter.outdir}/hla.result.txt
+        python3 {parameter.whole_dir}/../refine_typing.py -n {parameter.sample} -o {parameter.outdir}
         """
         # print (anno)
         os.system(anno)
