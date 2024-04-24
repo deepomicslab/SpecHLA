@@ -123,7 +123,7 @@ def get_IMGT_version():
             version_info = line.strip()
     return version_info
 
-def select_by_alignment(align_list):
+def select_by_alignment(align_list, gene):
     if len(align_list) == 0:
         return []
     full_result_list = []
@@ -143,16 +143,24 @@ def select_by_alignment(align_list):
     # print (identity_sorted_list)
     intersection_alleles = list(set(max_match_len_alleles) & set(max_identity_alleles))   
     # print (">>>>>>>>>", match_sorted_list[:10])
-
+    min_ide_diff_cutoff = 0.0002
     if len(intersection_alleles) > 0:
         select_allele_list = intersection_alleles[0].split(">")
         select_allele = select_allele_list[0]
-        print (">>>>>>>>>>perfect:", select_allele)  
-        full_result_list.append(select_allele_list)    
-        # return select_allele_list
+        
+        if gene != "DPB1":  
+            full_result_list.append(select_allele_list)   
+            # print (">>>>>>>>>>max_match_len allele and max_identity allele match, typed allele:", select_allele)  
+        else:  # although max_match_len allele and max_identity allele match, still report ambiguity alleles for DPB1
+            # print (">>>>>>>>>>report possible alleles for DPB1")  
+            for i in range(len(identity_sorted_list)):
+                if (identity_sorted_list[0][3] - identity_sorted_list[i][3])/identity_sorted_list[0][3] <= min_ide_diff_cutoff:
+                    full_result_list.append(identity_sorted_list[i])
+                    if len(full_result_list) >= 10:
+                        break
     else:
         # 
-        print (">>>>>>>>>>not perfect, report possible alleles")  
+        # print (">>>>>>>>>>max_match_len allele and max_identity allele don't match, report possible alleles")  
         len_diff_cutoff = 0.01 
         ide_diff_cutoff = 0.001
         max_match_len = match_sorted_list[0][2]
@@ -276,7 +284,7 @@ if __name__ == "__main__":
     record_best_match = {}
     blastfile = f"{result_path}/hla.blast.summary.txt"
 
-    print (f"Start optimize the typing results by balancing the alignment length and the alignment identity. ")
+    print (f"optimize typing results by balancing alignment length and identity ")
 
     for hap_index in range(2):
 
@@ -286,7 +294,7 @@ if __name__ == "__main__":
             tag = f"HLA_{gene}_{hap_index+1}"
             align_list = get_blast_info(blastfile, tag)
 
-            full_result_list = select_by_alignment(align_list)
+            full_result_list = select_by_alignment(align_list, gene)
             record_best_match[gene][hap_index+1] = full_result_list
     
     output(record_best_match, gene_list, result_file, version_info)
