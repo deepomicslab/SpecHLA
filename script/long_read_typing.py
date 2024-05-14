@@ -212,7 +212,7 @@ class Fasta():
             samtools index $outdir/$hla.bam
 
             samtools depth -aa $outdir/$hla.bam >$outdir/$hla.depth
-            python %s/mask_low_depth_region.py -f False -c $outdir/$hla.depth -o $outdir -w 20 -d %s
+            python3 %s/mask_low_depth_region.py -f False -c $outdir/$hla.depth -o $outdir -w 20 -d %s
             mask_bed=$outdir/low_depth.bed
             cp $outdir/low_depth.bed $outdir/$hla.low_depth.bed
 
