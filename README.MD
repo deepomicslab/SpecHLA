@@ -142,6 +142,7 @@ Options:
   -f        The trio infromation; child:parent_1:parent_2 [Example: NA12878:NA12891:NA12892]. If provided,
             use trio info to improve typing. Note: use it after performing SpecHLA once already.
   -b        Whether use database for unlinked block phasing [0|1], default is 1 (i.e., use).
+  -i        Location of the IMGT/HLA database folder, default is db.
   -h        Show this message.
 ```
 

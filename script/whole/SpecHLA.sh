@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -euo pipefail
 ###
 ### SpecHLA: Full-resolution HLA typing from sequencing data.
 ### 
@@ -48,6 +49,7 @@
 ###   -f        The trio infromation; child:parent_1:parent_2 [Example: NA12878:NA12891:NA12892]. If provided, 
 ###             use trio info to improve typing. Note: use it after performing SpecHLA once already.
 ###   -b        Whether use database for unlinked block phasing [0|1], default is 1 (i.e., use).
+###   -i        Location of the IMGT/HLA database folder, default is db.
 ###   -h        Show this message.
 
 #   -g        Whether use G group resolution annotation [0|1], default is 0 (i.e., not use).
@@ -61,7 +63,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
     exit 1
 fi
 
-while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:z:y:f:b:" opt; do
+while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:z:y:f:b:i:" opt; do
   case $opt in
     n) sample="$OPTARG"
     ;;
@@ -113,6 +115,8 @@ while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:z:y:f:b:" opt; do
     ;;
     b) use_database="$OPTARG"
     ;;
+    i) db="$OPTARG"
+    ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
   esac
@@ -123,7 +127,7 @@ dir=$(cd `dirname $0`; pwd)
 export LD_LIBRARY_PATH=$dir/../../spechla_env/lib
 python_bin=$dir/../../spechla_env/bin/python3
 bin=$dir/../../bin
-db=$dir/../../db
+db=${db:-$dir/../../db}
 hlaref=$db/ref/hla.ref.extend.fa
 
 if [ ${given_outdir:-NA} == NA ]
@@ -345,7 +349,7 @@ if [ $focus_exon_flag == 1 ];then #exon
 else
     perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -r whole 
 fi
-python3 $dir/g_group_annotation.py -s $sample -i $outdir -p ${pop:-Unknown} -j ${num_threads:-5} # g group resolution annotation
+python3 $dir/g_group_annotation.py -s $sample -i $outdir -p ${pop:-Unknown} -j ${num_threads:-5} --db ${db} # g group resolution annotation
 # #############################################################################
 
 
