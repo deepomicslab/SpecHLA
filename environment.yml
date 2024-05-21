@@ -18,6 +18,7 @@ dependencies:
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.18.1=h7f98852_0
   - ca-certificates=2022.12.7=ha878542_0
+  - cmake=cmake-3.23.2=h5432695_0
   - coin-or-cbc=2.10.8=h3786ebc_0
   - coin-or-cgl=0.60.6=he2f9439_0
   - coin-or-clp=1.17.6=h256e9bb_3
