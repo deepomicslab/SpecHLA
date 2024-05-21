@@ -16,3 +16,4 @@ bin/IMGTHLA
 *ndx
 *config.txt
 db/HLA/whole/hla_gen.fasta
+*.mmi
