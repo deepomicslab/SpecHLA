@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail
+# set -euo pipefail
 ###
 ### SpecHLA: Full-resolution HLA typing from sequencing data.
 ### 
@@ -353,7 +353,7 @@ else
     perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -r whole 
 fi
 
-python3 $dir/g_group_annotation.py -s $sample -i $outdir -p ${pop:-Unknown} -j ${num_threads:-5} --db ${db} # g group resolution annotation
+$python_bin $dir/g_group_annotation.py -s $sample -i $outdir -p ${pop:-Unknown} -j ${num_threads:-5} --db ${db} # g group resolution annotation
 # #############################################################################
 
 
