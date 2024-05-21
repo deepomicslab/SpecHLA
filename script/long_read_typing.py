@@ -117,7 +117,19 @@ class Pacbio_Binning():
         self.bamfile = pysam.AlignmentFile(self.sam, 'r')   
         self.assign_file = f"{parameter.outdir}/{parameter.sample}.assign.txt"
 
+    def index_db(self):
+        ref_index = self.db[:-5] + args["y"] + ".mmi"
+        # print ("search the reference index:", ref_index)
+        if not os.path.isfile(ref_index):
+            print ("start build Minimap2 index for the reference...")
+            os.system(f"minimap2 {minimap_para} -d {ref_index} {self.db} ")
+        else:
+            print (f"Detect Minimap2 index for the reference: {ref_index}")
+        self.db = ref_index
+
     def map2db(self):
+        if args["minimap_index"] == 1:
+            self.index_db()
         # map raw reads to database
         alignDB_order = f"""
         fq={parameter.raw_fq}
@@ -274,6 +286,7 @@ if __name__ == "__main__":
     optional.add_argument("-k", type=int, help="The mean depth in a window lower than this value will be masked by N, set 0 to avoid masking", metavar="\b", default=5)
     optional.add_argument("-a", type=str, help="Prefix of filtered fastq file.", metavar="\b", default="long_read")
     optional.add_argument("-y", type=str, help="Read type, [nanopore|pacbio].", metavar="\b", default="pacbio")
+    optional.add_argument("--minimap_index", type=int, help="Whether build Minimap2 index for the reference [0|1]. Using index can reduce memory usage.", metavar="\b", default=0)
     # optional.add_argument("-u", type=str, help="Choose full-length or exon typing. 0 indicates full-length, 1 means exon.", metavar="\b", default="0")
     optional.add_argument("-h", "--help", action="help")
     args = vars(parser.parse_args()) 
@@ -292,6 +305,7 @@ if __name__ == "__main__":
         minimap_para = " -x map-pb "
     elif args["y"] == "nanopore":
         minimap_para = " -x map-ont "
+
 
     ###assign reads
     if args["m"] == 10086:
