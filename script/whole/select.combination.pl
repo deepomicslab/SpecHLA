@@ -2,13 +2,14 @@
 use FindBin qw($Bin);
 use Getopt::Long;
 
-my ($sample, $gene, $dir, $pop, $help);
-
+my ($sample, $gene, $dir, $pop, $help, $db);
+$db="$Bin/../../db/HLA";
 GetOptions(
            "s=s"     =>      \$sample,
            "g=s"     =>      \$gene,
            "i=s"     =>      \$dir,
            "p=s"     =>      \$pop,
+           "d=s"     =>      \$db,
            "h"       =>      \$help
 );
 my $usage = <<USE;
@@ -20,17 +21,18 @@ usage: perl $0 [options]
         -g       <tr>    gene name "HLA_A|HLA_B|HLA_C|HLA_DPA1|HLA_DPB1|HLA_DQA1|HLA_DQB1|HLA_DRB1"
         -i       <tr>    the directory of phased sequence
         -p       <tr>    population information "Asian|Black|Caucasian|Unknown|nonuse"
+        -d       <tr>     db/ dir"
         -help|?           print help information
 e.g.:
         perl $0 -s samplename -g HLA_A -i indir -p Unknown 
 USE
 die $usage unless ($sample && $dir && $pop && $gene) ;
 
-print "parameter:\tsample:$sample\tdir:$dir\tpop:$pop\tgene:$gene\n";
+print "parameter:\tsample:$sample\tdir:$dir\tpop:$pop\tgene:$gene\tdb:$db\n";
 
 my $k = 2;
 my (%hashp, %hashpp, %hashg, %hashc, %hash,%hashdd);
-my $db="$Bin/../../db/HLA";
+# my $db="$Bin/../../db/HLA";
 my $bin="$Bin/../../bin";
 my $fadir=$dir;
 my $workdir = "$dir/tmp";

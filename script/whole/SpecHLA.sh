@@ -246,10 +246,10 @@ fi
 
 # ################### assign long reads to gene ###################
 if [ ${tgs:-NA} != NA ];then
-    $python_bin $dir/../long_read_typing.py -r ${tgs} -n $sample -m 0 -o $outdir -j ${num_threads:-5} -a pacbio
+    $python_bin $dir/../long_read_typing.py -r ${tgs} -n $sample -m 0 -o $outdir -j ${num_threads:-5} -a pacbio --db ${db}
 fi
 if [ ${nanopore_data:-NA} != NA ];then
-    $python_bin $dir/../long_read_typing.py -r ${nanopore_data} -n $sample -m 0 -o $outdir -j ${num_threads:-5} -a nanopore
+    $python_bin $dir/../long_read_typing.py -r ${nanopore_data} -n $sample -m 0 -o $outdir -j ${num_threads:-5} -a nanopore --db ${db}
 fi
 
 
@@ -339,7 +339,8 @@ $python_bin $dir/../phase_variants.py \
   --exon $focus_exon_flag \
   --thread_num ${num_threads:-5} \
   --use_database ${use_database:-1} \
-  --trio ${trio:-None}
+  --trio ${trio:-None} \
+  --db ${db}
 done
 # ##################################################################################################
 
@@ -348,9 +349,9 @@ done
 echo start annotation...
 # perl $dir/annoHLApop.pl $sample $outdir $outdir 2 $pop
 if [ $focus_exon_flag == 1 ];then #exon
-    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -r exon  #-g ${trans:-0}
+    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -d ${db}/HLA -r exon  #-g ${trans:-0}
 else
-    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -r whole 
+    perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -d ${db}/HLA -r whole 
 fi
 
 $python_bin $dir/g_group_annotation.py -s $sample -i $outdir -p ${pop:-Unknown} -j ${num_threads:-5} --db ${db} # g group resolution annotation

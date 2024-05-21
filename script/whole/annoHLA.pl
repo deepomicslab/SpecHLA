@@ -2,7 +2,8 @@
 use FindBin qw($Bin);
 use Getopt::Long;
 
-my ($sample, $dir, $pop, $wxs, $g_nom, $help);
+my ($sample, $dir, $pop, $wxs, $g_nom, $help, $db);
+$db="$Bin/../../db/HLA";
 $g_nom=0;
 GetOptions(
            "s=s"     =>      \$sample,
@@ -10,6 +11,7 @@ GetOptions(
            "p=s"     =>      \$pop,
            "r=s"     =>      \$wxs,
            "g=s"     =>      \$g_nom,
+           "d=s"     =>      \$db,
            "h"       =>      \$help
 );
 my $usage = <<USE;
@@ -22,6 +24,7 @@ usage: perl $0 [options]
         -p       <tr>    population information "Asian|Black|Caucasian|Unknown|nonuse"
         -r       <tr>    focus region "exon|whole|tgs" ("exon" is suitable for WES or RNAseq; "whole" is suitable for WGS; "tgs" is suitable for TGS )
         -g       <tr>     G-translate 1|0"
+        -d       <tr>     db/ dir"
         -help|?           print help information
 e.g.:
         perl $0 -s samplename -i indir -p Unknown -r exon -g 1
@@ -34,7 +37,6 @@ my $k = 2;
 my $bias = 1;
 if($wxs eq "tgs"){$bias = 0.4} # gap score in TGS
 my (%hashp,%hashp2, %hashpp, %hashg, %hashc, %hash,%hashdd);
-my $db="$Bin/../../db/HLA";
 my $bin="$Bin/../../bin";
 my @hlas = ("HLA_A","HLA_B","HLA_C","HLA_DPA1","HLA_DPB1","HLA_DQA1","HLA_DQB1","HLA_DRB1");
 my $fadir=$dir;

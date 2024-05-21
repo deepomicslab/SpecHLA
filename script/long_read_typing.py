@@ -110,8 +110,9 @@ class Pacbio_Binning():
     def __init__(self):
         
          
-        self.db = f"{sys.path[0]}/../db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta"
+        # self.db = f"{sys.path[0]}/../db/ref/hla_gen.format.filter.extend.DRB.no26789.fasta"
         # self.db = f"{sys.path[0]}/../db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta"
+        self.db = f"""{args["db"]}/ref/hla_gen.format.filter.extend.DRB.no26789.fasta"""
         self.map2db()
         self.sam = f"{parameter.outdir}/{parameter.sample}.db.sam"
         self.bamfile = pysam.AlignmentFile(self.sam, 'r')   
@@ -196,7 +197,7 @@ class Parameters():
         outdir = args["o"]
         self.population = args["p"]
         self.threads = args["j"]
-        self.db = "%s/../db/"%(sys.path[0])
+        self.db = "%s/"%(args["db"])
         self.bin = "%s/../bin/"%(sys.path[0])      
         self.outdir = "%s/%s/"%(outdir, self.sample)
         self.whole_dir = "%s/whole/"%(sys.path[0])
@@ -242,7 +243,7 @@ class Fasta():
             cat $outdir/hla.allele.$i.HLA_$hla.raw.fasta|grep -v ">" >>$outdir/hla.allele.$i.HLA_$hla.fasta
             
             samtools faidx $outdir/hla.allele.$i.HLA_$hla.fasta        
-            """%(parameter.sample, parameter.bin, parameter.db, parameter.outdir, gene, index+1, index,parameter.threads, minimap_para, args["a"], sys.path[0], args["k"], interval_dict[gene], gene)
+            """%(parameter.sample, parameter.bin, args["db"], parameter.outdir, gene, index+1, index,parameter.threads, minimap_para, args["a"], sys.path[0], args["k"], interval_dict[gene], gene)
             os.system(order)
             # -S -A -Q 10 -E 0.3 -e 5
 
@@ -254,9 +255,9 @@ class Fasta():
 
     def annotation(self):
         anno = f"""
-        perl {parameter.whole_dir}/annoHLA.pl -s {parameter.sample} -i {parameter.outdir} -p {parameter.population} -r tgs -g {args["g"]}
+        perl {parameter.whole_dir}/annoHLA.pl -s {parameter.sample} -i {parameter.outdir} -p {parameter.population} -r tgs -g {args["g"]} --db {args["db"]}/HLA 
         cat {parameter.outdir}/hla.result.txt
-        python3 {parameter.whole_dir}/../refine_typing.py -n {parameter.sample} -o {parameter.outdir}
+        python3 {parameter.whole_dir}/../refine_typing.py -n {parameter.sample} -o {parameter.outdir}  --db {args["db"]}
         """
         # print (anno)
         os.system(anno)
@@ -287,7 +288,7 @@ if __name__ == "__main__":
     optional.add_argument("-a", type=str, help="Prefix of filtered fastq file.", metavar="\b", default="long_read")
     optional.add_argument("-y", type=str, help="Read type, [nanopore|pacbio].", metavar="\b", default="pacbio")
     optional.add_argument("--minimap_index", type=int, help="Whether build Minimap2 index for the reference [0|1]. Using index can reduce memory usage.", metavar="\b", default=0)
-    # optional.add_argument("--db", type=str, help="db dir.", metavar="\b", default=sys.path[0] + "/../db/")
+    optional.add_argument("--db", type=str, help="db dir.", metavar="\b", default=sys.path[0] + "/../db/")
     # optional.add_argument("-u", type=str, help="Choose full-length or exon typing. 0 indicates full-length, 1 means exon.", metavar="\b", default="0")
     optional.add_argument("-h", "--help", action="help")
     args = vars(parser.parse_args()) 

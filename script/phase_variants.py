@@ -70,7 +70,7 @@ optional.add_argument("--use_database",help="Whether use database to link blocks
      Just used for evaluation",dest='use_database',metavar='',default=1, type=int)
 optional.add_argument("--trio",help="The trio infromation; give sample names in the order of child:mother:father.\
  Example: NA12878:NA12891:NA12892. The order of mother and father can be ambiguous.",dest='trio',metavar='', default="None",type=str)
-
+optional.add_argument("--db", type=str, help="db dir.", metavar="\b", default=sys.path[0] + "/../db/")
 parser._action_groups.append(optional)
 args = parser.parse_args()
 
@@ -816,9 +816,9 @@ class Share_reads():
                 id_name[seg_region.strip()] = str(seg[0]) + '_' + str(seg[1]) 
             gap += seg_region
         for i in range(self.strainsNum):
-            order='samtools faidx %s/../db/ref/hla.ref.extend.fa\
+            order='samtools faidx %s/ref/hla.ref.extend.fa\
                 %s |%s/../bin/bcftools consensus --mask %s -H %s %s/%s.rephase.vcf.gz\
-                      >%s/%s_%s_seg.fa'%(sys.path[0],gap,sys.path[0],mask_bed,i+1,self.outdir,\
+                      >%s/%s_%s_seg.fa'%(args.db,gap,sys.path[0],mask_bed,i+1,self.outdir,\
                 self.gene,self.outdir,self.gene,i)
             os.system(order)
             fa_file = '%s/%s_%s_seg.fa'%(self.outdir,self.gene,i)
@@ -1170,13 +1170,13 @@ def dup_region_type(outdir, strainsNum, bamfile):
         outdir=%s
         k=%s
         pos=HLA_DRB1:3898-4400        
-        ref=%s/../db/ref/DRB1_dup_extract_ref.fasta
+        ref=%s/ref/DRB1_dup_extract_ref.fasta
         samtools view -f 64 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##1 "$2,$3}' > $outdir/extract.fa
         samtools view -f 128 $bam $pos| cut -f 1,6,10|sort|uniq |awk '{OFS="\n"}{print ">"$1"##2 "$2,$3}' >> $outdir/extract.fa
         blastn -query $outdir/extract.fa -out $outdir/extract.read.blast -db $ref -outfmt 6 -strand plus  -penalty -1 -reward 1 -gapopen 4 -gapextend 1
         perl %s/count.read.pl $outdir
         less $outdir/DRB1.hla.count| sort -k3,3nr -k4,4nr | head -n $k |awk '$3>0.7'|awk '$4>5' >$outdir/select.DRB1.seq.txt
-        """%(bamfile, outdir, strainsNum, sys.path[0], sys.path[0])
+        """%(bamfile, outdir, strainsNum, args.db, sys.path[0])
     os.system(order)
 
 def long_InDel_breakpoints(bfile):
@@ -1545,7 +1545,7 @@ def run_SpecHap():
             if [ $gene == "HLA_A" ];
             then
                 rm -rf ./$folder_name
-                longranger align --id=$folder_name --fastqs=$fq --reference=%s/../db/ref/refdata-hla.ref.extend\
+                longranger align --id=$folder_name --fastqs=$fq --reference=%s/ref/refdata-hla.ref.extend\
                     --sample=$sample --localcores=%s --localmem=10 
             fi
  
@@ -1557,7 +1557,7 @@ def run_SpecHap():
             awk '$0=$0" 1"' $outdir/fragment.raw3.tenx.file >$outdir/fragment.tenx.file
             cat $outdir/fragment.tenx.file >> $outdir/fragment.all.file
         
-        """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, gene_vcf,sys.path[0], args.thread_num, sys.path[0], gene_vcf[:-3])
+        """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, gene_vcf,args.db, args.thread_num, sys.path[0], gene_vcf[:-3])
         print ('align linked-reads with longranger and extract linkage info')
         os.system(command)
         
@@ -1623,7 +1623,8 @@ def all_poss_block_link():
 def select_poss():
     # map all possible haps to allele database
     # select the hap with highest mapping score
-    reph='perl %s/whole/select.combination.pl -g %s -i %s -s %s -p Unknown'%(sys.path[0],gene,outdir,args.sample_id)        
+    reph='perl %s/whole/select.combination.pl -g %s -i %s -s %s -p Unknown -d %s/HLA'%(sys.path[0],gene,outdir,args.sample_id, args.db)      
+    # print (str(reph))  
     os.system(str(reph))    
     selected_fasta = "%s/result.%s.fasta"%(outdir, gene)
     f = open(selected_fasta, 'r')
@@ -1665,7 +1666,7 @@ def link_blocks():
         update_seqlist = all_poss_block_link()
     else:
         if args.use_database == True:
-            reph='%s/../spechla_env/bin/python3 %s/whole/map_block2_database.py %s %s'%(sys.path[0],sys.path[0],gene,outdir)     
+            reph='%s/../spechla_env/bin/python3 %s/whole/map_block2_database.py %s %s %s'%(sys.path[0],sys.path[0],gene,outdir,args.db)     
             os.system(str(reph))
             # phase block with spectral graph theory
             print ("phase block with spectral graph theory")
@@ -1846,7 +1847,7 @@ if __name__ == "__main__":
         bamfile,outdir,snp_dp,indel_len,freq_bias=args.bamfile,args.outdir,args.snp_dp,args.indel_len,args.freq_bias           
         snp_qual,gene,fq1,fq2,vcffile,long_indel_file = args.snp_qual,args.gene,args.fq1,args.fq2,args.vcf,args.sv
         strainsNum = 2 # two hap for each sample
-        hla_ref = '%s/../db/ref/hla.ref.extend.fa'%(sys.path[0])
+        hla_ref = '%s/ref/hla.ref.extend.fa'%(args.db)
         mask_bed = "%s/low_depth.bed"%(outdir)
         gene_vcf = "%s/%s.vcf.gz"%(outdir, gene) # gene-specific variants 
         raw_spec_vcf = '%s/%s.specHap.phased.vcf'%(outdir,gene)

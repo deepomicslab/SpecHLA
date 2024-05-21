@@ -194,9 +194,10 @@ if __name__ == "__main__":
     # outdir = "/mnt/d/HLAPro_backup/haplotype/sample20/"
     gene = sys.argv[1]
     outdir = sys.argv[2] + "/"
+    db = sys.argv[3]
 
-    hla_ref = '%s/../../db/ref/hla.ref.extend.fa'%(sys.path[0])
-    gene_db = '%s/../../db/HLA/whole/%s.fasta'%(sys.path[0], gene)
+    hla_ref = '%s/ref/hla.ref.extend.fa'%(db)
+    gene_db = '%s/HLA/whole/%s.fasta'%(db, gene)
     vcf = "%s/%s.spechap.vcf.gz"%(outdir, gene)
 
     break_point_file = outdir + "/%s_break_points_spechap.txt"%(gene)
