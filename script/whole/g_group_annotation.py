@@ -29,8 +29,8 @@ def count_n_ratio(fasta_file):
     ratio = round(ratio, 2)
     return ratio
 
-def read_G_annotation():
-    g_file = "%s/../../db/HLA/hla_nom_g.txt"%(sys.path[0])
+def read_G_annotation(db):
+    g_file = f"{db}/HLA/hla_nom_g.txt"
     G_annotation_dict = {}
     i = 0
     for line in open(g_file):
@@ -221,6 +221,7 @@ if __name__ == "__main__":
     optional = parser.add_argument_group("Optional arguments")
     required.add_argument("-s", type=str, help="sample name", metavar="\b")
     required.add_argument("-i", type=str, help="the directory of phased sequence.", metavar="\b", default="./output")
+    required.add_argument("--db", type=str, help="IMGT/HLA database folder", required=True)
     optional.add_argument("-p", type=str, help="The population of the sample [Asian, Black, Caucasian, Unknown, nonuse] for annotation. Unknown means use mean allele frequency in all populations. nonuse indicates only adopting mapping score and considering zero-frequency alleles.", metavar="\b", default="Unknown")
     optional.add_argument("-j", type=int, help="Number of threads.", metavar="\b", default=5)
 
@@ -233,11 +234,11 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(0)
 
-    exon_database = "%s/../../db/HLA//hla_exons.fasta"%(sys.path[0])
-    freq = "%s/../../db/HLA/HLA_FREQ_HLA_I_II.txt"%(sys.path[0])
+    exon_database = f"{args['db']}/HLA/hla_exons.fasta"
+    freq = f"{args['db']}/HLA/HLA_FREQ_HLA_I_II.txt"
 
     print ("Start G group resolution annotation...")
-    G_annotation_dict, version_info = read_G_annotation()
+    G_annotation_dict, version_info = read_G_annotation(args['db'])
     hashp = population(args["p"], "whole")
     g_ann = G_annotation(args["s"], args["i"])
     g_ann.main()
