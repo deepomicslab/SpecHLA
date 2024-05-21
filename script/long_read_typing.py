@@ -117,7 +117,19 @@ class Pacbio_Binning():
         self.bamfile = pysam.AlignmentFile(self.sam, 'r')   
         self.assign_file = f"{parameter.outdir}/{parameter.sample}.assign.txt"
 
+    def index_db(self):
+        ref_index = self.db[:-5] + args["y"] + ".mmi"
+        # print ("search the reference index:", ref_index)
+        if not os.path.isfile(ref_index):
+            print ("start build Minimap2 index for the reference...")
+            os.system(f"minimap2 {minimap_para} -d {ref_index} {self.db} ")
+        else:
+            print (f"Detect Minimap2 index for the reference: {ref_index}")
+        self.db = ref_index
+
     def map2db(self):
+        if args["minimap_index"] == 1:
+            self.index_db()
         # map raw reads to database
         alignDB_order = f"""
         fq={parameter.raw_fq}
@@ -125,7 +137,7 @@ class Pacbio_Binning():
         outdir={parameter.outdir}
         bin={sys.path[0]}/../bin
         sample={parameter.sample}
-        minimap2 -t {parameter.threads} -p 0.1 -N 100000 -a $ref $fq > $outdir/$sample.db.sam
+        minimap2 -t {parameter.threads} {minimap_para} -p 0.1 -N 100000 -a $ref $fq > $outdir/$sample.db.sam
         echo alignment done.
         """
         os.system(alignDB_order)
@@ -197,9 +209,6 @@ class Parameters():
 
 class Fasta():
 
-    # minimap2 -t %s -p 0.5 -B 10 -ax asm20 $hla_ref $outdir/$hla.%s.fq.gz | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
-
-    # minimap2 -t %s -a $hla_ref $outdir/$hla.%s.fq.gz | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
     def vcf2fasta(self, gene):
         for index in range(2):
             order = """
@@ -211,11 +220,11 @@ class Fasta():
             i=%s
             j=%s
             hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-            minimap2 -t %s -a $hla_ref $outdir/$hla.%s.fq.gz | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
+            minimap2 -t %s %s -a $hla_ref $outdir/$hla.%s.fq.gz | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
             samtools index $outdir/$hla.bam
 
             samtools depth -aa $outdir/$hla.bam >$outdir/$hla.depth
-            python %s/mask_low_depth_region.py -f False -c $outdir/$hla.depth -o $outdir -w 20 -d %s
+            python3 %s/mask_low_depth_region.py -f False -c $outdir/$hla.depth -o $outdir -w 20 -d %s
             mask_bed=$outdir/low_depth.bed
             cp $outdir/low_depth.bed $outdir/$hla.low_depth.bed
 
@@ -233,7 +242,7 @@ class Fasta():
             cat $outdir/hla.allele.$i.HLA_$hla.raw.fasta|grep -v ">" >>$outdir/hla.allele.$i.HLA_$hla.fasta
             
             samtools faidx $outdir/hla.allele.$i.HLA_$hla.fasta        
-            """%(parameter.sample, parameter.bin, parameter.db, parameter.outdir, gene, index+1, index,parameter.threads, args["a"], sys.path[0], args["k"], interval_dict[gene], gene)
+            """%(parameter.sample, parameter.bin, parameter.db, parameter.outdir, gene, index+1, index,parameter.threads, minimap_para, args["a"], sys.path[0], args["k"], interval_dict[gene], gene)
             os.system(order)
             # -S -A -Q 10 -E 0.3 -e 5
 
@@ -247,6 +256,7 @@ class Fasta():
         anno = f"""
         perl {parameter.whole_dir}/annoHLA.pl -s {parameter.sample} -i {parameter.outdir} -p {parameter.population} -r tgs -g {args["g"]}
         cat {parameter.outdir}/hla.result.txt
+        python3 {parameter.whole_dir}/../refine_typing.py -n {parameter.sample} -o {parameter.outdir}
         """
         # print (anno)
         os.system(anno)
@@ -275,6 +285,8 @@ if __name__ == "__main__":
     optional.add_argument("-m", type=int, help="1 represents typing, 0 means only read assignment", metavar="\b", default=1)
     optional.add_argument("-k", type=int, help="The mean depth in a window lower than this value will be masked by N, set 0 to avoid masking", metavar="\b", default=5)
     optional.add_argument("-a", type=str, help="Prefix of filtered fastq file.", metavar="\b", default="long_read")
+    optional.add_argument("-y", type=str, help="Read type, [nanopore|pacbio].", metavar="\b", default="pacbio")
+    optional.add_argument("--minimap_index", type=int, help="Whether build Minimap2 index for the reference [0|1]. Using index can reduce memory usage.", metavar="\b", default=0)
     # optional.add_argument("-u", type=str, help="Choose full-length or exon typing. 0 indicates full-length, 1 means exon.", metavar="\b", default="0")
     optional.add_argument("-h", "--help", action="help")
     args = vars(parser.parse_args()) 
@@ -287,6 +299,13 @@ if __name__ == "__main__":
     # Min_score = 0.1  #the read is too long, so the score can be very low.
     Min_score = 0  #the read is too long, so the score can be very low.
     Min_diff = args["d"]  #0.001
+
+    minimap_para = ''
+    if args["y"] == "pacbio":
+        minimap_para = " -x map-pb "
+    elif args["y"] == "nanopore":
+        minimap_para = " -x map-ont "
+
 
     ###assign reads
     if args["m"] == 10086:

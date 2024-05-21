@@ -50,6 +50,7 @@ set -euo pipefail
 ###             use trio info to improve typing. Note: use it after performing SpecHLA once already.
 ###   -b        Whether use database for unlinked block phasing [0|1], default is 1 (i.e., use).
 ###   -i        Location of the IMGT/HLA database folder, default is db.
+###   -l        Whether remove all tmp files [0|1], default is 1.
 ###   -h        Show this message.
 
 #   -g        Whether use G group resolution annotation [0|1], default is 0 (i.e., not use).
@@ -63,7 +64,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
     exit 1
 fi
 
-while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:z:y:f:b:i:" opt; do
+while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:z:y:f:b:l:i:" opt; do
   case $opt in
     n) sample="$OPTARG"
     ;;
@@ -116,6 +117,8 @@ while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:z:y:f:b:i:" opt; d
     b) use_database="$OPTARG"
     ;;
     i) db="$OPTARG"
+    ;;
+    l) rm_tmp="$OPTARG"
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
@@ -349,11 +352,13 @@ if [ $focus_exon_flag == 1 ];then #exon
 else
     perl $dir/annoHLA.pl -s $sample -i $outdir -p ${pop:-Unknown} -r whole 
 fi
+
 python3 $dir/g_group_annotation.py -s $sample -i $outdir -p ${pop:-Unknown} -j ${num_threads:-5} --db ${db} # g group resolution annotation
 # #############################################################################
 
 
-
-bash $dir/../clear_output.sh $outdir/
+if [ ${rm_tmp:-1} == 1 ];then #exon
+    bash $dir/../clear_output.sh $outdir/
+fi
 cat $outdir/hla.result.txt
 echo $sample is done.

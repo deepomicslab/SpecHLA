@@ -24,11 +24,12 @@ bash script/whole/SpecHLA.sh -h
 
 Note:
 
-- SpecHLA requires a License of [Novoalign](https://www.novocraft.com/buy-now/) in `bin/`. If not detected, it uses `bowtie2` as replacement automatically. 
+- SpecHLA requires a License of [Novoalign](https://www.novocraft.com/buy-now/) in `bin/`. If not detected, it uses `bowtie2` as a replacement automatically. 
 The License file of `Novoalign` should be put in the `bin/` folder `before` running `bash index.sh`. 
-- If you want to run SpecHLA with `only` long-read data, these is no need for the `Novoalign` licence. 
+- If you want to run SpecHLA with `only` long-read data, there is no need for the `Novoalign` license. 
 - SpecHLA now supports Linux and Windows WSL systems.
 - SpecHLA does not accept short single-end reads.
+- The conda environment should be located in the local folder.
 
 
 ## Test
@@ -143,6 +144,7 @@ Options:
             use trio info to improve typing. Note: use it after performing SpecHLA once already.
   -b        Whether use database for unlinked block phasing [0|1], default is 1 (i.e., use).
   -i        Location of the IMGT/HLA database folder, default is db.
+  -l        Whether remove all tmp files [0|1], default is 1.
   -h        Show this message.
 ```
 

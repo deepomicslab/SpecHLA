@@ -3,6 +3,7 @@ channels:
   - conda-forge
   - bioconda
   - defaults
+  - anaconda
 dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_gnu
@@ -18,6 +19,7 @@ dependencies:
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.18.1=h7f98852_0
   - ca-certificates=2022.12.7=ha878542_0
+  - cmake
   - coin-or-cbc=2.10.8=h3786ebc_0
   - coin-or-cgl=0.60.6=he2f9439_0
   - coin-or-clp=1.17.6=h256e9bb_3
