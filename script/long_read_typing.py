@@ -12,7 +12,7 @@ import argparse
 interval_dict = {"A":"HLA_A:1000-4503", "B":"HLA_B:1000-5081","C": "HLA_C:1000-5304","DPA1":"HLA_DPA1:1000-10775",\
     "DPB1":"HLA_DPB1:1000-12468","DQA1":"HLA_DQA1:1000-7492","DQB1":"HLA_DQB1:1000-8480","DRB1":"HLA_DRB1:1000-12229" }
 gene_list = ['A', 'B', 'C', 'DPA1', 'DPB1', 'DQA1', 'DQB1', 'DRB1']
-# gene_list = ['DRB1']
+# gene_list = ['A']
 
 
 class Read_Obj():
@@ -211,6 +211,35 @@ class Parameters():
 class Fasta():
 
     def vcf2fasta(self, gene):
+        ### call and phase snps
+        cmd = """
+        sample=%s
+        bin=%s
+        db=%s
+        outdir=%s
+        hla=%s
+        hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
+        minimap2 -t %s %s -a $hla_ref $outdir/$hla.%s.fq.gz | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
+        samtools index $outdir/$hla.bam
+
+        samtools depth -aa $outdir/$hla.bam >$outdir/$hla.depth
+        python3 %s/mask_low_depth_region.py -f False -c $outdir/$hla.depth -o $outdir -w 20 -d %s
+        mask_bed=$outdir/low_depth.bed
+        cp $outdir/low_depth.bed $outdir/$hla.low_depth.bed
+
+        # longshot -F -c 2 -C 10000 --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
+        longshot -F -c 2 -A -r %s --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
+        
+        bgzip -f $outdir/$sample.$hla.longshot.vcf
+        tabix -f $outdir/$sample.$hla.longshot.vcf.gz
+
+        zcat $outdir/$sample.$hla.longshot.vcf.gz >$outdir/$sample.$hla.phased.vcf          
+        bgzip -f $outdir/$sample.$hla.phased.vcf
+        tabix -f $outdir/$sample.$hla.phased.vcf.gz
+        """%(parameter.sample, parameter.bin, args["db"], parameter.outdir, gene, parameter.threads, minimap_para, args["a"], sys.path[0], args["k"], interval_dict[gene])
+        os.system(cmd)
+
+
         for index in range(2):
             order = """
             sample=%s
@@ -221,29 +250,14 @@ class Fasta():
             i=%s
             j=%s
             hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
-            minimap2 -t %s %s -a $hla_ref $outdir/$hla.%s.fq.gz | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
-            samtools index $outdir/$hla.bam
-
-            samtools depth -aa $outdir/$hla.bam >$outdir/$hla.depth
-            python3 %s/mask_low_depth_region.py -f False -c $outdir/$hla.depth -o $outdir -w 20 -d %s
             mask_bed=$outdir/low_depth.bed
-            cp $outdir/low_depth.bed $outdir/$hla.low_depth.bed
-
-            longshot -F -c 2 --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
-            #longshot -F -S -c 2 -q 10 -Q 2 -a 5 -y 20 -e 2 -E 0.1 --hom_snv_rate 0.01 --het_snv_rate 0.01 --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
-            bgzip -f $outdir/$sample.$hla.longshot.vcf
-            tabix -f $outdir/$sample.$hla.longshot.vcf.gz
-
-            zcat $outdir/$sample.$hla.longshot.vcf.gz >$outdir/$sample.$hla.phased.vcf          
-            bgzip -f $outdir/$sample.$hla.phased.vcf
-            tabix -f $outdir/$sample.$hla.phased.vcf.gz
 
             samtools faidx $hla_ref %s |$bin/bcftools consensus -H $i --mask $mask_bed $outdir/$sample.$hla.phased.vcf.gz >$outdir/hla.allele.$i.HLA_$hla.raw.fasta
             echo ">HLA_%s_$j" >$outdir/hla.allele.$i.HLA_$hla.fasta
             cat $outdir/hla.allele.$i.HLA_$hla.raw.fasta|grep -v ">" >>$outdir/hla.allele.$i.HLA_$hla.fasta
             
             samtools faidx $outdir/hla.allele.$i.HLA_$hla.fasta        
-            """%(parameter.sample, parameter.bin, args["db"], parameter.outdir, gene, index+1, index,parameter.threads, minimap_para, args["a"], sys.path[0], args["k"], interval_dict[gene], gene)
+            """%(parameter.sample, parameter.bin, args["db"], parameter.outdir, gene, index+1, index, interval_dict[gene], gene)
             os.system(order)
             # -S -A -Q 10 -E 0.3 -e 5
 
@@ -255,7 +269,7 @@ class Fasta():
 
     def annotation(self):
         anno = f"""
-        perl {parameter.whole_dir}/annoHLA.pl -s {parameter.sample} -i {parameter.outdir} -p {parameter.population} -r tgs -g {args["g"]} --db {args["db"]}/HLA 
+        perl {parameter.whole_dir}/annoHLA.pl -s {parameter.sample} -i {parameter.outdir} -p {parameter.population} -r tgs -g {args["g"]} -d {args["db"]}/HLA 
         cat {parameter.outdir}/hla.result.txt
         python3 {parameter.whole_dir}/../refine_typing.py -n {parameter.sample} -o {parameter.outdir}  --db {args["db"]}
         """
