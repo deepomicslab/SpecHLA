@@ -156,25 +156,30 @@ usage: python3 long_read_typing.py -h
 HLA Typing with only long-read data.
 
 Required arguments:
-  -r               Long-read fastq file. PacBio or Nanopore. (default: None)
-  -n               Sample ID (default: None)
-  -o               The output folder to store the typing results. (default: ./output)
+  -r                  Long-read fastq file. PacBio or Nanopore. (default: None)
+  -n                  Sample ID (default: None)
+  -o                  The output folder to store the typing results. (default: ./output)
 
 Optional arguments:
-  -p               The population of the sample [Asian, Black, Caucasian, Unknown, nonuse] for annotation. Unknown
-                     means use mean allele frequency in all populations. nonuse indicates only adopting mapping score
-                     and considering zero-frequency alleles. (default: Unknown)
-  -j               Number of threads. (default: 5)
-  -d               Minimum score difference to assign a read to a gene. (default: 0.001)
-  -g               Whether use G group resolution annotation [0|1]. (default: 0)
-  -m               1 represents typing, 0 means only read assignment (default: 1)
-  -k               The mean depth in a window lower than this value will be masked by N, set 0 to avoid masking
-                     (default: 5)
-  -a               Prefix of filtered fastq file. (default: long_read)
-  -y               Read type, [nanopore|pacbio]. (default: pacbio)
-  --minimap_index  Whether build Minimap2 index for the reference [0|1]. Using index can reduce memory usage.
-                     (default: 0)
-  --db             db dir. (default: /home/wangshuai/softwares/SpecHLA/script/../db/)
+  -p                  The population of the sample [Asian, Black, Caucasian, Unknown, nonuse] for annotation.
+                        Unknown means use mean allele frequency in all populations. nonuse indicates only adopting
+                        mapping score and considering zero-frequency alleles. (default: Unknown)
+  -j                  Number of threads. (default: 5)
+  -d                  Minimum score difference to assign a read to a gene. (default: 0.001)
+  -g                  Whether use G group resolution annotation [0|1]. (default: 0)
+  -m                  1 represents typing, 0 means only read assignment (default: 1)
+  -k                  The mean depth in a window lower than this value will be masked by N, set 0 to avoid masking
+                        (default: 5)
+  -a                  Prefix of filtered fastq file. (default: long_read)
+  -y                  Read type, [nanopore|pacbio]. (default: pacbio)
+  --minimap_index     Whether build Minimap2 index for the reference [0|1]. Using index can reduce memory usage.
+                        (default: 0)
+  --db                db dir. (default: /home/wangshuai/softwares/SpecHLA/script/../db/)
+  --strand_bias_pvalue_cutoff
+                        Remove a variant if the allele observations are biased toward one strand (forward or reverse).
+                        Recommand setting 0 to high-depth data. (default: 0.01)
+  --seed              seed to generate random numbers (default: 8)
+  --max_depth         maximum depth for each HLA locus. Downsample if exceed this value. (default: 2000)
   -h, --help
 ```
 

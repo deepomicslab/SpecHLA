@@ -8,6 +8,7 @@ import os
 import pysam
 import gzip
 import argparse
+from downsample_bam import main
 
 interval_dict = {"A":"HLA_A:1000-4503", "B":"HLA_B:1000-5081","C": "HLA_C:1000-5304","DPA1":"HLA_DPA1:1000-10775",\
     "DPB1":"HLA_DPB1:1000-12468","DQA1":"HLA_DQA1:1000-7492","DQB1":"HLA_DQB1:1000-8480","DRB1":"HLA_DRB1:1000-12229" }
@@ -210,7 +211,7 @@ class Parameters():
 
 class Fasta():
 
-    def vcf2fasta(self, gene):
+    def alignment(self, gene):
         ### call and phase snps
         cmd = """
         sample=%s
@@ -221,14 +222,47 @@ class Fasta():
         hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
         minimap2 -t %s %s -a $hla_ref $outdir/$hla.%s.fq.gz | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
         samtools index $outdir/$hla.bam
+        samtools depth -d 1000000 -aa $outdir/$hla.bam >$outdir/$hla.depth
+        """%(parameter.sample, parameter.bin, args["db"], parameter.outdir, gene, parameter.threads, minimap_para, args["a"])
+        os.system(cmd)
 
-        samtools depth -aa $outdir/$hla.bam >$outdir/$hla.depth
+        max_depth = args["max_depth"]
+        seed = args["seed"]
+        input_bam = f"{parameter.outdir}/{gene}.bam"
+        input_depth = f"{parameter.outdir}/{gene}.depth"
+        output_bam = f"{parameter.outdir}/{gene}.downsample.bam"
+        output_depth = f"{parameter.outdir}/{gene}.downsample.depth"
+        downsample_ratio = main(input_bam, output_bam, input_depth, output_depth, max_depth, seed)
+        print (f"downsample ratio is {downsample_ratio} for {gene}")
+        if downsample_ratio < 1:
+            os.system(f"rm {input_bam}")
+            os.system(f"rm {input_depth}")
+            os.system(f"mv {output_bam} {input_bam}")
+            os.system(f"mv {output_depth} {input_depth}")
+
+
+    def vcf2fasta(self, gene):
+        ### map and downsample alignment
+        self.alignment(gene)
+        ### call and phase snps
+        cmd = """
+        sample=%s
+        bin=%s
+        db=%s
+        outdir=%s
+        hla=%s
+        hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
+
+        # minimap2 -t %s %s -a $hla_ref $outdir/$hla.%s.fq.gz | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
+        # samtools index $outdir/$hla.bam
+        # samtools depth -d 1000000 -aa $outdir/$hla.bam >$outdir/$hla.depth
+
+
         python3 %s/mask_low_depth_region.py -f False -c $outdir/$hla.depth -o $outdir -w 20 -d %s
         mask_bed=$outdir/low_depth.bed
         cp $outdir/low_depth.bed $outdir/$hla.low_depth.bed
 
-        # longshot -F -c 2 -C 10000 --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
-        longshot -F -c 2 -A -r %s --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
+        longshot -F -c 2 -C 100000 -P %s -r %s --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
         
         bgzip -f $outdir/$sample.$hla.longshot.vcf
         tabix -f $outdir/$sample.$hla.longshot.vcf.gz
@@ -236,10 +270,10 @@ class Fasta():
         zcat $outdir/$sample.$hla.longshot.vcf.gz >$outdir/$sample.$hla.phased.vcf          
         bgzip -f $outdir/$sample.$hla.phased.vcf
         tabix -f $outdir/$sample.$hla.phased.vcf.gz
-        """%(parameter.sample, parameter.bin, args["db"], parameter.outdir, gene, parameter.threads, minimap_para, args["a"], sys.path[0], args["k"], interval_dict[gene])
+        """%(parameter.sample, parameter.bin, args["db"], parameter.outdir, gene, parameter.threads, minimap_para, args["a"], sys.path[0], args["k"], args["strand_bias_pvalue_cutoff"], interval_dict[gene])
         os.system(cmd)
 
-
+        ## reconstruct HLA sequence based on the phased snps
         for index in range(2):
             order = """
             sample=%s
@@ -303,7 +337,10 @@ if __name__ == "__main__":
     optional.add_argument("-y", type=str, help="Read type, [nanopore|pacbio].", metavar="\b", default="pacbio")
     optional.add_argument("--minimap_index", type=int, help="Whether build Minimap2 index for the reference [0|1]. Using index can reduce memory usage.", metavar="\b", default=0)
     optional.add_argument("--db", type=str, help="db dir.", metavar="\b", default=sys.path[0] + "/../db/")
+    optional.add_argument("--strand_bias_pvalue_cutoff", type=float, help="Remove a variant if the allele observations are biased toward one strand (forward or reverse). Recommand setting 0 to high-depth data.", metavar="\b", default=0.01)
     # optional.add_argument("-u", type=str, help="Choose full-length or exon typing. 0 indicates full-length, 1 means exon.", metavar="\b", default="0")
+    optional.add_argument("--seed", type=int, help="seed to generate random numbers", metavar="\b", default=8)
+    optional.add_argument("--max_depth", type=int, help="maximum depth for each HLA locus. Downsample if exceed this value.", metavar="\b", default=2000)
     optional.add_argument("-h", "--help", action="help")
     args = vars(parser.parse_args()) 
 
