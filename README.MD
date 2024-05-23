@@ -28,6 +28,10 @@ Perform SpecHLA with
 ```
 bash script/whole/SpecHLA.sh -h
 ```
+With only long reads, run
+```
+python3 script/long_read_typing.py -h
+```
 
 Note:
 
