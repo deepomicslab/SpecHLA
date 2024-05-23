@@ -115,8 +115,8 @@ class Pacbio_Binning():
         # self.db = f"{sys.path[0]}/../db/ref/hla_gen.format.filter.extend.DRB.no26789.v2.fasta"
         self.db = f"""{args["db"]}/ref/hla_gen.format.filter.extend.DRB.no26789.fasta"""
         self.map2db()
-        self.sam = f"{parameter.outdir}/{parameter.sample}.db.sam"
-        self.bamfile = pysam.AlignmentFile(self.sam, 'r')   
+        self.sam = f"{parameter.outdir}/{parameter.sample}.db.bam"
+        self.bamfile = pysam.AlignmentFile(self.sam, 'rb')   
         self.assign_file = f"{parameter.outdir}/{parameter.sample}.assign.txt"
 
     def index_db(self):
@@ -139,7 +139,7 @@ class Pacbio_Binning():
         outdir={parameter.outdir}
         bin={sys.path[0]}/../bin
         sample={parameter.sample}
-        minimap2 -t {parameter.threads} {minimap_para} -p 0.1 -N 100000 -a $ref $fq > $outdir/$sample.db.sam
+        minimap2 -t {parameter.threads} {minimap_para} -p 0.1 -N 100000 -a $ref $fq |samtools view -bS -o $outdir/$sample.db.bam
         echo alignment done.
         """
         os.system(alignDB_order)
