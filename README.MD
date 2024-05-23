@@ -1,10 +1,10 @@
 # SpecHLA: full-resolution HLA typing from sequencing data
 
-SpecHLA is a software package leveraging reads binning and local assembly to achieve accurate fullresolution HLA typing and loss-of-heterozygosity detection. SpecHLA accepts various sequencing data protocols and can incorporate pedigree data and genotype frequency for better performance. SpecHLA
-- reconstructs diploid sequences of HLA-A, -B, -C, -DPA1, -DPB1, -DQA1, -DQB1, and -DRB1 genes.
-- accepts short-read-only, long-read-only, and combine short- and long-reads data.
-- supports WES, WGS, and RNA-seq data.
-- detects HLA loss-of-heterozygosity events.
+SpecHLA is a software package leveraging reads binning and local assembly to achieve accurate full-resolution HLA typing and loss-of-heterozygosity detection. 
+- SpecHLA reconstructs diploid sequences of HLA-A, -B, -C, -DPA1, -DPB1, -DQA1, -DQB1, and -DRB1 genes.
+- SpecHLA accepts short-reads-only, long-reads-only, and short+long-reads data.
+- SpecHLA supports WES, WGS, and RNA-seq data.
+- SpecHLA detects HLA loss-of-heterozygosity events.
 
 
 ## Install  
