@@ -30,7 +30,9 @@ public:
     inline void add_HiC_info(Fragment &fragment)
     {
         uint start_idx = fragment.snps[0].first;
-        linker.emplace(start_idx, fragment);
+        // linker.emplace(start_idx, fragment);
+        HiCLinker link = HiCLinker(fragment);
+        linker.emplace(start_idx, link);
     }
     inline void clear()
     {
