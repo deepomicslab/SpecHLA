@@ -42,6 +42,7 @@ You need only construct the environment from `conda env create --prefix=./spechl
 - SpecHLA now supports Linux and Windows WSL systems.
 - SpecHLA does not accept short single-end reads.
 - The conda environment should be located in the local folder.
+- In case of failed installation, pls check your GCC version, it should be `GCC 9.4.0+`, see https://github.com/deepomicslab/SpecHLA/issues/42
 
 
 ## Test
