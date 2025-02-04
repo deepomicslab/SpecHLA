@@ -44,6 +44,7 @@ You need only construct the environment from `conda env create --prefix=./spechl
 - The conda environment should be located in the local folder.
 - In case of failed installation, pls check your GCC version, it should be `GCC 9.4.0+`, see https://github.com/deepomicslab/SpecHLA/issues/42
 - Please ensure to clear the previous results before rerunning SpecHLA.
+- For long-read data, pls use our new tool [SpecImmune](https://github.com/deepomicslab/SpecImmune), which can type HLA, KIR, IG, TCR, CYP genes.
 
 
 ## Test
