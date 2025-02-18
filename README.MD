@@ -378,4 +378,4 @@ After applying for the authority of [Novoalign](https://www.novocraft.com/buy-no
 [Wang, Shuai, Mengyao Wang, Lingxi Chen, Guangze Pan, Yanfei Wang, and Shuai Cheng Li. "SpecHLA enables full-resolution HLA typing from sequencing data." Cell Reports Methods (2023).](https://doi.org/10.1016/j.crmeth.2023.100589)
 
 ## Getting help
-Should you have any queries, please feel free to contact us, we will reply as soon as possible (swang66-c@my.cityu.edu.hk).
+Should you have any queries, please feel free to contact us via opening an issue or sending an email, we will reply as soon as possible (wshuai294@gmail.com).
