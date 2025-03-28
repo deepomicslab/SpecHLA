@@ -332,7 +332,7 @@ Interpret each column as
 |Het_num|Number of heterozygous variant|
 |LOH| Whether LOH exists (Y or N)|
 
-## Identify somatic HLA mutation
+## Identify somatic/germline HLA mutation
 Please refer to https://github.com/deepomicslab/SpecHLA/issues/23#issue
 
 To map detected variants onto `hg38`, please use the script of @pjgreer -- https://github.com/pjgreer/Informatics-Tools
