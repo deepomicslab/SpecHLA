@@ -335,7 +335,7 @@ Interpret each column as
 ## Identify somatic HLA mutation
 Please refer to https://github.com/deepomicslab/SpecHLA/issues/23#issue
 
-To map detected variants onto `hg38`, please refer to the script of @pjgreer -- https://gist.github.com/pjgreer/0b9472236562715a383eddec7d3a607d
+To map detected variants onto `hg38`, please use the script of @pjgreer -- https://github.com/pjgreer/Informatics-Tools
 
 ## Update to latest IMGT/HLA database
 To nomenclature the HLA alleles using the latest IMGT/HLA database, please execute the following command:
