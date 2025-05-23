@@ -1,4 +1,5 @@
-name: /home/wangshuai/softwares/SpecHLA/spechla_env
+name: spechla_env
+prefix: ./spechla_env
 channels:
   - conda-forge
   - bioconda
@@ -114,4 +115,3 @@ dependencies:
   - xz=5.2.5=h516909a_1
   - zlib=1.2.11=h166bdaf_1014
   - zstd=1.5.2=h8a70e8d_1
-prefix: /home/wangshuai/softwares/SpecHLA/spechla_env
