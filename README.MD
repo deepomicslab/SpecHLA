@@ -38,7 +38,7 @@ Note:
 - SpecHLA requires a License of [Novoalign](https://www.novocraft.com/buy-now/) in `bin/`. If not detected, it uses `bowtie2` as a replacement automatically. 
 The License file of `Novoalign` should be put in the `bin/` folder `before` running `bash index.sh`. 
 - If you want to run SpecHLA with `only` long-read data, there is no need for the `Novoalign` license and running `bash index.sh`. 
-You need only construct the environment from `conda env create --prefix=./spechla_env -f long_only_env.yml`.
+You need only construct the environment from `conda env create --prefix=./spechla_env -f long_only_env.yml`. To extract HLA-related reads, pls use the full environment.
 - SpecHLA now supports Linux and Windows WSL systems.
 - SpecHLA does not accept short single-end reads.
 - The conda environment should be located in the local folder.
