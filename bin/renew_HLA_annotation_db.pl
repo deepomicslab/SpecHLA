@@ -3,9 +3,19 @@
 `git clone https://github.com/ANHIG/IMGTHLA.git --depth 1`;
 
 my $infile = "IMGTHLA/hla_gen.fasta";
+my $infile_zip = "IMGTHLA/hla_gen.fasta.zip";
 my $infile2 = "IMGTHLA/hla_nuc.fasta";
 my $db_dir = "../db";
 my $bin = "./";
+
+### check if $infile exists, if not, check if $infile_zip exists, and unzip $infile_zip
+if(!-e $infile){
+	if(-e $infile_zip){
+		`unzip $infile_zip -d IMGTHLA/`;
+	}else{
+		die "$!\tno IMGTHLA/hla_gen.fasta found in IMGTHLA/\n";
+	}
+}
 
 `cp IMGTHLA/wmda/hla_nom_g.txt $db_dir/HLA`;
 `cp IMGTHLA/Allelelist.txt $db_dir/HLA`;
