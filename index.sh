@@ -39,9 +39,9 @@ else
 fi
 
 # the lib required by samtools
-ln --force -s $dir/spechla_env/lib/libncurses.so.6 $dir/spechla_env/lib/libncurses.so.5
-ln --force -s $dir/spechla_env/lib/libtinfo.so.6 $dir/spechla_env/lib/libtinfo.so.5
-#ln -s $dir/spechla_env/lib/libhts.so.3 $dir/spechla_env/lib/libhts.so.2
+ln --force -s $CONDA_PREFIX/lib/libncurses.so.6 $CONDA_PREFIX/lib/libncurses.so.5
+ln --force -s $CONDA_PREFIX/lib/libtinfo.so.6 $CONDA_PREFIX/lib/libtinfo.so.5
+#ln -s $CONDA_PREFIX/lib/libhts.so.3 $CONDA_PREFIX/lib/libhts.so.2
 # !
 
 # install spechap
