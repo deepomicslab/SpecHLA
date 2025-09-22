@@ -115,7 +115,12 @@ done
 
 
 dir=$(cd `dirname $0`; pwd)
-export LD_LIBRARY_PATH=$dir/../../spechla_env/lib
+
+# If in conda-env, use its libs, else go with the system libs.
+if test -v CONDA_ENV; then
+  export LD_LIBRARY_PATH="${CONDA_PREFIX/lib}"
+fi
+
 bin=$dir/../../bin
 db=$dir/../../db
 hlaref=$db/ref/hla.ref.extend.fa

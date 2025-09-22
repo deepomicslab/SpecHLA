@@ -120,8 +120,13 @@ done
 
 
 dir=$(cd `dirname $0`; pwd)
-export LD_LIBRARY_PATH=$dir/../../spechla_env/lib
-python_bin=$dir/../../spechla_env/bin/python3
+
+# If in conda-env, use its libs, else go with the system libs.
+if test -v CONDA_ENV; then
+  export LD_LIBRARY_PATH="${CONDA_PREFIX/lib}"
+fi
+
+python_bin=$(which python3)
 bin=$dir/../../bin
 db=$dir/../../db
 hlaref=$db/ref/hla.ref.extend.fa
