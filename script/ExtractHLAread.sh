@@ -57,7 +57,10 @@ echo "-o " $outdir
 mkdir -p $outdir
 sampleid=$outdir/$id
 
-dir=$(cd `dirname $0`; pwd)
+# Ensure the dir is set relative to the actual path, links should be resolved
+# so that this script can be linked somewhere else.
+script_path=$(dirname $(realpath $0))
+dir=$(cd $script_path; pwd)
 
 samtools_bin=samtools
 bamUtil=bam

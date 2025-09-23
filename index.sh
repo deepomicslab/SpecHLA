@@ -3,7 +3,11 @@ set -euo pipefail
 
 # construct config file for ScanIndel
 HLAs=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
-dir=$(cd `dirname $0`; pwd)
+
+# Ensure the dir is set relative to the actual path, links should be resolved
+# so that this script can be linked somewhere else.
+script_path=$(dirname $(realpath $0))
+dir=$(cd $script_path; pwd)
 
 # :<<!
 for hla in ${HLAs[@]}; do
