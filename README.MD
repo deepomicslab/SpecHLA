@@ -12,7 +12,9 @@ detection.
 
 ## Install
 
-First, create the env with conda, and activate the env.
+First, create the env with conda, and activate the env. When running any of the
+SpecHLA scripts, ensure this is done inside this environment, either through
+`conda run` or by activating the environment like below.
 
 ```
 git clone https://github.com/deepomicslab/SpecHLA.git --depth 1
@@ -59,7 +61,6 @@ Note:
   HLA-related reads, pls use the full environment.
 - SpecHLA now supports Linux and Windows WSL systems.
 - SpecHLA does not accept short single-end reads.
-- The conda environment should be located in the local folder.
 - In case of failed installation, pls check your GCC version, it should be
   `GCC 9.4.0+`, see https://github.com/deepomicslab/SpecHLA/issues/42
 - Please ensure to clear the previous results before rerunning SpecHLA.
