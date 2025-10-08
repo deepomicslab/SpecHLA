@@ -17,3 +17,6 @@ run_test exon/test_exon.sh
 run_test hybrid/test_hybrid.sh
 run_test pacbio/test_pacbio.sh
 run_test whole/test_whole.sh
+
+# Ran last, depends on test output for whole.
+run_test whole/test_hla_loh.sh
