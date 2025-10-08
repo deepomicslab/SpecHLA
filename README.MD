@@ -71,7 +71,8 @@ Note:
 ## Test
 
 Please go to the `example/` folder, run SpecHLA with given scripts, and find
-results in the `output/`.
+results in the `output/`. There is also a `test_all.sh` script which will run
+all tests sequentially.
 
 ## Basic Usage
 
