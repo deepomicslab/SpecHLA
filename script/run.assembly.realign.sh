@@ -5,7 +5,12 @@ rlen=$4
 
 bedfile=$5
 thread=$6
-dir=$(cd `dirname $0`; pwd)
+
+# Ensure the dir is set relative to the actual path, links should be resolved
+# so that this script can be linked somewhere else.
+script_path=$(dirname $(realpath $0))
+dir=$(cd $script_path; pwd)
+
 sdir=$dir/../bin
 db=$dir/../db
 hla_fa=$db/ref/hla.ref.extend.fa
@@ -69,7 +74,7 @@ fi
 rm -rf $outdir/prefix2* $outdir/id.list
 done
 
-$dir/../spechla_env/bin/python3 $dir/realignblast.py -i $bam -o $outdir/$sample.realign.bam -r $outdir/rematch.total.read.format.txt
+python3 $dir/realignblast.py -i $bam -o $outdir/$sample.realign.bam -r $outdir/rematch.total.read.format.txt
 samtools sort --threads $thread $outdir/$sample.realign.bam > $outdir/$sample.realign.sort.bam
 #java -jar $sdir/picard.jar FixMateInformation I=$outdir/$sample.realign.sort.bam O=$outdir/$sample.realign.sort.fixmate.bam
 samtools index $outdir/$sample.realign.sort.bam

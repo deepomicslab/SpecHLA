@@ -1,70 +1,98 @@
 # SpecHLA: full-resolution HLA typing from sequencing data
 
-SpecHLA is a software package leveraging reads binning and local assembly to achieve accurate full-resolution HLA typing and loss-of-heterozygosity detection. 
-- SpecHLA reconstructs diploid sequences of HLA-A, -B, -C, -DPA1, -DPB1, -DQA1, -DQB1, and -DRB1 genes.
+SpecHLA is a software package leveraging reads binning and local assembly to
+achieve accurate full-resolution HLA typing and loss-of-heterozygosity
+detection.
+
+- SpecHLA reconstructs diploid sequences of HLA-A, -B, -C, -DPA1, -DPB1, -DQA1,
+  -DQB1, and -DRB1 genes.
 - SpecHLA accepts short-reads-only, long-reads-only, and short+long-reads data.
 - SpecHLA supports WES, WGS, and RNA-seq data.
 - SpecHLA detects HLA loss-of-heterozygosity events.
 
+## Install
 
-## Install  
-First, create the env with conda, and activate the env.
+First, create the env with conda, and activate the env. When running any of the
+SpecHLA scripts, ensure this is done inside this environment, either through
+`conda run` or by activating the environment like below.
+
 ```
 git clone https://github.com/deepomicslab/SpecHLA.git --depth 1
 cd SpecHLA/
 conda env create --prefix=./spechla_env -f environment.yml
 conda activate ./spechla_env
 ```
+
 Second, make the softwares in bin/ executable.
+
 ```
 chmod +x -R bin/*
 ```
+
 Third, index the database and install the packages.
+
 ```
 unset LD_LIBRARY_PATH && unset LIBRARY_PATH 
 bash index.sh
 ```
+
 Perform SpecHLA with
+
 ```
 bash script/whole/SpecHLA.sh -h
 ```
+
 With only long reads, run
+
 ```
 python3 script/long_read_typing.py -h
 ```
 
 Note:
 
-- SpecHLA requires a License of [Novoalign](https://www.novocraft.com/buy-now/) in `bin/`. If not detected, it uses `bowtie2` as a replacement automatically. 
-The License file of `Novoalign` should be put in the `bin/` folder `before` running `bash index.sh`. 
-- If you want to run SpecHLA with `only` long-read data, there is no need for the `Novoalign` license and running `bash index.sh`. 
-You need only construct the environment from `conda env create --prefix=./spechla_env -f long_only_env.yml`. To extract HLA-related reads, pls use the full environment.
+- SpecHLA requires a License of [Novoalign](https://www.novocraft.com/buy-now/)
+  in `bin/`. If not detected, it uses `bowtie2` as a replacement automatically.
+  The License file of `Novoalign` should be put in the `bin/` folder `before`
+  running `bash index.sh`.
+- If you want to run SpecHLA with `only` long-read data, there is no need for
+  the `Novoalign` license and running `bash index.sh`. You need only construct
+  the environment from
+  `conda env create --prefix=./spechla_env -f long_only_env.yml`. To extract
+  HLA-related reads, pls use the full environment.
 - SpecHLA now supports Linux and Windows WSL systems.
 - SpecHLA does not accept short single-end reads.
-- The conda environment should be located in the local folder.
-- In case of failed installation, pls check your GCC version, it should be `GCC 9.4.0+`, see https://github.com/deepomicslab/SpecHLA/issues/42
+- In case of failed installation, pls check your GCC version, it should be
+  `GCC 9.4.0+`, see https://github.com/deepomicslab/SpecHLA/issues/42
 - Please ensure to clear the previous results before rerunning SpecHLA.
-- For long-read data, pls use our new tool [SpecImmune](https://github.com/deepomicslab/SpecImmune), which can type HLA, KIR, IG, TCR, CYP genes.
-
+- For long-read data, pls use our new tool
+  [SpecImmune](https://github.com/deepomicslab/SpecImmune), which can type HLA,
+  KIR, IG, TCR, CYP genes.
 
 ## Test
-Please go to the `example/` folder, run SpecHLA with given scripts, and find results in the `output/`.
 
-## Basic Usage  
+Please go to the `example/` folder, run SpecHLA with given scripts, and find
+results in the `output/`.
+
+## Basic Usage
 
 ### Main functions
-| Scripts | Description |
-| --- | --- |
-|script/ExtractHLAread.sh| Extract HLA reads from enrichment-free data.|
-|script/whole/SpecHLA.sh| HLA typing with paired-end (PE), PE+long reads, PE+HiC, or PE+10X data.  |
-|script/long_read_typing.py|HLA typing with only long-read data.|
-|script/typing_from_assembly.py  |HLA Typing from diploid assemblies.|
-|script/cal.hla.copy.pl|Detect HLA LOH events based on SpecHLA's typing results.|
 
+| Scripts                        | Description                                                             |
+| ------------------------------ | ----------------------------------------------------------------------- |
+| script/ExtractHLAread.sh       | Extract HLA reads from enrichment-free data.                            |
+| script/whole/SpecHLA.sh        | HLA typing with paired-end (PE), PE+long reads, PE+HiC, or PE+10X data. |
+| script/long_read_typing.py     | HLA typing with only long-read data.                                    |
+| script/typing_from_assembly.py | HLA Typing from diploid assemblies.                                     |
+| script/cal.hla.copy.pl         | Detect HLA LOH events based on SpecHLA's typing results.                |
 
 ### Extract HLA-related reads
-First extract HLA reads with enrichment-free data. Otherwise, HLA typing would be slow. Map reads to `hg19` or `hg38`, then use `script/ExtractHLAread.sh` to extract HLA-related reads. We use the script of [Kourami](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-018-1388-2) with minor revision for this step. 
-Extract HLA-related reads by
+
+First extract HLA reads with enrichment-free data. Otherwise, HLA typing would
+be slow. Map reads to `hg19` or `hg38`, then use `script/ExtractHLAread.sh` to
+extract HLA-related reads. We use the script of
+[Kourami](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-018-1388-2)
+with minor revision for this step. Extract HLA-related reads by
+
 ```
 USAGE: bash script/ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome> -o <outdir>
 
@@ -77,39 +105,59 @@ USAGE: bash script/ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome> 
  -o          : folder to save extracted reads [required]
 ```
 
-### HLA Typing 
-Full-resolution and exon HLA typing using SpecHLA. With Exome data like WES or RNASeq, only support exon typing. For efficient HLA typing, we strongly recommend utilizing only HLA-related reads. Specifically, for enrichment-free data, we recommend first performing the aforementioned step.
+### HLA Typing
+
+Full-resolution and exon HLA typing using SpecHLA. With Exome data like WES or
+RNASeq, only support exon typing. For efficient HLA typing, we strongly
+recommend utilizing only HLA-related reads. Specifically, for enrichment-free
+data, we recommend first performing the aforementioned step.
 
 Perform full-resolution HLA typing with `paired-end` reads by
+
 ```
 bash script/whole/SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/
 ```
+
 Perform exon HLA typing with `paired-end` reads by
+
 ```
 bash script/whole/SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ -u 1
 ```
+
 Perform full-resolution HLA typing with `paired-end` reads and `PacBio` reads by
+
 ```
 bash script/whole/SpecHLA.sh -n <sample> -t <sample.pacbio.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
-Perform full-resolution HLA typing with `paired-end` reads and `Nanopore` reads by
+
+Perform full-resolution HLA typing with `paired-end` reads and `Nanopore` reads
+by
+
 ```
 bash script/whole/SpecHLA.sh -n <sample> -e <sample.nanopore.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
+
 Perform full-resolution HLA typing with `paired-end` reads and `Hi-C` reads by
+
 ```
 bash script/whole/SpecHLA.sh -n <sample> -c <sample.hic.fwd.fq.gz> -d <sample.hic.rev.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
-Perform full-resolution HLA typing with `paired-end` reads and `10X` linked reads by (LongRanger should be installed in system env)
+
+Perform full-resolution HLA typing with `paired-end` reads and `10X` linked
+reads by (LongRanger should be installed in system env)
+
 ```
 bash script/whole/SpecHLA.sh -n <sample> -x <sample.10x.read.folder> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
+
 Consider `long Indels` and use `population information` for annotation by
+
 ```
 bash script/whole/SpecHLA.sh -n <sample> -v True -p <Asia> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
 ```
 
 Full arguments can be seen in
+
 ```
 SpecHLA: Full-resolution HLA typing from sequencing data.
 
@@ -164,7 +212,9 @@ Options:
 ```
 
 ### HLA typing with long-read data alone
-Perform HLA typing only with `long reads` by 
+
+Perform HLA typing only with `long reads` by
+
 ```
 usage: python3 long_read_typing.py -h
 
@@ -199,6 +249,7 @@ Optional arguments:
 ```
 
 ### HLA Typing from diploid assemblies
+
 ```
 usage: python3 typing_from_assembly.py -h
 
@@ -214,22 +265,32 @@ Optional arguments:
   -j        Number of threads. (default: 10)
   -h, --help
 ```
-An example of running command is 
+
+An example of running command is
+
 ```
 python SpecHLA/script/typing_from_assembly.py -j 15 -o output -n v12_HG00096 -1 v12_HG00096_hgsvc_pbsq2-clr_1000-flye.h1-un.arrow-p1.fasta -2 v12_HG00096_hgsvc_pbsq2-clr_1000-flye.h2-un.arrow-p1.fasta
 ```
-The result is stored in `<sample>_extracted_HLA_alleles.fasta`, please see result description in the below `Interpret output` section.
 
+The result is stored in `<sample>_extracted_HLA_alleles.fasta`, please see
+result description in the below `Interpret output` section.
 
 ### Pedigree phasing
-After performing HLA typing, we can afford trio information to update the results of child by
+
+After performing HLA typing, we can afford trio information to update the
+results of child by
+
 ```
 bash script/SpecHLA.sh -n <child> -1 <child.fq.1.gz> -2 <child.fq.2.gz> -o outdir/ --trio child:parent1:parent2
 ```
-The fresh results can be found in the trio/ folder inside the original result folder.
+
+The fresh results can be found in the trio/ folder inside the original result
+folder.
 
 ### Detect HLA LOH in tumor samples
+
 Based on the tumor purity and ploidy, we can infer HLA LOH event by
+
 ```
 usage:  perl cal.hla.copy.pl [Options] -S <samplename> -C <5> -purity <Purity> -ploidy <Ploidy> -F <filelist> -T <hla.result.txt> -O <outdir>
 
@@ -244,43 +305,54 @@ usage:  perl cal.hla.copy.pl [Options] -S <samplename> -C <5> -purity <Purity> -
 
 The result file "merge.hla.copy.txt" can be found in the output dir.
 ```
-Use `ls typing_result_dir/*_freq.txt >freq.list` to generate the file required by `-F`. The command example is
+
+Use `ls typing_result_dir/*_freq.txt >freq.list` to generate the file required
+by `-F`. The command example is
+
 ```
 perl script/cal.hla.copy.pl -purity 0.5 -ploidy 2 -S test -F freq.list -T hla.result.txt -O ./
 ```
 
-
 ## Interpret output
-In the denoted outdir, the results of each sample are saved in a folder named as the sample ID.  
+
+In the denoted outdir, the results of each sample are saved in a folder named as
+the sample ID.
 
 In the directory of one specific sample, you will find the below files:
-| Output | Description |
-| --- | --- |
-| hla.result.txt | HLA-typing results for all alleles |
-| hla.result.details.txt | All the alleles with the highest mapping score in annotation |
-| hla.result.g.group.txt | G group resolution HLA type |
-| hla.allele.\*.HLA_\*.fasta | Sequence of each allele (the low-depth region is masked by N) |
-| HLA_*_freq.txt | Haplotype frequencies of each gene |
-| HLA_*.rephase.vcf.gz | Phased vcf file for each gene |
-| hlala.like.results.txt | Report all potential types like HLA*LA, only generated by long-read-only mode |
+
+| Output                      | Description                                                                    |
+| --------------------------- | ------------------------------------------------------------------------------ |
+| hla.result.txt              | HLA-typing results for all alleles                                             |
+| hla.result.details.txt      | All the alleles with the highest mapping score in annotation                   |
+| hla.result.g.group.txt      | G group resolution HLA type                                                    |
+| hla.allele.\*.HLA\_\*.fasta | Sequence of each allele (the low-depth region is masked by N)                  |
+| HLA\_\*\_freq.txt           | Haplotype frequencies of each gene                                             |
+| HLA\_\*.rephase.vcf.gz      | Phased vcf file for each gene                                                  |
+| hlala.like.results.txt      | Report all potential types like HLA\*LA, only generated by long-read-only mode |
 
 If you performed pedigree phasing, you will find below files.
-| Output | Description |
-| --- | --- |
-| trio/HLA_*.trio.vcf.gz | Phased vcf file after pedigree phasing |
-| hla.allele.\*.HLA_\*.fasta | Allele sequence after pedigree phasing|
 
+| Output                      | Description                            |
+| --------------------------- | -------------------------------------- |
+| trio/HLA\_\*.trio.vcf.gz    | Phased vcf file after pedigree phasing |
+| hla.allele.\*.HLA\_\*.fasta | Allele sequence after pedigree phasing |
 
-1. **An example for `hla.result.txt` is as below:** 
+1. **An example for `hla.result.txt` is as below:**
+
 ```
 Sample  HLA_A_1 HLA_A_2 HLA_B_1 HLA_B_2 HLA_C_1 HLA_C_2 HLA_DPA1_1      HLA_DPA1_2      HLA_DPB1_1      HLA_DPB1_2      HLA_DQA1_1    HLA_DQA1_2      HLA_DQB1_1      HLA_DQB1_2      HLA_DRB1_1      HLA_DRB1_2
 HG00118 A*24:02:01:01   A*02:01:01:01   B*07:02:01:01   B*40:01:02:02   C*03:04:01:01   C*07:02:01:03   DPA1*01:03:01:02        DPA1*01:03:01:02    DPB1*04:01:01:01        DPB1*04:01:01:01        DQA1*01:02:01:01        DQA1*01:02:01:01        DQB1*06:02:01:01        DQB1*06:02:01:01    DRB1*15:01:01:01        DRB1*15:01:01:01
 ```
-Note: 
-- We handle each gene independently. Hence the result does not contain the linkage information between different genes.
-- The Symbol `-` means low confidence sequence which cannot map to any allele in the database.
+
+Note:
+
+- We handle each gene independently. Hence the result does not contain the
+  linkage information between different genes.
+- The Symbol `-` means low confidence sequence which cannot map to any allele in
+  the database.
 
 2. **An example for `HLA_*_freq.txt` is as below:**
+
 ```
 # Haplotype     Frequency
 hla.allele.1.HLA_A.fasta 0.532
@@ -288,7 +360,10 @@ hla.allele.2.HLA_A.fasta 0.468
 # The number of heterozygous variant is 30
 ```
 
-3. **After typing from diploid assmebly, HLA sequences are in `<sample>_extracted_HLA_alleles.fasta`, and HLA types can be got by `cat <sample>_extracted_HLA_alleles.fasta| grep >`, an example is as below:**
+3. **After typing from diploid assmebly, HLA sequences are in
+   `<sample>_extracted_HLA_alleles.fasta`, and HLA types can be got by
+   `cat <sample>_extracted_HLA_alleles.fasta| grep >`, an example is as below:**
+
 ```
 >v12_HG00096.h1.HLA-A   cluster13_contig_98:2073847-2077365     A*29:02:01:01   # version: IPD-IMGT/HLA 3.51.0
 >v12_HG00096.h1.HLA-B   cluster13_contig_98:657830-661911       B*44:03:01:01   # version: IPD-IMGT/HLA 3.51.0
@@ -296,15 +371,18 @@ hla.allele.2.HLA_A.fasta 0.468
 >v12_HG00096.h2.HLA-A   cluster13_scaffold_119:2516943-2520446  A*01:01:01:01   # version: IPD-IMGT/HLA 3.51.0
 ...
 ```
+
 Interpret each column in the annotation line as
-|Column| Description |
-| --- | --- |
-|first| gene and haplotype, h1 means the first haplotype|
-|  second |  the region to extract the sequence from the assembly |
-| third  | the best matched IMGT allele, i.e., the typing result  |
-|  four | IMGT version  |
+
+| Column | Description                                           |
+| ------ | ----------------------------------------------------- |
+| first  | gene and haplotype, h1 means the first haplotype      |
+| second | the region to extract the sequence from the assembly  |
+| third  | the best matched IMGT allele, i.e., the typing result |
+| four   | IMGT version                                          |
 
 4. **An example for HLA LOH result file: `merge.hla.copy.txt` is as below:**
+
 ```
 Sample  HLA     Allele1                 Allele2              copyratio       KeptHLA                 LossHLA                 Freq1   Freq2   Purity  Het_num LOH
 test    A       A*24:02:01:01           A*02:01:01:01           1:1          A*24:02:01:01           A*02:01:01:01           0.507   0.493   0.5     100     N
@@ -316,71 +394,91 @@ test    DQA1    DQA1*01:02:01:01        DQA1*01:02:01:01        1:1          DQA
 test    DQB1    DQB1*06:02:01:01        DQB1*06:02:01:01        2:0          DQB1*06:02:01:01        homogeneous             1       0       0.5     0       N
 test    DRB1    DRB1*15:01:01:01        DRB1*15:01:01:01        2:0          DRB1*15:01:01:01        DRB1*15:01:01:01        0.65    0.35    0.5     2       N
 ```
+
 Interpret each column as
-|Header| Description |
-| --- | --- |
-|Sample| Sample Name|
-|HLA| HLA locus|
-|Allele1| HLA type of the first allele|
-|Allele2| HLA type of the second allele|
-|copyratio| Copy numbers of two alleles|
-|KeptHLA| The remaining allele|
-|LossHLA| The possible lost allele|
-|Freq1| Frequency of the first allele|
-|Freq2|Frequency of the second allele|
-|Purity| Tumor purity|
-|Het_num|Number of heterozygous variant|
-|LOH| Whether LOH exists (Y or N)|
+
+| Header    | Description                    |
+| --------- | ------------------------------ |
+| Sample    | Sample Name                    |
+| HLA       | HLA locus                      |
+| Allele1   | HLA type of the first allele   |
+| Allele2   | HLA type of the second allele  |
+| copyratio | Copy numbers of two alleles    |
+| KeptHLA   | The remaining allele           |
+| LossHLA   | The possible lost allele       |
+| Freq1     | Frequency of the first allele  |
+| Freq2     | Frequency of the second allele |
+| Purity    | Tumor purity                   |
+| Het_num   | Number of heterozygous variant |
+| LOH       | Whether LOH exists (Y or N)    |
 
 ## Identify somatic/germline HLA mutation
+
 Please refer to https://github.com/deepomicslab/SpecHLA/issues/23#issue
 
-To map detected variants onto `hg38`, please use the script of @pjgreer -- https://github.com/pjgreer/Informatics-Tools
+To map detected variants onto `hg38`, please use the script of @pjgreer --
+https://github.com/pjgreer/Informatics-Tools
 
 ## Update to latest IMGT/HLA database
-To nomenclature the HLA alleles using the latest IMGT/HLA database, please execute the following command:
+
+To nomenclature the HLA alleles using the latest IMGT/HLA database, please
+execute the following command:
+
 ```
 cd SpecHLA/bin
 perl renew_HLA_annotation_db.pl
 ```
-This script will download the latest IMGT/HLA database from Github, and preprocess it for SpecHLA to use.
 
-## Dependencies 
+This script will download the latest IMGT/HLA database from Github, and
+preprocess it for SpecHLA to use.
+
+## Dependencies
 
 ### Systematic requirement
-SpecHLA requires `conda 4.12.0+`, `cmake 3.16.3+`, and `GCC 9.4.0+` for environment construction and software installation.
 
-### Programming 
-* python=3.8.12 or above  
-* Python libraries: numpy=1.22.3, pulp=2.6.0, pysam=0.19.0, scipy=1.8.0, and biopython=1.79. 
-* Perl 5 or above
+SpecHLA requires `conda 4.12.0+`, `cmake 3.16.3+`, and `GCC 9.4.0+` for
+environment construction and software installation.
+
+### Programming
+
+- python=3.8.12 or above
+- Python libraries: numpy=1.22.3, pulp=2.6.0, pysam=0.19.0, scipy=1.8.0, and
+  biopython=1.79.
+- Perl 5 or above
 
 ### Third party packages
-SpecHLA enables automatic installation of these third party packages using `conda`. 
-Also, we can install the softwares by ourselves, and add their locations to system path (Exception: put bcftools, fermikit, and novoalign to `bin/` folder).
-After applying for the authority of [Novoalign](https://www.novocraft.com/buy-now/), please put the novoalign.lic (License file) in the `bin/` folder.
 
-* Third party packages:
-    * SamTools-1.3.1
-    * bamutil Version: 1.0.14
-    * BWA-0.7.17-r1188
-    * blast 2.12.0
-    * BLAT v. 36x2
-    * bedtools-v2.26.0
-    * bcftools-Version: 1.9
-    * Freebayes-v1.2.0-2-g29c4002
-    * Novoalign V4.02.01
-    * ScanIndel v1.3
-    * Fermikit-0.13
-    * SpecHap v1.0.1 and ExtractHAIRs
-    * Minimap 2.17-r941
-    * pbmm2-1.4.0
-    * pbsv Version 2.6.2
-    * Bowtie 2 version 2.3.4.1
-    * longshot-0.4.5
-   
+SpecHLA enables automatic installation of these third party packages using
+`conda`. Also, we can install the softwares by ourselves, and add their
+locations to system path (Exception: put bcftools, fermikit, and novoalign to
+`bin/` folder). After applying for the authority of
+[Novoalign](https://www.novocraft.com/buy-now/), please put the novoalign.lic
+(License file) in the `bin/` folder.
+
+- Third party packages:
+  - SamTools-1.3.1
+  - bamutil Version: 1.0.14
+  - BWA-0.7.17-r1188
+  - blast 2.12.0
+  - BLAT v. 36x2
+  - bedtools-v2.26.0
+  - bcftools-Version: 1.9
+  - Freebayes-v1.2.0-2-g29c4002
+  - Novoalign V4.02.01
+  - ScanIndel v1.3
+  - Fermikit-0.13
+  - SpecHap v1.0.1 and ExtractHAIRs
+  - Minimap 2.17-r941
+  - pbmm2-1.4.0
+  - pbsv Version 2.6.2
+  - Bowtie 2 version 2.3.4.1
+  - longshot-0.4.5
+
 ## Citation
+
 [Wang, Shuai, Mengyao Wang, Lingxi Chen, Guangze Pan, Yanfei Wang, and Shuai Cheng Li. "SpecHLA enables full-resolution HLA typing from sequencing data." Cell Reports Methods (2023).](https://doi.org/10.1016/j.crmeth.2023.100589)
 
 ## Getting help
-Should you have any queries, please feel free to contact us via opening an issue or sending an email, we will reply as soon as possible (wshuai294@gmail.com).
+
+Should you have any queries, please feel free to contact us via opening an issue
+or sending an email, we will reply as soon as possible (wshuai294@gmail.com).

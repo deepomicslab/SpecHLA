@@ -114,8 +114,16 @@ while getopts ":n:1:2:p:f:m:v:q:t:a:e:x:c:d:r:y:o:j:w:u:s:g:k:z:y:f:b:" opt; do
 done
 
 
-dir=$(cd `dirname $0`; pwd)
-export LD_LIBRARY_PATH=$dir/../../spechla_env/lib
+# Ensure the dir is set relative to the actual path, links should be resolved
+# so that this script can be linked somewhere else.
+script_path=$(dirname $(realpath $0))
+dir=$(cd $script_path; pwd)
+
+# If in conda-env, use its libs, else go with the system libs.
+if test -v CONDA_ENV; then
+  export LD_LIBRARY_PATH="${CONDA_PREFIX/lib}"
+fi
+
 bin=$dir/../../bin
 db=$dir/../../db
 hlaref=$db/ref/hla.ref.extend.fa

@@ -3,7 +3,11 @@ bam=$2
 port=$4
 dir=$3
 
-pdir=$(cd `dirname $0`; pwd)
+# Ensure the dir is set relative to the actual path, links should be resolved
+# so that this script can be linked somewhere else.
+script_path=$(dirname $(realpath $0))
+pdir=$(cd $script_path; pwd)
+
 bin=$pdir/../../bin
 db=$pdir/../../db
 
