@@ -3,7 +3,7 @@ use FindBin qw($Bin);
 use Getopt::Long;
 
 my ($sample, $dir, $pop, $wxs, $g_nom, $help, $db);
-$db="$Bin/../../db/HLA";
+$db=$ENV{SPECHLA_DB} ? "$ENV{SPECHLA_DB}/HLA" : "$Bin/../../db/HLA";
 $g_nom=0;
 GetOptions(
            "s=s"     =>      \$sample,
@@ -37,7 +37,6 @@ my $k = 2;
 my $bias = 1;
 if($wxs eq "tgs"){$bias = 0.4} # gap score in TGS
 my (%hashp,%hashp2, %hashpp, %hashg, %hashc, %hash,%hashdd);
-my $bin="$Bin/../../bin";
 my @hlas = ("HLA_A","HLA_B","HLA_C","HLA_DPA1","HLA_DPB1","HLA_DQA1","HLA_DQB1","HLA_DRB1");
 my $fadir=$dir;
 my $workdir = "$dir/tmp";

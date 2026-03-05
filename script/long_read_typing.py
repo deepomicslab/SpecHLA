@@ -9,6 +9,7 @@ import pysam
 import gzip
 import argparse
 from downsample_bam import main
+from spechla_paths import get_db_dir, get_script_dir
 
 interval_dict = {"A":"HLA_A:1000-4503", "B":"HLA_B:1000-5081","C": "HLA_C:1000-5304","DPA1":"HLA_DPA1:1000-10775",\
     "DPB1":"HLA_DPB1:1000-12468","DQA1":"HLA_DQA1:1000-7492","DQB1":"HLA_DQB1:1000-8480","DRB1":"HLA_DRB1:1000-12229" }
@@ -137,7 +138,6 @@ class Pacbio_Binning():
         fq={parameter.raw_fq}
         ref={self.db}
         outdir={parameter.outdir}
-        bin={sys.path[0]}/../bin
         sample={parameter.sample}
         minimap2 -t {parameter.threads} {minimap_para} -p 0.1 -N 100000 -a $ref $fq |samtools view -bS -o $outdir/$sample.db.bam
         echo alignment done.
@@ -199,9 +199,8 @@ class Parameters():
         self.population = args["p"]
         self.threads = args["j"]
         self.db = "%s/"%(args["db"])
-        self.bin = "%s/../bin/"%(sys.path[0])      
         self.outdir = "%s/%s/"%(outdir, self.sample)
-        self.whole_dir = "%s/whole/"%(sys.path[0])
+        self.whole_dir = "%s/whole/"%(get_script_dir())
 
         if not os.path.exists(args["o"]):
             os.system("mkdir %s"%(args["o"]))
@@ -215,15 +214,14 @@ class Fasta():
         ### call and phase snps
         cmd = """
         sample=%s
-        bin=%s
         db=%s
         outdir=%s
         hla=%s
         hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
         minimap2 -t %s %s -a $hla_ref $outdir/$hla.%s.fq.gz | samtools view -bS -F 0x800 -| samtools sort - >$outdir/$hla.bam
         samtools index $outdir/$hla.bam
-        samtools depth -d 1000000 -aa $outdir/$hla.bam >$outdir/$hla.depth
-        """%(parameter.sample, parameter.bin, args["db"], parameter.outdir, gene, parameter.threads, minimap_para, args["a"])
+        samtools depth -aa $outdir/$hla.bam >$outdir/$hla.depth
+        """%(parameter.sample, args["db"], parameter.outdir, gene, parameter.threads, minimap_para, args["a"])
         os.system(cmd)
 
         max_depth = args["max_depth"]
@@ -247,7 +245,6 @@ class Fasta():
         ### call and phase snps
         cmd = """
         sample=%s
-        bin=%s
         db=%s
         outdir=%s
         hla=%s
@@ -262,22 +259,21 @@ class Fasta():
         mask_bed=$outdir/low_depth.bed
         cp $outdir/low_depth.bed $outdir/$hla.low_depth.bed
 
-        longshot -F -c 2 -C 100000 -P %s -r %s --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf 
-        
+        longshot -F -c 2 -C 100000 -P %s -r %s --bam $outdir/$hla.bam --ref $hla_ref --out $outdir/$sample.$hla.longshot.vcf
+
         bgzip -f $outdir/$sample.$hla.longshot.vcf
         tabix -f $outdir/$sample.$hla.longshot.vcf.gz
 
-        zcat $outdir/$sample.$hla.longshot.vcf.gz >$outdir/$sample.$hla.phased.vcf          
+        zcat $outdir/$sample.$hla.longshot.vcf.gz >$outdir/$sample.$hla.phased.vcf
         bgzip -f $outdir/$sample.$hla.phased.vcf
         tabix -f $outdir/$sample.$hla.phased.vcf.gz
-        """%(parameter.sample, parameter.bin, args["db"], parameter.outdir, gene, parameter.threads, minimap_para, args["a"], sys.path[0], args["k"], args["strand_bias_pvalue_cutoff"], interval_dict[gene])
+        """%(parameter.sample, args["db"], parameter.outdir, gene, parameter.threads, minimap_para, args["a"], get_script_dir(), args["k"], args["strand_bias_pvalue_cutoff"], interval_dict[gene])
         os.system(cmd)
 
         ## reconstruct HLA sequence based on the phased snps
         for index in range(2):
             order = """
             sample=%s
-            bin=%s
             db=%s
             outdir=%s
             hla=%s
@@ -286,12 +282,12 @@ class Fasta():
             hla_ref=$db/HLA/HLA_$hla/HLA_$hla.fa
             mask_bed=$outdir/low_depth.bed
 
-            samtools faidx $hla_ref %s |$bin/bcftools consensus -H $i --mask $mask_bed $outdir/$sample.$hla.phased.vcf.gz >$outdir/hla.allele.$i.HLA_$hla.raw.fasta
+            samtools faidx $hla_ref %s |bcftools consensus -H $i --mask $mask_bed $outdir/$sample.$hla.phased.vcf.gz >$outdir/hla.allele.$i.HLA_$hla.raw.fasta
             echo ">HLA_%s_$j" >$outdir/hla.allele.$i.HLA_$hla.fasta
             cat $outdir/hla.allele.$i.HLA_$hla.raw.fasta|grep -v ">" >>$outdir/hla.allele.$i.HLA_$hla.fasta
-            
-            samtools faidx $outdir/hla.allele.$i.HLA_$hla.fasta        
-            """%(parameter.sample, parameter.bin, args["db"], parameter.outdir, gene, index+1, index, interval_dict[gene], gene)
+
+            samtools faidx $outdir/hla.allele.$i.HLA_$hla.fasta
+            """%(parameter.sample, args["db"], parameter.outdir, gene, index+1, index, interval_dict[gene], gene)
             os.system(order)
             # -S -A -Q 10 -E 0.3 -e 5
 
@@ -336,7 +332,7 @@ if __name__ == "__main__":
     optional.add_argument("-a", type=str, help="Prefix of filtered fastq file.", metavar="\b", default="long_read")
     optional.add_argument("-y", type=str, help="Read type, [nanopore|pacbio].", metavar="\b", default="pacbio")
     optional.add_argument("--minimap_index", type=int, help="Whether build Minimap2 index for the reference [0|1]. Using index can reduce memory usage.", metavar="\b", default=0)
-    optional.add_argument("--db", type=str, help="db dir.", metavar="\b", default=sys.path[0] + "/../db/")
+    optional.add_argument("--db", type=str, help="db dir.", metavar="\b", default=get_db_dir())
     optional.add_argument("--strand_bias_pvalue_cutoff", type=float, help="Remove a variant if the allele observations are biased toward one strand (forward or reverse). Recommand setting 0 to high-depth data.", metavar="\b", default=0.01)
     # optional.add_argument("-u", type=str, help="Choose full-length or exon typing. 0 indicates full-length, 1 means exon.", metavar="\b", default="0")
     optional.add_argument("--seed", type=int, help="seed to generate random numbers", metavar="\b", default=8)

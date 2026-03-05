@@ -7,7 +7,8 @@
 
 set(HTSLIB_SEARCH_DIRS
         ${HTSLIB_SEARCH_DIRS}
-	$ENV{CONDA_PREFIX}
+        ${CMAKE_PREFIX_PATH}
+        $ENV{CONDA_PREFIX}
         )
 
 set(_htslib_ver_path "htslib-${htslib_FIND_VERSION}")
@@ -18,10 +19,9 @@ include(LibFindMacros)
 
 # Include dir
 find_path(HTSlib_INCLUDE_DIR
-        NAMES ${HTSLIB_ADDITIONAL_HEADERS} sam.h
+        NAMES htslib/sam.h ${HTSLIB_ADDITIONAL_HEADERS}
         PATHS ${HTSLIB_SEARCH_DIRS}
-        PATH_SUFFIXES
-        include include/htslib htslib/${_htslib_ver_path}/htslib
+        PATH_SUFFIXES include
         HINTS ENV HTSLIB_ROOT
         )
 
@@ -29,7 +29,6 @@ find_path(HTSlib_INCLUDE_DIR
 find_library(HTSlib_LIBRARY
         NAMES hts libhts.a hts.a
         PATHS ${HTSLIB_SEARCH_DIRS}
-        NO_DEFAULT_PATH
         PATH_SUFFIXES lib lib64 ${_htslib_ver_path}
         HINTS ENV HTSLIB_ROOT
         )

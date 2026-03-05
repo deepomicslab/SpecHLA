@@ -21,3 +21,7 @@ db/HLA/whole/hla_gen.fasta
 
 # Python cache directories
 **/__pycache__
+
+# Claude Code
+CLAUDE.md
+.claude/
