@@ -1,13 +1,15 @@
 import sys
 import os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+from spechla_paths import get_db_dir
 from Bio import SeqIO
 
 outdir = sys.argv[1]
 detail_anno = outdir + "/hla.result.details.txt"
 top_allele_fasta = outdir + "/top_allele.fasta"
 top_allele_fastq = outdir + "/top_allele.fastq"
-samtools = sys.path[0] + "samtools"
-db_dir = sys.path[0] + "/../../db/HLA/whole/"
+samtools = "samtools"
+db_dir = get_db_dir() + "/HLA/whole/"
 f=open(top_allele_fasta, 'w')
 f.close()
 

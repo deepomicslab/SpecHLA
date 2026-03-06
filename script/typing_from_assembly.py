@@ -13,6 +13,7 @@ import re
 import sys
 import pysam
 import argparse
+from spechla_paths import get_db_dir
 
 
 def get_1_element(lst):
@@ -387,7 +388,7 @@ class Assign_allele():
         return new_align_list
 
 def get_IMGT_version():
-    g_file = "%s/../db/HLA/hla_nom_g.txt"%(sys.path[0])
+    g_file = "%s/HLA/hla_nom_g.txt"%(get_db_dir())
     G_annotation_dict = {}
     i = 0
     version_info = "N/A"
@@ -418,7 +419,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     minimap_path = "minimap2"
-    HLA_data = "%s/../db/HLA/whole/hla_gen.fasta"%(sys.path[0])
+    HLA_data = "%s/HLA/whole/hla_gen.fasta"%(get_db_dir())
     version_info = get_IMGT_version()
 
     # https://github.com/ANHIG/IMGTHLA/blob/Latest/fasta/hla_gen.fasta
@@ -437,7 +438,7 @@ if __name__ == "__main__":
     if not os.path.exists(args["o"]):
         os.system("mkdir %s"%(args["o"]))
     if not os.path.isfile(HLA_data):
-        os.system("cat %s/../db/HLA/whole/HLA_*.fasta > %s/../db/HLA/whole/hla_gen.fasta"%(sys.path[0], sys.path[0]))
+        os.system("cat %s/HLA/whole/HLA_*.fasta > %s/HLA/whole/hla_gen.fasta"%(get_db_dir(), get_db_dir()))
     
 
     result_path = args['o']

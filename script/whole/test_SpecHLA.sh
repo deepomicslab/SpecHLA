@@ -123,6 +123,7 @@ done
 # so that this script can be linked somewhere else.
 script_path=$(dirname $(realpath $0))
 dir=$(cd $script_path; pwd)
+source "$dir/../spechla_env.sh"
 
 # If in conda-env, use its libs, else go with the system libs.
 if test -v CONDA_ENV; then
@@ -131,7 +132,7 @@ fi
 
 python_bin=$(which python3)
 bin=$dir/../../bin
-db=$dir/../../db
+db=${db:-$SPECHLA_DB}
 hlaref=$db/ref/hla.ref.extend.fa
 
 if [ ${given_outdir:-NA} == NA ]
@@ -176,7 +177,12 @@ fq2=$outdir/$sample.uniq.name.R2.gz
 
 # ################### assign the reads to original gene######################################################
 echo map the reads to database to assign reads to corresponding genes.
-license=$dir/../../bin/novoalign.lic
+if command -v novoalign &>/dev/null; then
+    _novo_dir=$(dirname $(which novoalign))
+    license="$_novo_dir/novoalign.lic"
+else
+    license=""
+fi
 if [ $focus_exon_flag == 1 ];then
   database_prefix=hla_gen.format.filter.extend.DRB.no26789
 else
@@ -188,7 +194,7 @@ if [ -f "$license" ];then
         echo "Can't find ref index for novoalign, please run *bash index.sh* again."
         exit 1
     fi
-    $bin/novoalign -d $db/ref/$database_prefix.ndx -f $fq1 $fq2 -F STDFQ -o SAM \
+    novoalign -d $db/ref/$database_prefix.ndx -f $fq1 $fq2 -F STDFQ -o SAM \
     -o FullNW -r All 100000 --mCPU ${num_threads:-5} -c 10  -g 20 -x 3  | samtools view \
     -Sb - | samtools sort -  > $outdir/$sample.map_database.bam
 else
@@ -234,9 +240,9 @@ tabix -f $outdir/$sample.realign.vcf.gz
 zless $outdir/$sample.realign.vcf.gz |grep "#" > $outdir/$sample.realign.filter.vcf
 echo BAM and VCF are ready.
 if [ $focus_exon_flag == 1 ];then #exon
-    $bin/bcftools filter -R $dir/exon_extent.bed $outdir/$sample.realign.vcf.gz |grep -v "#"  >> $outdir/$sample.realign.filter.vcf  
+    bcftools filter -R $dir/exon_extent.bed $outdir/$sample.realign.vcf.gz |grep -v "#"  >> $outdir/$sample.realign.filter.vcf
 else # full length
-    $bin/bcftools filter\
+    bcftools filter\
      -t HLA_A:1000-4503,HLA_B:1000-5081,HLA_C:1000-5304,HLA_DPA1:1000-10775,HLA_DPB1:1000-12468,HLA_DQA1:1000-7492,HLA_DQB1:1000-8480,HLA_DRB1:1000-12229\
       $outdir/$sample.realign.vcf.gz |grep -v "#" >> $outdir/$sample.realign.filter.vcf  
 fi

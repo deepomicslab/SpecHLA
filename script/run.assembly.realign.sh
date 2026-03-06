@@ -10,9 +10,10 @@ thread=$6
 # so that this script can be linked somewhere else.
 script_path=$(dirname $(realpath $0))
 dir=$(cd $script_path; pwd)
+source "$dir/spechla_env.sh"
 
 sdir=$dir/../bin
-db=$dir/../db
+db=${SPECHLA_DB:-$dir/../db}
 hla_fa=$db/ref/hla.ref.extend.fa
 
 exec >$outdir/$sample.local_assem.log 2>&1 #redirect log info to the outdir
@@ -33,7 +34,7 @@ if [ ! -f "$outdir/extract.fa" ]
 then
 	echo "$pos noreads"
 else
-$sdir/fermikit/fermi.kit/fermi2.pl unitig -s1k -t $thread  -T 10 -2 -l $rlen -p $outdir/prefix2 $outdir/extract.fa > $outdir/prefix2.mak
+fermi2.pl unitig -s1k -t $thread  -T 10 -2 -l $rlen -p $outdir/prefix2 $outdir/extract.fa > $outdir/prefix2.mak
 
 make -f $outdir/prefix2.mak
 
@@ -59,7 +60,7 @@ else
         done
 
         blastn -num_threads $thread -query $outdir/assembly.fa -out $outdir/assembly.blast -db $ref -strand plus -penalty -1 -reward 1 -gapopen 4 -gapextend 1 -line_length 700
-        perl $sdir/blast2sam.pl $outdir/assembly.blast > $outdir/assembly.blast.sam
+        blast2sam.pl $outdir/assembly.blast > $outdir/assembly.blast.sam
 
         bwa index $outdir/assembly.fa
         bwa mem -t $thread -L 10000,10000 -O 6,10 -E 7,7 -A 3 -B 0 $outdir/assembly.fa $outdir/extract.fa | samtools view --threads $thread -Sb -F 4 - | samtools sort --threads $thread - > $outdir/rematch.bam

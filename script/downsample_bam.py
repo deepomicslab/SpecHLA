@@ -38,7 +38,7 @@ def downsample_bam(input_bam, output_bam, downsample_ratio, seed):
 def handle_bam(output_bam, output_depth):
     cmd = f"""
     samtools index {output_bam}
-    samtools depth -d 1000000 -aa {output_bam} > {output_depth}
+    samtools depth -aa {output_bam} > {output_depth}
     """
     os.system(cmd)
 

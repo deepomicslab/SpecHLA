@@ -13,6 +13,7 @@ import re
 import sys
 import pysam
 import argparse
+from spechla_paths import get_db_dir
 
 
 def get_1_element(lst):
@@ -255,7 +256,7 @@ if __name__ == "__main__":
     # required.add_argument("-2", type=str, help="Assembly file of the second haplotype in fasta formate", metavar="\b")
     required.add_argument("-n", type=str, help="Sample ID", metavar="\b")
     required.add_argument("-o", type=str, help="The output folder to store the typing results.", metavar="\b", default="./output")
-    optional.add_argument("--db", type=str, help="db dir.", metavar="\b", default=sys.path[0] + "/../db/")
+    optional.add_argument("--db", type=str, help="db dir.", metavar="\b", default=get_db_dir())
     # optional.add_argument("-g", type=int, help="Whether use G group resolution annotation [0|1].", metavar="\b", default=0)
     # optional.add_argument("-u", type=str, help="Choose full-length or exon typing. 0 indicates full-length, 1 means exon.", metavar="\b", default="0")
     optional.add_argument("-h", "--help", action="help")

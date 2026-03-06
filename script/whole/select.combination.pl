@@ -3,7 +3,7 @@ use FindBin qw($Bin);
 use Getopt::Long;
 
 my ($sample, $gene, $dir, $pop, $help, $db);
-$db="$Bin/../../db/HLA";
+$db=$ENV{SPECHLA_DB} ? "$ENV{SPECHLA_DB}/HLA" : "$Bin/../../db/HLA";
 GetOptions(
            "s=s"     =>      \$sample,
            "g=s"     =>      \$gene,
@@ -33,7 +33,6 @@ print "parameter:\tsample:$sample\tdir:$dir\tpop:$pop\tgene:$gene\tdb:$db\n";
 my $k = 2;
 my (%hashp, %hashpp, %hashg, %hashc, %hash,%hashdd);
 # my $db="$Bin/../../db/HLA";
-my $bin="$Bin/../../bin";
 my $fadir=$dir;
 my $workdir = "$dir/tmp";
 `mkdir  -p $workdir`;

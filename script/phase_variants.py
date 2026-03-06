@@ -15,6 +15,7 @@ import pysam
 import sys
 from pysam import VariantFile
 import pickle
+from spechla_paths import get_db_dir, get_script_dir
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -31,7 +32,7 @@ python3 phase_variants.py [options]
 Help information can be found by python3 phase_variants.py -h/--help, additional information can be found in \
 README.MD or https://github.com/deepomicslab/SpecHLA.
 """
-scripts_dir=sys.path[0]+'/'
+scripts_dir=get_script_dir()+'/'
 parser = ArgumentParser(description="SpecHLA",prog='python3 phase_variants.py',usage=Usage)
 optional=parser._action_groups.pop()
 required=parser.add_argument_group('required arguments')
@@ -70,7 +71,7 @@ optional.add_argument("--use_database",help="Whether use database to link blocks
      Just used for evaluation",dest='use_database',metavar='',default=1, type=int)
 optional.add_argument("--trio",help="The trio infromation; give sample names in the order of child:mother:father.\
  Example: NA12878:NA12891:NA12892. The order of mother and father can be ambiguous.",dest='trio',metavar='', default="None",type=str)
-optional.add_argument("--db", type=str, help="db dir.", metavar="\b", default=sys.path[0] + "/../db/")
+optional.add_argument("--db", type=str, help="db dir.", metavar="\b", default=get_db_dir())
 parser._action_groups.append(optional)
 args = parser.parse_args()
 
@@ -817,8 +818,8 @@ class Share_reads():
             gap += seg_region
         for i in range(self.strainsNum):
             order='samtools faidx %s/ref/hla.ref.extend.fa\
-                %s |%s/../bin/bcftools consensus --mask %s -H %s %s/%s.rephase.vcf.gz\
-                      >%s/%s_%s_seg.fa'%(args.db,gap,sys.path[0],mask_bed,i+1,self.outdir,\
+                %s |bcftools consensus --mask %s -H %s %s/%s.rephase.vcf.gz\
+                      >%s/%s_%s_seg.fa'%(args.db,gap,mask_bed,i+1,self.outdir,\
                 self.gene,self.outdir,self.gene,i)
             os.system(order)
             fa_file = '%s/%s_%s_seg.fa'%(self.outdir,self.gene,i)
@@ -916,8 +917,8 @@ class Share_reads():
         fastq_seq = []
         for i in range(2):
             order = """
-            samtools faidx %s/newref_insertion.fa %s|%s/../bin/bcftools consensus -H %s %s  >%s/seq_%s_%s.fa
-            """%(self.outdir, insertion_seg, sys.path[0], i+1, self.vcf, self.outdir, i, insertion_seg)
+            samtools faidx %s/newref_insertion.fa %s|bcftools consensus -H %s %s  >%s/seq_%s_%s.fa
+            """%(self.outdir, insertion_seg, i+1, self.vcf, self.outdir, i, insertion_seg)
             os.system(order)
             fastq_seq.append(read_fasta('%s/seq_%s_%s.fa'%(self.outdir, i, insertion_seg)))
         print ('link long indel supporting reads', r00, r01)
@@ -928,8 +929,8 @@ class Share_reads():
 
     def consensus_insertion(self, insertion_seg):
         order = """
-        samtools faidx %s/newref_insertion.fa %s|%s/../bin/bcftools consensus -H %s %s  >%s/seq
-        """%(self.outdir, insertion_seg, sys.path[0], 1, self.vcf, self.outdir)
+        samtools faidx %s/newref_insertion.fa %s|bcftools consensus -H %s %s  >%s/seq
+        """%(self.outdir, insertion_seg, 1, self.vcf, self.outdir)
         os.system(order)
         cons_seq = read_fasta('%s/seq'%(self.outdir))
         return cons_seq
@@ -972,25 +973,24 @@ def segment_mapping_pre(fq1, fq2, ins_seq, outdir, gene, gene_ref):
         # index the ref
     print ('New mapping starts to link long InDels.')
     map_call = """\
-        bindir=%s/../bin/
-        outdir=%s/ 
-        sample='newref_insertion' 
-        samtools faidx %s 
+        outdir=%s/
+        sample='newref_insertion'
+        samtools faidx %s
         bwa index %s
         group='@RG\\tID:sample\\tSM:sample'  #only -B 1
         bwa mem -t %s -B 1 -O 1,1 -L 1,1 -U 1 -R $group -Y %s %s %s | samtools view -q 1 -F 4 -Sb | samtools sort > $outdir/$sample.sort.bam
         mv $outdir/$sample.sort.bam $outdir/$sample.bam
-        samtools index $outdir/$sample.bam 
-        freebayes -f %s -p 2 $outdir/$sample.bam > $outdir/$sample.freebayes.1.vcf 
-        cat $outdir/$sample.freebayes.1.vcf| sed -e 's/\//\|/g'>$outdir/$sample.freebayes.vcf 
-        bgzip -f $outdir/$sample.freebayes.vcf 
+        samtools index $outdir/$sample.bam
+        freebayes -f %s -p 2 $outdir/$sample.bam > $outdir/$sample.freebayes.1.vcf
+        cat $outdir/$sample.freebayes.1.vcf| sed -e 's/\//\|/g'>$outdir/$sample.freebayes.vcf
+        bgzip -f $outdir/$sample.freebayes.vcf
         tabix -f $outdir/$sample.freebayes.vcf.gz
-        """%(sys.path[0], outdir, newref, newref, args.thread_num, newref, fq1, fq2, newref)
+        """%(outdir, newref, newref, args.thread_num, newref, fq1, fq2, newref)
     os.system(map_call)
     # print (ins_seq)
     for ins in ins_seq.keys():
-        ins_call = """samtools faidx %s/newref_insertion.fa %s_%s |%s/../bin/bcftools consensus -H 1 %s/newref_insertion.freebayes.vcf.gz  >%s/fresh_ins.fa
-        """%(outdir,gene,int(ins),sys.path[0],outdir,outdir)
+        ins_call = """samtools faidx %s/newref_insertion.fa %s_%s |bcftools consensus -H 1 %s/newref_insertion.freebayes.vcf.gz  >%s/fresh_ins.fa
+        """%(outdir,gene,int(ins),outdir,outdir)
         # print ('#####################', ins, ins_call)
         os.system(ins_call)
         ins_seq[ins] = read_fasta('%s/fresh_ins.fa'%(outdir))
@@ -1008,17 +1008,16 @@ def segment_mapping(fq1, fq2, ins_seq, outdir, gene, gene_ref):
         # index the ref
     print ('New mapping starts to link long InDels.')
     map_call = """\
-        bindir=%s/../bin/
-        outdir=%s/ 
-        sample='newref_insertion' 
-        samtools faidx %s 
+        outdir=%s/
+        sample='newref_insertion'
+        samtools faidx %s
         bwa index %s
         group='@RG\\tID:sample\\tSM:sample'  #only -B 1
         bwa mem -t %s -B 1 -O 1,1 -L 1,1 -U 1 -R $group -Y %s %s %s | samtools view -q 1 -F 4 -Sb | samtools sort > $outdir/$sample.sort.bam
-        mv $outdir/$sample.sort.bam $outdir/$sample.bam 
-        samtools index $outdir/$sample.bam 
-        freebayes -f %s -p 2 $outdir/$sample.bam > $outdir/$sample.freebayes.vcf 
-        """%(sys.path[0], outdir, newref, newref, args.thread_num, newref, fq1, fq2, newref)
+        mv $outdir/$sample.sort.bam $outdir/$sample.bam
+        samtools index $outdir/$sample.bam
+        freebayes -f %s -p 2 $outdir/$sample.bam > $outdir/$sample.freebayes.vcf
+        """%(outdir, newref, newref, args.thread_num, newref, fq1, fq2, newref)
     os.system(map_call)
 
 def get_insertion_linkage(ins_seq):
@@ -1176,7 +1175,7 @@ def dup_region_type(outdir, strainsNum, bamfile):
         blastn -query $outdir/extract.fa -out $outdir/extract.read.blast -db $ref -outfmt 6 -strand plus  -penalty -1 -reward 1 -gapopen 4 -gapextend 1
         perl %s/count.read.pl $outdir
         less $outdir/DRB1.hla.count| sort -k3,3nr -k4,4nr | head -n $k |awk '$3>0.7'|awk '$4>5' >$outdir/select.DRB1.seq.txt
-        """%(bamfile, outdir, strainsNum, args.db, sys.path[0])
+        """%(bamfile, outdir, strainsNum, args.db, get_script_dir())
     os.system(order)
 
 def long_InDel_breakpoints(bfile):
@@ -1359,23 +1358,23 @@ def get_unphased_loci(outdir, gene, invcf, snp_list, spec_vcf):
     print ("%s blocks after phasing."%(len(block_boundaries)+1))
     return block_boundaries
 
-def phase_insertion(gene, outdir, hla_ref, shdir):
+def phase_insertion(gene, outdir, hla_ref):
     order = """
     sample=%s
     outdir=%s
     ref=%s
     cat $outdir/newref_insertion.freebayes.vcf|grep '#'>$outdir/filter_newref_insertion.freebayes.vcf
     awk -F'\t' '{if($6>5) print $0}' $outdir/newref_insertion.freebayes.vcf|grep -v '#' >>$outdir/filter_newref_insertion.freebayes.vcf
-    %s/../bin/extractHairs/build/ExtractHAIRs --triallelic 1 --mbq 4 --mmq 0 --indels 1 \
+    ExtractHAIRs --triallelic 1 --mbq 4 --mmq 0 --indels 1 \
     --ref $ref --bam $outdir/newref_insertion.bam --VCF $outdir/filter_newref_insertion.freebayes.vcf --out $outdir/$sample.fragment.file > spec.log 2>&1
     sort -n -k3 $outdir/$sample.fragment.file >$outdir/$sample.fragment.sorted.file
     bgzip -f $outdir/filter_newref_insertion.freebayes.vcf
     tabix -f $outdir/filter_newref_insertion.freebayes.vcf.gz
-    %s/../bin/SpecHap/build/SpecHap --ncs --window_size 15000 -N --vcf $outdir/filter_newref_insertion.freebayes.vcf.gz --frag $outdir/$sample.fragment.sorted.file --out $outdir/$sample.insertion.phased.raw.vcf
+    SpecHap --ncs --window_size 15000 -N --vcf $outdir/filter_newref_insertion.freebayes.vcf.gz --frag $outdir/$sample.fragment.sorted.file --out $outdir/$sample.insertion.phased.raw.vcf
     cat $outdir/$sample.insertion.phased.raw.vcf| sed -e 's/1\/1/1\|1/g'>$outdir/$sample.insertion.phased.vcf
     bgzip -f $outdir/$sample.insertion.phased.vcf
     tabix -f $outdir/$sample.insertion.phased.vcf.gz
-    """%(gene, outdir, hla_ref, sys.path[0], shdir)
+    """%(gene, outdir, hla_ref)
     os.system(order)
     print ('insertion phasing done.')
 
@@ -1458,8 +1457,8 @@ def run_SpecHap():
     os.system('cat %s/fragment.read.file >%s/fragment.all.file'%(outdir, outdir))   
 
     # the order to phase with only ngs data.
-    order='%s/../bin/SpecHap/build/SpecHap --ncs --protocols ngs,matrix --weights %s,%s --window_size 15000 --vcf %s --frag %s/fragment.sorted.file,%s/fragment.imbalance.file --out \
-    %s/%s.specHap.phased.vcf'%(sys.path[0], 1-args.weight_imb, args.weight_imb, gene_vcf, outdir,outdir, outdir,gene)
+    order='SpecHap --ncs --protocols ngs,matrix --weights %s,%s --window_size 15000 --vcf %s --frag %s/fragment.sorted.file,%s/fragment.imbalance.file --out \
+    %s/%s.specHap.phased.vcf'%(1-args.weight_imb, args.weight_imb, gene_vcf, outdir,outdir, outdir,gene)
     # print (order)
 
     # integrate phase info from pacbio data if provided.
@@ -1468,16 +1467,15 @@ def run_SpecHap():
         command = """
         fq=%s
         outdir=%s
-        bin=%s/../bin
         gene=%s
         ref=%s
         sample=pacbio
 
         pbmm2 align -j %s $ref $outdir/%s/$gene.pacbio.fq.gz $outdir/$sample.tgs.sort.bam --sort --sample $sample --rg '@RG\tID:movie1'
         samtools index $outdir/$sample.tgs.sort.bam
-        $bin/extractHairs/build/ExtractHAIRs --triallelic 1 --pacbio 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.$sample.file
+        ExtractHAIRs --triallelic 1 --pacbio 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.$sample.file
         cat $outdir/fragment.$sample.file >> $outdir/fragment.all.file
-        """%(args.tgs, outdir, sys.path[0], gene.split("_")[1], hla_ref, args.thread_num, args.sample_id, gene_vcf)
+        """%(args.tgs, outdir, gene.split("_")[1], hla_ref, args.thread_num, args.sample_id, gene_vcf)
 
         print ('extract linkage info from pacbio data.')
         os.system(command)
@@ -1489,20 +1487,19 @@ def run_SpecHap():
         fq=%s
         ref=%s
         outdir=%s
-        bin=%s/../bin
         gene=%s
         sample=nanopore
         minimap2 -t %s -a $ref $outdir/%s/$gene.nanopore.fq.gz > $outdir/$sample.tgs.sam
         samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
         samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
         samtools index $outdir/$sample.tgs.sort.bam
-        $bin/extractHairs/build/ExtractHAIRs --triallelic 1 --ONT 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.$sample.file
+        ExtractHAIRs --triallelic 1 --ONT 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.$sample.file
         cat $outdir/fragment.$sample.file >> $outdir/fragment.all.file
-        """%(args.nanopore, hla_ref, outdir, sys.path[0], gene.split("_")[1], args.thread_num, args.sample_id, gene_vcf)
+        """%(args.nanopore, hla_ref, outdir, gene.split("_")[1], args.thread_num, args.sample_id, gene_vcf)
         print ('extract linkage info from nanopore TGS data.')
         os.system(command)
-        # order = '%s/../bin/SpecHap/build/SpecHap --ncs -N --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
-        # --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
+        # order = 'SpecHap --ncs -N --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
+        # --out %s/%s.specHap.phased.vcf'%(gene_vcf, outdir, outdir,gene)
         order += " -N"
 
     # hic 
@@ -1512,7 +1509,6 @@ def run_SpecHap():
         rev_hic=%s
         ref=%s
         outdir=%s
-        bin=%s/../bin
         sample=HiC
         group='@RG\tID:'$sample'\tSM:'$sample
         bwa mem -t %s -5SP -Y -U 10000 -L 10000,10000 -O 7,7 -E 2,2 $ref $fwd_hic $rev_hic >$outdir/$sample.tgs.raw.sam
@@ -1520,13 +1516,13 @@ def run_SpecHap():
         samtools view -F 2308 -b -T $ref $outdir/$sample.tgs.sam > $outdir/$sample.tgs.bam
         samtools sort $outdir/$sample.tgs.bam -o $outdir/$sample.tgs.sort.bam
         samtools index $outdir/$sample.tgs.sort.bam
-        $bin/extractHairs/build/ExtractHAIRs --new_format 1 --triallelic 1 --hic 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.hic.file
-        """%(args.hic_fwd, args.hic_rev, hla_ref, outdir, sys.path[0], args.thread_num, gene_vcf)
+        ExtractHAIRs --new_format 1 --triallelic 1 --hic 1 --indels 1 --ref $ref --bam $outdir/$sample.tgs.sort.bam --VCF %s --out $outdir/fragment.hic.file
+        """%(args.hic_fwd, args.hic_rev, hla_ref, outdir, args.thread_num, gene_vcf)
         print ('extract linkage info from HiC data.')
         os.system(command)
         os.system('cat %s/fragment.hic.file >> %s/fragment.all.file'%(outdir, outdir))
-        # order = '%s/../bin/SpecHap/build/SpecHap --ncs -H --new_format --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
-        # --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
+        # order = 'SpecHap --ncs -H --new_format --window_size 15000 --vcf %s --frag %s/fragment.sorted.file \
+        # --out %s/%s.specHap.phased.vcf'%(gene_vcf, outdir, outdir,gene)
         order += " -H --new_format"
 
     # 10x genomics
@@ -1535,35 +1531,34 @@ def run_SpecHap():
             fq=%s
             ref=%s
             outdir=%s
-            bin=%s/../bin
             sample=%s
             gene=%s
             vcf=%s
             folder_name=tenx_bam_$sample
             bam=./$folder_name/outs/possorted_bam.bam
-            
+
             if [ $gene == "HLA_A" ];
             then
                 rm -rf ./$folder_name
                 longranger align --id=$folder_name --fastqs=$fq --reference=%s/ref/refdata-hla.ref.extend\
-                    --sample=$sample --localcores=%s --localmem=10 
+                    --sample=$sample --localcores=%s --localmem=10
             fi
- 
-            $bin/extractHairs/build/ExtractHAIRs --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam\
+
+            ExtractHAIRs --new_format 1 --triallelic 1 --10X 1 --indels 1 --ref $ref --bam $bam\
                  --VCF $vcf --out $outdir/fragment.raw.tenx.file
             gzip -f -d -k $vcf
             python3 %s/link_fragment.py -b $bam -f $outdir/fragment.raw.tenx.file\
                  -v %s -o  $outdir/fragment.raw3.tenx.file
             awk '$0=$0" 1"' $outdir/fragment.raw3.tenx.file >$outdir/fragment.tenx.file
             cat $outdir/fragment.tenx.file >> $outdir/fragment.all.file
-        
-        """%(args.tenx, hla_ref, outdir, sys.path[0], args.sample_id, gene, gene_vcf,args.db, args.thread_num, sys.path[0], gene_vcf[:-3])
+
+        """%(args.tenx, hla_ref, outdir, args.sample_id, gene, gene_vcf,args.db, args.thread_num, get_script_dir(), gene_vcf[:-3])
         print ('align linked-reads with longranger and extract linkage info')
         os.system(command)
         
-        # order = '%s/../bin/SpecHap/build/SpecHap --ncs -T  --new_format --window_size 15000 \
+        # order = 'SpecHap --ncs -T  --new_format --window_size 15000 \
         # --vcf %s --frag %s/fragment.sorted.file\
-        # --out %s/%s.specHap.phased.vcf'%(sys.path[0],gene_vcf, outdir, outdir,gene)
+        # --out %s/%s.specHap.phased.vcf'%(gene_vcf, outdir, outdir,gene)
         order += " -T --new_format"
 
     if new_formate:
@@ -1623,7 +1618,7 @@ def all_poss_block_link():
 def select_poss():
     # map all possible haps to allele database
     # select the hap with highest mapping score
-    reph='perl %s/whole/select.combination.pl -g %s -i %s -s %s -p Unknown -d %s/HLA'%(sys.path[0],gene,outdir,args.sample_id, args.db)      
+    reph='perl %s/whole/select.combination.pl -g %s -i %s -s %s -p Unknown -d %s/HLA'%(get_script_dir(),gene,outdir,args.sample_id, args.db)      
     # print (str(reph))  
     os.system(str(reph))    
     selected_fasta = "%s/result.%s.fasta"%(outdir, gene)
@@ -1666,12 +1661,12 @@ def link_blocks():
         update_seqlist = all_poss_block_link()
     else:
         if args.use_database == True:
-            reph='python3 %s/whole/map_block2_database.py %s %s %s'%(sys.path[0],gene,outdir,args.db)     
+            reph='python3 %s/whole/map_block2_database.py %s %s %s'%(get_script_dir(),gene,outdir,args.db)     
             os.system(str(reph))
             # phase block with spectral graph theory
             print ("phase block with spectral graph theory")
             spec_block = "python3 %s/phase_unlinked_block.py %s/%s_break_points_score.txt %s/%s_break_points_phased.txt"\
-                %(sys.path[0],outdir,gene,outdir,gene)
+                %(get_script_dir(),outdir,gene,outdir,gene)
             os.system(str(spec_block))       
             record_block_haps = read_block_hap()
         else:
@@ -1725,7 +1720,7 @@ def skip_mask_region(mask_dict, gene, start, end):
     return start, end    
 
 def vcf2fasta(rephase_vcf):
-    exon_bed = "%s/whole/exon_extent.bed"%(sys.path[0])
+    exon_bed = "%s/whole/exon_extent.bed"%(get_script_dir())
     exon_intervals = []
     f = open(exon_bed, 'r')
     for line in f:
@@ -1741,12 +1736,12 @@ def vcf2fasta(rephase_vcf):
         start, end = interval[0], interval[1]
         for i in range(1, 3):
             if j == 0:
-                fastq2 = 'samtools faidx %s %s:%s-%s | %s/../bin/bcftools consensus -H %s --mask %s %s\
-                    >%s/hla.allele.%s.%s.fasta'%(hla_ref, gene, start, end, sys.path[0], i, mask_bed,\
+                fastq2 = 'samtools faidx %s %s:%s-%s | bcftools consensus -H %s --mask %s %s\
+                    >%s/hla.allele.%s.%s.fasta'%(hla_ref, gene, start, end, i, mask_bed,\
                     rephase_vcf, outdir, i, gene)
             else:
-                fastq2 = 'samtools faidx %s %s:%s-%s | %s/../bin/bcftools consensus -H %s --mask %s %s\
-                    >>%s/hla.allele.%s.%s.fasta'%(hla_ref, gene, start, end, sys.path[0], i, mask_bed, \
+                fastq2 = 'samtools faidx %s %s:%s-%s | bcftools consensus -H %s --mask %s %s\
+                    >>%s/hla.allele.%s.%s.fasta'%(hla_ref, gene, start, end, i, mask_bed, \
                     rephase_vcf, outdir, i, gene)              
             os.system(fastq2)
         j += 1
@@ -1772,22 +1767,21 @@ class Pedigree():
 
     def pedhap(self): # run pedhap
         command = """
-        bin=%s/../bin/
         workdir=%s
         gene=%s
         child=%s
         mother=%s
         father=%s
-        $bin/bcftools merge $workdir/$child/$gene.specHap.phased.refined.vcf.gz $workdir/$mother/$gene.specHap.phased.refined.vcf.gz $workdir/$father/$gene.specHap.phased.refined.vcf.gz -o $workdir/$child/$gene.trio.merge.vcf.gz -Oz -0
+        bcftools merge $workdir/$child/$gene.specHap.phased.refined.vcf.gz $workdir/$mother/$gene.specHap.phased.refined.vcf.gz $workdir/$father/$gene.specHap.phased.refined.vcf.gz -o $workdir/$child/$gene.trio.merge.vcf.gz -Oz -0
         tabix -f $workdir/$child/$gene.trio.merge.vcf.gz
         python3 %s/pedhap/main.py --threshold1 0.6 --threshold2 0 -v $workdir/$child/$gene.trio.merge.vcf.gz -p $workdir/$child/trio.ped -o $workdir/$child/$gene.trio.rephase.vcf.gz
         file=$workdir/$child/$gene.trio.rephase.vcf.gz
         tabix -f $file
-        for sample in `$bin/bcftools query -l $file`; do
-            $bin/bcftools view -c1 -Oz -s $sample -o $workdir/$sample/trio/$sample.$gene.trio.vcf.gz $file
+        for sample in `bcftools query -l $file`; do
+            bcftools view -c1 -Oz -s $sample -o $workdir/$sample/trio/$sample.$gene.trio.vcf.gz $file
             tabix -f $workdir/$sample/trio/$sample.$gene.trio.vcf.gz
-        done        
-        """%(sys.path[0],self.root_dir, gene, self.sample_list[0], self.sample_list[1], self.sample_list[2], sys.path[0])
+        done
+        """%(self.root_dir, gene, self.sample_list[0], self.sample_list[1], self.sample_list[2], get_script_dir())
         os.system(command)  
         print ("pedhap is done")  
 
@@ -1919,7 +1913,7 @@ if __name__ == "__main__":
                 # there can be hete variants
                 # get consensus sequence if copy number is 1 
                 # phase the variants to get two haps if copy number is 2
-                phase_insertion(gene, outdir, args.ref, sys.path[0])
+                phase_insertion(gene, outdir, args.ref)
 
             # phase long indels
             sh = Share_reads(deletion_region, outdir, strainsNum, gene, gene_profile, ins_seq)

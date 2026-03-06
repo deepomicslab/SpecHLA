@@ -7,14 +7,12 @@ dir=$3
 # so that this script can be linked somewhere else.
 script_path=$(dirname $(realpath $0))
 pdir=$(cd $script_path; pwd)
+source "$pdir/../spechla_env.sh"
 
-bin=$pdir/../../bin
-db=$pdir/../../db
+db=${SPECHLA_DB:-$pdir/../../db}
 
 outdir=$dir/Scanindel
 mkdir -p $outdir
-
-export PATH=$PATH:$bin
 
 rm -rf $outdir/$sample.breakpoint.txt $outdir/$sample.ins.fa
 HLAs=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
