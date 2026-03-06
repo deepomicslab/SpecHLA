@@ -23,25 +23,15 @@ requirements:
     - arpack
     - zlib
   run:
+    # Core (all modes)
     - python >=3.8
     - samtools >=1.13
     - bcftools
-    - bwa
-    - bowtie2
-    - freebayes
-    - minimap2
-    - blast
-    - blat
-    - bedtools
-    - bamutil
-    - fermikit
-    - k8
-    - parallel
-    - trinity
-    - pbmm2
-    - pbsv
-    - longshot
     - htslib
+    - perl
+    - perl-findbin
+    - perl-getopt-long
+    # Python libraries (all modes)
     - pysam
     - biopython
     - numpy
@@ -50,9 +40,24 @@ requirements:
     - pyvcf
     - pulp
     - python-edlib
-    - perl
-    - perl-findbin
-    - perl-getopt-long
+    # Short-read mode
+    - bwa
+    - bowtie2
+    - freebayes
+    - blast
+    - blat
+    - bedtools
+    - bamutil
+    - fermikit
+    - k8
+    - parallel
+    - trinity
+    # Long-read mode
+    - minimap2
+    - longshot
+    # Structural variant detection (optional, -v flag)
+    - pbmm2
+    - pbsv
 
 test:
   commands:

@@ -12,6 +12,29 @@ detection.
 
 ## Install
 
+### Option 1: Conda (recommended)
+
+```
+conda install -c bioconda spechla
+```
+
+After installation, run SpecHLA with:
+
+```
+spechla -h
+```
+
+For long-read-only typing:
+
+```
+spechla-long-read -h
+```
+
+If you only need long-read mode, you can install a minimal set of dependencies
+using `long_only_env.yml` instead of the full package.
+
+### Option 2: From source
+
 First, create the env with conda, and activate the env. When running any of the
 SpecHLA scripts, ensure this is done inside this environment, either through
 `conda run` or by activating the environment like below.
@@ -32,7 +55,7 @@ chmod +x -R bin/*
 Third, index the database and install the packages.
 
 ```
-unset LD_LIBRARY_PATH && unset LIBRARY_PATH 
+unset LD_LIBRARY_PATH && unset LIBRARY_PATH
 bash index.sh
 ```
 
@@ -50,10 +73,12 @@ python3 script/long_read_typing.py -h
 
 Note:
 
-- SpecHLA requires a License of [Novoalign](https://www.novocraft.com/buy-now/)
-  in `bin/`. If not detected, it uses `bowtie2` as a replacement automatically.
-  The License file of `Novoalign` should be put in the `bin/` folder `before`
-  running `bash index.sh`.
+- SpecHLA optionally uses [Novoalign](https://www.novocraft.com/buy-now/) for
+  improved read mapping. If not detected, `bowtie2` is used automatically.
+  - **From source**: Put `novoalign.lic` in the `bin/` folder before running
+    `bash index.sh`.
+  - **Conda install**: Install novoalign separately and place `novoalign.lic`
+    next to the `novoalign` binary (e.g., `$CONDA_PREFIX/bin/novoalign.lic`).
 - If you want to run SpecHLA with `only` long-read data, there is no need for
   the `Novoalign` license and running `bash index.sh`. You need only construct
   the environment from
