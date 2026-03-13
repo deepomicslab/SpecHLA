@@ -40,7 +40,7 @@ requirements:
     - numpy
     - pandas
     - scipy
-    - pyvcf
+    - pyvcf3
     - pulp
     - python-edlib
     # Short-read mode

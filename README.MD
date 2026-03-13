@@ -103,23 +103,28 @@ all tests sequentially.
 
 ### Main functions
 
-| Scripts                        | Description                                                             |
-| ------------------------------ | ----------------------------------------------------------------------- |
-| script/ExtractHLAread.sh       | Extract HLA reads from enrichment-free data.                            |
-| script/whole/SpecHLA.sh        | HLA typing with paired-end (PE), PE+long reads, PE+HiC, or PE+10X data. |
-| script/long_read_typing.py     | HLA typing with only long-read data.                                    |
-| script/typing_from_assembly.py | HLA Typing from diploid assemblies.                                     |
-| script/cal.hla.copy.pl         | Detect HLA LOH events based on SpecHLA's typing results.                |
+| Scripts                        | Conda command                  | Description                                                             |
+| ------------------------------ | ------------------------------ | ----------------------------------------------------------------------- |
+| script/ExtractHLAread.sh       | `spechla-extract-hla-reads`    | Extract HLA reads from enrichment-free data.                            |
+| script/whole/SpecHLA.sh        | `spechla`                      | HLA typing with paired-end (PE), PE+long reads, PE+HiC, or PE+10X data. |
+| script/long_read_typing.py     | `spechla-long-read`            | HLA typing with only long-read data.                                    |
+| script/typing_from_assembly.py | `spechla-assembly`             | HLA Typing from diploid assemblies.                                     |
+| script/cal.hla.copy.pl         | `spechla-loh`                  | Detect HLA LOH events based on SpecHLA's typing results.                |
 
 ### Extract HLA-related reads
 
 First extract HLA reads with enrichment-free data. Otherwise, HLA typing would
-be slow. Map reads to `hg19` or `hg38`, then use `script/ExtractHLAread.sh` to
-extract HLA-related reads. We use the script of
+be slow. Map reads to `hg19` or `hg38`, then use `script/ExtractHLAread.sh` (or
+`spechla-extract-hla-reads` with conda) to extract HLA-related reads. We use the
+script of
 [Kourami](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-018-1388-2)
 with minor revision for this step. Extract HLA-related reads by
 
 ```
+# Conda
+spechla-extract-hla-reads -s <sample_id> -b <bamfile> -r <refGenome> -o <outdir>
+
+# From source
 USAGE: bash script/ExtractHLAread.sh -s <sample_id> -b <bamfile> -r <refGenome> -o <outdir>
 
  -s          : desired sample name (ex: NA12878) [required]
@@ -141,26 +146,30 @@ data, we recommend first performing the aforementioned step.
 Perform full-resolution HLA typing with `paired-end` reads by
 
 ```
+# Conda
+spechla -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/
+
+# From source
 bash script/whole/SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/
 ```
 
 Perform exon HLA typing with `paired-end` reads by
 
 ```
-bash script/whole/SpecHLA.sh -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ -u 1
+spechla -n <sample> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ -u 1
 ```
 
 Perform full-resolution HLA typing with `paired-end` reads and `PacBio` reads by
 
 ```
-bash script/whole/SpecHLA.sh -n <sample> -t <sample.pacbio.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
+spechla -n <sample> -t <sample.pacbio.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/
 ```
 
 Perform full-resolution HLA typing with `paired-end` reads and `Nanopore` reads
 by
 
 ```
-bash script/whole/SpecHLA.sh -n <sample> -e <sample.nanopore.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/ 
+spechla -n <sample> -e <sample.nanopore.fq.gz> -1 <sample.fq.1.gz> -2 <sample.fq.2.gz> -o outdir/
 ```
 
 Perform full-resolution HLA typing with `paired-end` reads and `Hi-C` reads by
@@ -242,7 +251,17 @@ Options:
 Perform HLA typing only with `long reads` by
 
 ```
-usage: python3 long_read_typing.py -h
+# Conda
+spechla-long-read -r <long_read.fq.gz> -n <sample> -o output/
+
+# From source
+python3 script/long_read_typing.py -r <long_read.fq.gz> -n <sample> -o output/
+```
+
+Full arguments:
+
+```
+usage: spechla-long-read -h
 
 HLA Typing with only long-read data.
 
@@ -277,6 +296,7 @@ Optional arguments:
 ### HLA Typing from diploid assemblies
 
 ```
+# Conda: spechla-assembly -h
 usage: python3 typing_from_assembly.py -h
 
 HLA Typing from diploid assemblies.
@@ -318,6 +338,7 @@ folder.
 Based on the tumor purity and ploidy, we can infer HLA LOH event by
 
 ```
+# Conda: spechla-loh
 usage:  perl cal.hla.copy.pl [Options] -S <samplename> -C <5> -purity <Purity> -ploidy <Ploidy> -F <filelist> -T <hla.result.txt> -O <outdir>
 
         OPTIONS:

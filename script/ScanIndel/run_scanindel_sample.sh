@@ -1,3 +1,5 @@
+#!/bin/bash
+
 sample=$1
 bam=$2
 port=$4
