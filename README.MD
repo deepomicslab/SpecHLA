@@ -12,10 +12,11 @@ detection.
 
 ## Install
 
-### Option 1: Conda (recommended)
+### Option 1: Conda (recommended and best build an independent env)
 
 ```
-conda install -c bioconda spechla
+conda create -n spechla -c bioconda -c conda-forge spechla
+conda activate spechla
 ```
 
 After installation, run SpecHLA with:
