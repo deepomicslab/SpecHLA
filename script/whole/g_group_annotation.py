@@ -65,7 +65,7 @@ def read_G_annotation(db):
 def convert_G(allele):
     allele = re.sub(":","_",allele)
     allele = re.sub("HLA-","",allele)
-    allele = re.sub("\*","_",allele)
+    allele = re.sub(r"\*","_",allele)
     allele = allele.split(";")[0]
     if allele in G_annotation_dict:
         allele = G_annotation_dict[allele]
