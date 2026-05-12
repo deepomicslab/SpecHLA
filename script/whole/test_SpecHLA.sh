@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 ###
 ### SpecHLA: Full-resolution HLA typing from sequencing data.
@@ -210,7 +211,7 @@ $python_bin $dir/../assign_reads_to_genes.py -1 $fq1 -2 $fq2 -n $bin -o $outdir 
 
 
 # ########### align the gene-specific reads to the corresponding gene reference################################
-bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 | samtools view -H  >$outdir/header.sam
+{ bwa mem -U 10000 -L 10000,10000 -R $group $hlaref $fq1 $fq2 || true; } | samtools view -H >$outdir/header.sam
 #hlas=(A B C)
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
@@ -240,11 +241,11 @@ tabix -f $outdir/$sample.realign.vcf.gz
 zless $outdir/$sample.realign.vcf.gz |grep "#" > $outdir/$sample.realign.filter.vcf
 echo BAM and VCF are ready.
 if [ $focus_exon_flag == 1 ];then #exon
-    bcftools filter -R $dir/exon_extent.bed $outdir/$sample.realign.vcf.gz |grep -v "#"  >> $outdir/$sample.realign.filter.vcf
+    bcftools filter -R $dir/exon_extent.bed $outdir/$sample.realign.vcf.gz |grep -v "#" >> $outdir/$sample.realign.filter.vcf || true
 else # full length
     bcftools filter\
      -t HLA_A:1000-4503,HLA_B:1000-5081,HLA_C:1000-5304,HLA_DPA1:1000-10775,HLA_DPB1:1000-12468,HLA_DQA1:1000-7492,HLA_DQB1:1000-8480,HLA_DRB1:1000-12229\
-      $outdir/$sample.realign.vcf.gz |grep -v "#" >> $outdir/$sample.realign.filter.vcf  
+      $outdir/$sample.realign.vcf.gz |grep -v "#" >> $outdir/$sample.realign.filter.vcf || true
 fi
 # #####################################################################################################
 
@@ -308,7 +309,7 @@ fi
 
 
 # ########### phase, link blocks, calculate haplotype ratio, give typing results ##############
-if [ "$maf" == "" ];then
+if [ "${maf:-}" == "" ];then
     if [ $focus_exon_flag != 1 ]; then
         my_maf=0.05
     else
