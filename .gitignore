@@ -10,6 +10,7 @@ example/nanopore/output/
 example/pacbio/output/
 example/hybrid/output/
 example/hla_loh/output/
+spechla_env2/
 spechla_env/
 bin/SpecHap/build/
 bin/extractHairs/build/

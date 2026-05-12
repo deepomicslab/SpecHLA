@@ -9,6 +9,7 @@ dependencies:
   - _sysroot_linux-64_curr_repodata_hack=3=h69a702a_16
   - biopython=1.79=py38h0a891b7_3
   - blast=2.12.0=hf3cf87c_4
+  - bcftools
   - bzip2=1.0.8=h4bc722e_7
   - c-ares=1.32.2=h4bc722e_0
   - ca-certificates=2024.7.4=hbcca054_0
