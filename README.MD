@@ -12,7 +12,7 @@ detection.
 
 ## Install
 
-### Option 1: Conda (recommended and best build an independent env)
+### Option 1: Conda (risky, not fullly tested)
 
 ```
 conda create -n spechla -c bioconda -c conda-forge spechla
@@ -34,7 +34,7 @@ spechla-long-read -h
 If you only need long-read mode, you can install a minimal set of dependencies
 using `long_only_env.yml` instead of the full package.
 
-### Option 2: From source
+### Option 2: From source (recommended)
 
 First, create the env with conda, and activate the env. When running any of the
 SpecHLA scripts, ensure this is done inside this environment, either through
