@@ -214,6 +214,7 @@ sub whole_blast{
                        chomp;
                        next if(/^#/);
                        my ($hla, $t, $m,$d,$s) = (split)[1,3,4,5,8];
+                       $hla = $hashc{$hla} if(exists $hashc{$hla}); # convert HLA:HLAxxxxx -> allele name
                        $hash11{$hla} += $t;
                        $hash12{$hla} += $m + $d;
                        $blastcount += 1;
