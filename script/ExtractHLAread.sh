@@ -20,6 +20,8 @@ function usage {
     echo
     echo " -o          : folder to save extracted reads [required]"
     echo
+    echo " -T          : path to reference FASTA (required for .cram input)"
+    echo
     exit 1
 }
 
@@ -32,7 +34,7 @@ if [[ $# == 0 ]] || [[ "$1" == "-h" ]]; then
 	exit 1
 fi
 
-while getopts ":s:b:r:o:" opt; do
+while getopts ":s:b:r:o:T:" opt; do
 	   case $opt in
 	    s) id="$OPTARG"
 		 ;;
@@ -41,6 +43,8 @@ while getopts ":s:b:r:o:" opt; do
 	    r) ref="$OPTARG"
 		 ;;
 	    o) outdir="$OPTARG"
+		 ;;
+	    T) fasta="$OPTARG"
 		 ;;
 	    \?) echo "Invalid option -$OPTARG" >&2
 		 ;;
@@ -52,7 +56,17 @@ echo "-s " $id
 echo "-b " $bam_path
 echo "-r " $ref
 echo "-o " $outdir
+echo "-T " $fasta
 
+if [[ "$bam_path" == *.cram ]] && [[ -z "$fasta" ]]; then
+    echo "Error: -T <ref.fasta> is required for CRAM input"
+    exit 1
+fi
+
+ref_fasta_opt=""
+if [[ -n "$fasta" ]]; then
+    ref_fasta_opt="-T $fasta"
+fi
 
 mkdir -p $outdir
 sampleid=$outdir/$id
@@ -79,10 +93,10 @@ if [ "$ref" == "hg38" ]; then
   
 	echo ">>>>>>>>>>>>>>>> extracting reads mapping to HLA loci and ALT contigs (hg38)"
 
-    if $samtools_bin view -H $bam_path | grep -q -w "SN:chr6"; then
+    if $samtools_bin view -H $ref_fasta_opt $bam_path | grep -q -w "SN:chr6"; then
         echo "BAM file contains chr6"
 
-        $samtools_bin view -b $bam_path chr6:29723340-29727296 chr6:29726601-29749049 chr6:29826979-29831122 \
+        $samtools_bin view -b $ref_fasta_opt $bam_path chr6:29723340-29727296 chr6:29726601-29749049 chr6:29826979-29831122 \
         chr6:29887760-29891080 chr6:29942470-29945884 chr6:30005971-30009956 chr6:30259562-30266951 \
         chr6:30489406-30494205 chr6:31268749-31272136 chr6:31353866-31357245 chr6:31399784-31415316 \
         chr6:31494881-31511124 chr6:32439842-32445051 chr6:32517377-32530229 chr6:32552713-32560002 \
@@ -94,7 +108,7 @@ if [ "$ref" == "hg38" ]; then
     else
         echo "BAM file does not contain chr6, find 6"
 
-        $samtools_bin view -b $bam_path 6:29723340-29727296 6:29726601-29749049 6:29826979-29831122 \
+        $samtools_bin view -b $ref_fasta_opt $bam_path 6:29723340-29727296 6:29726601-29749049 6:29826979-29831122 \
         6:29887760-29891080 6:29942470-29945884 6:30005971-30009956 6:30259562-30266951 \
         6:30489406-30494205 6:31268749-31272136 6:31353866-31357245 6:31399784-31415316 \
         6:31494881-31511124 6:32439842-32445051 6:32517377-32530229 6:32552713-32560002 \
@@ -111,14 +125,14 @@ if [ "$ref" == "hg19" ];then
 	
 	echo ">>>>>>>>>>>>>>>> extracting reads mapping to HLA loci and ALT contigs (hg19)"
 
-    if $samtools_bin view -H $bam_path | grep -q -w "SN:chr6"; then
+    if $samtools_bin view -H $ref_fasta_opt $bam_path | grep -q -w "SN:chr6"; then
         echo "BAM file contains chr6"
 
-	    $samtools_bin view -b $bam_path chr6:29907037-29915661 chr6:31319649-31326989 chr6:31234526-31241863 chr6:32914391-32922899 chr6:32900406-32910847 chr6:32969960-32979389 chr6:32778540-32786825 chr6:33030346-33050555 chr6:33041703-33059473 chr6:32603183-32613429 chr6:32707163-32716664 chr6:32625241-32636466 chr6:32721875-32733330 chr6:32405619-32414826 chr6:32544547-32559613 chr6:32518778-32554154 chr6:32483154-32559613 chr6:30455183-30463982 chr6:29689117-29699106 chr6:29792756-29800899 chr6:29793613-29978954 chr6:29855105-29979733 chr6:29892236-29899009 chr6:30225339-30236728 chr6:31369356-31385092 chr6:31460658-31480901 chr6:29766192-29772202 chr6:32810986-32823755 chr6:32779544-32808599 chr6:29756731-29767588  chr6_apd_hap1 chr6_cox_hap2 chr6_dbb_hap3 chr6_mann_hap4 chr6_mcf_hap5 chr6_qbl_hap6 chr6_ssto_hap7 | $samtools_bin view -b -F 0x4 - | $samtools_bin sort --thread $num_processors -m $samtools_sort_memory_per_thread -O BAM - > $sampleid.tmp.extract.bam
+	    $samtools_bin view -b $ref_fasta_opt $bam_path chr6:29907037-29915661 chr6:31319649-31326989 chr6:31234526-31241863 chr6:32914391-32922899 chr6:32900406-32910847 chr6:32969960-32979389 chr6:32778540-32786825 chr6:33030346-33050555 chr6:33041703-33059473 chr6:32603183-32613429 chr6:32707163-32716664 chr6:32625241-32636466 chr6:32721875-32733330 chr6:32405619-32414826 chr6:32544547-32559613 chr6:32518778-32554154 chr6:32483154-32559613 chr6:30455183-30463982 chr6:29689117-29699106 chr6:29792756-29800899 chr6:29793613-29978954 chr6:29855105-29979733 chr6:29892236-29899009 chr6:30225339-30236728 chr6:31369356-31385092 chr6:31460658-31480901 chr6:29766192-29772202 chr6:32810986-32823755 chr6:32779544-32808599 chr6:29756731-29767588  chr6_apd_hap1 chr6_cox_hap2 chr6_dbb_hap3 chr6_mann_hap4 chr6_mcf_hap5 chr6_qbl_hap6 chr6_ssto_hap7 | $samtools_bin view -b -F 0x4 - | $samtools_bin sort --thread $num_processors -m $samtools_sort_memory_per_thread -O BAM - > $sampleid.tmp.extract.bam
 
     else
         echo "BAM file does not contain chr6, find 6"
-        $samtools_bin view -b $bam_path 6:29907037-29915661 6:31319649-31326989 6:31234526-31241863 6:32914391-32922899 6:32900406-32910847 6:32969960-32979389 6:32778540-32786825 6:33030346-33050555 6:33041703-33059473 6:32603183-32613429 6:32707163-32716664 6:32625241-32636466 6:32721875-32733330 6:32405619-32414826 6:32544547-32559613 6:32518778-32554154 6:32483154-32559613 6:30455183-30463982 6:29689117-29699106 6:29792756-29800899 6:29793613-29978954 6:29855105-29979733 6:29892236-29899009 6:30225339-30236728 6:31369356-31385092 6:31460658-31480901 6:29766192-29772202 6:32810986-32823755 6:32779544-32808599 6:29756731-29767588  6_apd_hap1 6_cox_hap2 6_dbb_hap3 6_mann_hap4 6_mcf_hap5 6_qbl_hap6 6_ssto_hap7 | $samtools_bin view -b -F 0x4 - | $samtools_bin sort --thread $num_processors -m $samtools_sort_memory_per_thread -O BAM - > $sampleid.tmp.extract.bam
+        $samtools_bin view -b $ref_fasta_opt $bam_path 6:29907037-29915661 6:31319649-31326989 6:31234526-31241863 6:32914391-32922899 6:32900406-32910847 6:32969960-32979389 6:32778540-32786825 6:33030346-33050555 6:33041703-33059473 6:32603183-32613429 6:32707163-32716664 6:32625241-32636466 6:32721875-32733330 6:32405619-32414826 6:32544547-32559613 6:32518778-32554154 6:32483154-32559613 6:30455183-30463982 6:29689117-29699106 6:29792756-29800899 6:29793613-29978954 6:29855105-29979733 6:29892236-29899009 6:30225339-30236728 6:31369356-31385092 6:31460658-31480901 6:29766192-29772202 6:32810986-32823755 6:32779544-32808599 6:29756731-29767588  6_apd_hap1 6_cox_hap2 6_dbb_hap3 6_mann_hap4 6_mcf_hap5 6_qbl_hap6 6_ssto_hap7 | $samtools_bin view -b -F 0x4 - | $samtools_bin sort --thread $num_processors -m $samtools_sort_memory_per_thread -O BAM - > $sampleid.tmp.extract.bam
     fi
 
 fi	
