@@ -12,7 +12,7 @@ detection.
 
 ## Install
 
-### Option 1: Conda (risky, not fullly tested)
+### Option 1: Conda (might not be latest)
 
 ```
 conda create -n spechla -c bioconda -c conda-forge spechla
