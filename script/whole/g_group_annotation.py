@@ -92,6 +92,8 @@ class G_annotation():
            
     def read_blast(self, blast_result_file):
         # blast_result_file = "/mnt/d/HLAPro_backup/haplotype_v2/spechla/HG00096/test.out"
+        if not os.path.exists(blast_result_file):
+            return "no_match"
         f = open(blast_result_file, 'r')
         identity_record = {}
         record_hit_exon_times = {}
@@ -143,6 +145,12 @@ class G_annotation():
             sample_results[gene] = []
             for hap_index in range(1,3):
                 infer_hap_file = f"{self.spechla_dir}/hla.allele.{hap_index}.HLA_{gene}.fasta"
+                if not os.path.exists(infer_hap_file):
+                    # phasing of this gene/allele failed upstream (e.g. too many
+                    # blocks to link); degrade to no match instead of crashing
+                    print ("WARNING: %s is missing; skipping G group annotation."%(infer_hap_file))
+                    sample_results[gene].append("no_match")
+                    continue
                 n_ratio = count_n_ratio(infer_hap_file) # cal the ratio of N in the fasta
                 print ("The ratio of N (masked) is %s for the allele %s"%(n_ratio, infer_hap_file))
                 blast_result_file = infer_hap_file + ".exon.blast"
