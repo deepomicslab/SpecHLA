@@ -1586,6 +1586,12 @@ def all_poss_block_link():
     print ("Num of all possible haps is %s."%(len(all_poss)))
     if len(all_poss) > 512:
         print ("ERROR: Too many blocks, the phasing process must be wrong.")
+        print ("Found %s unlinked blocks separated by %s het variants, so the"
+               " %s possible haplotype combinations exceed the limit of 512."
+               % (len(block_intervals), len(block_boundaries), len(all_poss)))
+        print ("Likely there is insufficient read support for accurate phasing.")
+        print ("Try providing additional long-read / Hi-C / 10x data to bridge")
+        print ("the unlinked blocks, or re-run with higher coverage.")
         print ("-----------------------------------------------------------")
         sys.exit(1)
     record_all_block_haps = []

@@ -336,7 +336,10 @@ echo Minimum Minor Allele Frequency is $my_maf.
 hlas=(A B C DPA1 DPB1 DQA1 DQB1 DRB1)
 for hla in ${hlas[@]}; do
 hla_ref=$db/ref/HLA_$hla.fa
-$python_bin $dir/../phase_variants.py \
+# A gene whose phasing fails (e.g. too many blocks to link) must not abort the
+# whole sample: skip it and continue, downstream annotation degrades its
+# missing alleles to "no_match".
+if ! $python_bin $dir/../phase_variants.py \
   -o $outdir \
   -b $bam \
   -s $bfile \
@@ -360,6 +363,11 @@ $python_bin $dir/../phase_variants.py \
   --use_database ${use_database:-1} \
   --trio ${trio:-None} \
   --db ${db}
+then
+    echo "WARNING: phasing of HLA_$hla failed, continue with the remaining genes."
+    echo
+    echo
+fi
 done
 # ##################################################################################################
 
